@@ -197,7 +197,7 @@ def getDescFromObj(obj):
 #
 def cleanName(text):
 	'''removes forbidden characters - extend as more are identified'''
-	badChar = [u'\\'] #maybe also / ? ' 
+	badChar = [u'\\', u'/', u'[', u']', u'{', u'}', u'|', u'#'] #maybe also / ? ' 
 	badWhite = [u'	'] #maybe also &nbsp; character
 	for b in badChar:
 		text = text.replace(b, '-')

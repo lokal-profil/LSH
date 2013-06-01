@@ -27,8 +27,8 @@ def makeFilenames(filenameP=u'deriv-photo_multimedia_ObjIds_stichID_samesame_rea
 	f.write(u'%s|%s|%s|%s|filename\n' % (headerP[0], headerP[1], headerP[9], headerP[10]))
 	fbesk.write(u'Final filename becomes: <descr> - <museum> - <photoId>.tif \n\n')
 	fbesk.write(u'Attempts have been made to keep descriptions under %r characters with a hard limit at %r characters\n\n' %(GOODLENGTH,MAXLENGTH))
-	fbesk.write(u'You are free to change the descriptions shown below.\n')
-	fbesk.write(u'===phoId|description===\n')
+	fbesk.write(u'You are free to add improved the descriptions below.\n')
+	fbesk.write(u'===phoId | description | new description===\n')
 	
 	
 	skiplog = []
@@ -69,9 +69,11 @@ def makeFilenames(filenameP=u'deriv-photo_multimedia_ObjIds_stichID_samesame_rea
 		if len(log) > 0:
 			flog.write(u'%s\n' %log.strip('\t'))
 		if cOut%250==0:
+			fbesk.write(u'|}\n')
 			fbesk.write(u'====%r-%r====\n' %(cOut,cOut+250))
+			fbesk.write(u'{| class="wikitable sortable"\n|-\n! PhoId !! generated <descr> !! improved <descr>\n')
 		cOut = cOut+1
-		fbesk.write(u'*%s|%s\n' %(phoId, insufficient(phoBes)))
+		fbesk.write(u'|-\n| %s || %s || \n' %(phoId, insufficient(phoBes)))
 		newfName = u'%s - %s - %s.tif' %(phoBes, museum, phoId)
 		f.write(u'%s|%s|%s|%s|%s\n' % (phoId, mullId, origPath, origFName, newfName))
 		uTester.append(newfName)
@@ -86,6 +88,8 @@ def makeFilenames(filenameP=u'deriv-photo_multimedia_ObjIds_stichID_samesame_rea
 		flog.write(u'%s\n' %l)
 	flog.close()
 	f.close()
+	fbesk.write(u'|}')
+	fbesk.close()
 	#
 def museumConv(text):
 	'''converts plaintext museumname to std. abbrevition'''

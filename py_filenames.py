@@ -13,15 +13,15 @@ from common import Common
 GOODLENGTH = 100
 MAXLENGTH = 128
 
-def makeFilenames(filenameP=u'deriv-photo_multimedia_ObjIds_stichID_samesame_real.csv'):
+def makeFilenames(filenameP=u'deriv-photo_multimedia_ObjIds_stichID_samesame_real_noDupes.csv', filenameO=u'deriv-ObjDaten-trimmed_Ausstellung_sam_eregnis_kuenstler_MulMass.csv'):
 	'''Testing PhoBeschreibungM'''
 	headerP, linesP = Common.openFile(filenameP)
 	
-	oDict = Common.file_to_dict(u'deriv-ObjDaten-trimmed_Ausstellung_sam_eregnis_kuenstler_MulMass.csv')
+	oDict = Common.file_to_dict(filenameO)
 	
 	f = codecs.open(u'deriv-filenames.csv', 'w', 'utf-8') #new csv file
-	fbesk = codecs.open(u'deriv-descr_forCommons.log', 'w', 'utf-8') #new csv file for Commons
-	flog = codecs.open(u'deriv-filename.log', 'w', 'utf-8') #logfile (for any unmerged rows)
+	fbesk = codecs.open(u'deriv-filenames_forCommons.log', 'w', 'utf-8') #new csv file for Commons
+	flog = codecs.open(u'deriv-filenames.log', 'w', 'utf-8') #logfile (for any unmerged rows)
 	
 	#write headers
 	f.write(u'%s|%s|%s|%s|filename\n' % (headerP[0], headerP[1], headerP[9], headerP[10]))
@@ -50,7 +50,7 @@ def makeFilenames(filenameP=u'deriv-photo_multimedia_ObjIds_stichID_samesame_rea
 		phoBes, log = phoBesConv(col[3])
 		origPath = col[9]
 		origFName = col[10]
-		same_same = col[13]
+		#same_same = col[13]
 		if len(phoBes) == 0: #skip empty ones
 			if len(col[2]) == 0:
 				noHopelog.append('No-objects-No-photoDescr|%s|%s' % (phoId,mullId))
@@ -74,7 +74,7 @@ def makeFilenames(filenameP=u'deriv-photo_multimedia_ObjIds_stichID_samesame_rea
 		fbesk.write(u'*%s|%s|%s\n' %(phoId, mullId, phoBes))
 		#newfName = u'%s - %s - %s.tif' %(phoBes, museum, origFName)
 		ending = phoId
-		if len(same_same)>0: ending = u'%s (%s)' %(ending, mullId)
+		#if len(same_same)>0: ending = u'%s (%s)' %(ending, mullId)
 		newfName = u'%s - %s - %s.tif' %(phoBes, museum, ending)
 		f.write(u'%s|%s|%s|%s|%s\n' % (phoId, mullId, origPath, origFName, newfName))
 		uTester.append(newfName)

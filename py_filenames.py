@@ -28,7 +28,7 @@ def makeFilenames(filenameP=u'deriv-photo_multimedia_ObjIds_stichID_samesame_rea
 	fbesk.write(u'Final filename becomes: <descr> - <museum> - <photoId>.tif \n\n')
 	fbesk.write(u'Attempts have been made to keep descriptions under %r characters with a hard limit at %r characters\n\n' %(GOODLENGTH,MAXLENGTH))
 	fbesk.write(u'You are free to change the descriptions shown below.\n')
-	fbesk.write(u'===phoId|mullId|description===\n')
+	fbesk.write(u'===phoId|description===\n')
 	
 	
 	skiplog = []
@@ -71,11 +71,8 @@ def makeFilenames(filenameP=u'deriv-photo_multimedia_ObjIds_stichID_samesame_rea
 		if cOut%250==0:
 			fbesk.write(u'====%r-%r====\n' %(cOut,cOut+250))
 		cOut = cOut+1
-		fbesk.write(u'*%s|%s|%s\n' %(phoId, mullId, phoBes))
-		#newfName = u'%s - %s - %s.tif' %(phoBes, museum, origFName)
-		ending = phoId
-		#if len(same_same)>0: ending = u'%s (%s)' %(ending, mullId)
-		newfName = u'%s - %s - %s.tif' %(phoBes, museum, ending)
+		fbesk.write(u'*%s|%s\n' %(phoId, phoBes))
+		newfName = u'%s - %s - %s.tif' %(phoBes, museum, phoId)
 		f.write(u'%s|%s|%s|%s|%s\n' % (phoId, mullId, origPath, origFName, newfName))
 		uTester.append(newfName)
 	print u'Skipped: %r files out of which %r may have hope.' %(dcounter+hcounter,dcounter)
@@ -108,10 +105,6 @@ def museumConv2(text):
 		return text
 def phoBesConv(text):
 	'''strips out inv. numbers etc'''
-	#simple strings to remove
-	easyBadStrings = [u'Fler inventarienr.', u'(?)']
-	for b in easyBadStrings:
-		text = text.replace(b,'').strip()
 	#strings preceding inventory no's
 	badStrings = [u'LRK.', u'LRK ', u'LRk ', u'HWY ', u'ENR ', u'Enr ', u'enr ', u'inv. nr. ', u'SKO ', u'LXIV:', u'unr ', u'xlii:']
 	badchar = u'-., ' #kanske även "
@@ -149,7 +142,7 @@ def phoBesConv(text):
 		return '', log
 	else:
 		text = cleanName(text)
-		return shortenNames(text).capitalize(), log
+		return touchup(shortenNames(text)), log
 #
 def getDescFromObj(obj):
 	'''finds a suitable description based on obj'''
@@ -194,10 +187,15 @@ def getDescFromObj(obj):
 		else: #u'LRK dubletter', u'Skoklosters slotts boksamling'
 			descr = orig
 	descr = cleanName(descr)
-	return shortenNames(descr).capitalize()
+	return touchup(shortenNames(descr))
 #
 def cleanName(text):
-	'''removes forbidden characters - extend as more are identified'''
+	'''removes forbidden characters and unwanted strings'''
+	#simple strings to remove
+	easyBadStrings = [u'Fler inventarienr.', u'(?)']
+	for b in easyBadStrings:
+		text = text.replace(b,'').strip()
+	#bad characters  - extend as more are identified
 	badChar = [u'\\', u'/', u'[', u']', u'{', u'}', u'|', u'#'] #maybe also / ? ' 
 	badWhite = [u'	'] #maybe also &nbsp; character
 	for b in badChar:
@@ -207,6 +205,19 @@ def cleanName(text):
 	#replace double space by single space
 	text = text.replace('  ', ' ')
 	return text
+#
+def touchup(text):
+	'''final tweaks to description'''
+	#If string starts and ends with bracket or quotes then remove
+	brackets = {u'(':')',u'[':']',u'{':'}',u'"':'"'}
+	for k,v in brackets.iteritems():
+		if text.startswith(k) and text.endswith(v):
+			if text[:-1].count(k) == 1: #so as to not remove unmatching brackets. slice in check is due to quote-bracket
+				text=text[1:-1]
+	#Make sure first character is upper case
+	text = text[:1].upper()+text[1:]
+	return text
+#
 def shortenNames(text):
 	'''if a string is larger than MAXLENGTH then this tries to find a sensibel shortening'''
 	badchar = u'-., ' #kanske även " 

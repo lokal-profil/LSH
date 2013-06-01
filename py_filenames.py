@@ -118,15 +118,19 @@ def phoBesConv(text):
 				pos = text.find(b)
 				#find end - must be a better way
 				sep = ','
-				pos2 = text.find(',',pos)
-				posOch = text.find('och',pos)
-				posAmp = text.find('&',pos)
+				pos2 = text.find(',',pos+len(b))
+				posOch = text.find('och',pos+len(b))
+				posAmp = text.find('&',pos+len(b))
+				posStop = text.find('. ',pos+len(b))
 				if posOch > 0 and (posOch < pos2 or pos2<0):
 					sep = ' och'
 					pos2 = posOch
 				if posAmp > 0 and (posAmp < pos2 or pos2<0):
 					sep = ' &'
 					pos2 = posAmp
+				if posStop > 0 and (posStop < pos2 or pos2<0):
+					sep = '.'
+					pos2 = posStop
 				#end of ugly
 				if pos2 > 0:
 					log = u'%s%s\t' %(log, text[pos:pos2])
@@ -192,7 +196,7 @@ def getDescFromObj(obj):
 def cleanName(text):
 	'''removes forbidden characters and unwanted strings'''
 	#simple strings to remove
-	easyBadStrings = [u'Fler inventarienr.', u'(?)']
+	easyBadStrings = [u'Fler inventarienr.', u'Fler inventarienr' , u'(?)']
 	for b in easyBadStrings:
 		text = text.replace(b,'').strip()
 	#bad characters  - extend as more are identified
@@ -214,7 +218,7 @@ def touchup(text):
 				text=text[1:-1]
 	#Make sure first character is upper case
 	text = text[:1].upper()+text[1:]
-	return text
+	return text.strip(' .,;')
 #
 def insufficient(text):
 	'''colours text red if it matches the requirment for insufficient info'''

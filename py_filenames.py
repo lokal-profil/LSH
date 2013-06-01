@@ -71,7 +71,7 @@ def makeFilenames(filenameP=u'deriv-photo_multimedia_ObjIds_stichID_samesame_rea
 		if cOut%250==0:
 			fbesk.write(u'====%r-%r====\n' %(cOut,cOut+250))
 		cOut = cOut+1
-		fbesk.write(u'*%s|%s\n' %(phoId, phoBes))
+		fbesk.write(u'*%s|%s\n' %(phoId, insufficient(phoBes)))
 		newfName = u'%s - %s - %s.tif' %(phoBes, museum, phoId)
 		f.write(u'%s|%s|%s|%s|%s\n' % (phoId, mullId, origPath, origFName, newfName))
 		uTester.append(newfName)
@@ -106,7 +106,7 @@ def museumConv2(text):
 def phoBesConv(text):
 	'''strips out inv. numbers etc'''
 	#strings preceding inventory no's
-	badStrings = [u'LRK.', u'LRK ', u'LRk ', u'HWY ', u'ENR ', u'Enr ', u'enr ', u'inv. nr. ', u'SKO ', u'LXIV:', u'unr ', u'xlii:']
+	badStrings = [u'LRK.', u'LRK ', u'LRk ', u'HWY ', u'Hwy S', u'ENR ', u'Enr ', u'enr ', u'inv. nr. ', u'SKO ', u'LXIV:', u'unr ', u'XLII:', u'XXX']
 	badchar = u'-., ' #kanske även "
 	log=''
 	runAgain = True
@@ -196,15 +196,13 @@ def cleanName(text):
 	for b in easyBadStrings:
 		text = text.replace(b,'').strip()
 	#bad characters  - extend as more are identified
-	badChar = [u'\\', u'/', u'[', u']', u'{', u'}', u'|', u'#'] #maybe also / ? ' 
-	badWhite = [u'	'] #maybe also &nbsp; character
-	for b in badChar:
-		text = text.replace(b, '-')
-	for b in badWhite:
-		text = text.replace(b, ' ')
+	#Note that : is complicated as it has several different interpretaions. Currently jsut replacing possesive case
+	badChar = {u'\\':u'-', u'/':u'-', u'[':u'(', u']':u')', u'{':u'(', u'}':u')', u'|':u'-', u'#':u'-', u':s':u's', u'	':u' ', u'e´':u'é'} #maybe also ? ' and &nbsp; character
+	for k,v in badChar.iteritems():
+		text = text.replace(k,v)
 	#replace double space by single space
 	text = text.replace('  ', ' ')
-	return text
+	return text.strip()
 #
 def touchup(text):
 	'''final tweaks to description'''
@@ -217,6 +215,14 @@ def touchup(text):
 	#Make sure first character is upper case
 	text = text[:1].upper()+text[1:]
 	return text
+#
+def insufficient(text):
+	'''colours text red if it matches the requirment for insufficient info'''
+	badStrings = [u'Detalj', u'Helbild', u'Målning', u'Reprofoto']
+	if text in badStrings:
+		return u'<span style="color:red">%s</span>' % text
+	else:
+		return text
 #
 def shortenNames(text):
 	'''if a string is larger than MAXLENGTH then this tries to find a sensibel shortening'''

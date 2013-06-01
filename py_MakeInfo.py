@@ -11,11 +11,11 @@ from common import Common
 
 class MakeInfo:
 	flog = codecs.open(u'deriv-phoId.log', 'w', 'utf-8') #logfile
-	#
+	#Test suit
 	def quicktest(self):
 		self.readInLibraries()
 		self.readConnections()
-		pho_mullList = [(u'52630:205997', u'no objects, other versions of same photo'),
+		pho_mullList = [(u'52630:205996', u'no objects, other versions of same photo'),
 						(u'90361:191521', u'one object, photographer'),
 						(u'86399:189509', u'event, exhibit, role, mull, mass'),
 						(u'89352:189055', u'weird mass'),
@@ -43,7 +43,7 @@ class MakeInfo:
 				self.flog.write(out)
 				self.flog.flush()
 	#
-	def phoIdtoFile(self):
+	def phoIdtoFileTest(self):
 		self.readInLibraries()
 		self.readConnections()
 		pho_mullList = [(u'84273:187899', u'Häst'),
@@ -59,11 +59,12 @@ class MakeInfo:
 				print u'%s outputed to %s' %(pho_mull[0],bName)
 			else:
 				print u'%s failed to make infopage. See log' %pho_mull[0]
-	#
+	#End of test suite
+	
 	def readInLibraries(self, verbose=False, careful=False):
 		'''reads the given files into dictionaries'''
 		
-		self.photoD     = Common.file_to_dict(u'deriv-photo_multimedia_ObjIds_stichID_samesame_real.csv', idcol=[0,1], verbose=verbose, careful=careful)
+		self.photoD     = Common.file_to_dict(u'deriv-photo_multimedia_ObjIds_stichID_samesame_real_noDupes.csv', idcol=[0,1], verbose=verbose, careful=careful)
 		self.stichD     = Common.file_to_dict(u'deriv-Photo_stichwort_trim.csv', verbose=verbose, careful=careful)
 		self.massD      = Common.file_to_dict(u'deriv-ObjMass.csv', verbose=verbose, careful=careful)
 		self.multiD     = Common.file_to_dict(u'deriv-ObjMultiple.csv', verbose=verbose, careful=careful)
@@ -115,8 +116,8 @@ class MakeInfo:
 		if len(objIds) > 0: objIds = objIds.split(';')
 		stichIds = phoInfo[u'PstId']
 		if len(stichIds) > 0: stichIds = stichIds.split(';')
-		same_photo= phoInfo[u'same_PhoId']
-		if len(same_photo) > 0: same_photo = same_photo.split(';')
+		#same_photo= phoInfo[u'same_PhoId']
+		#if len(same_photo) > 0: same_photo = same_photo.split(';')
 		same_object = phoInfo[u'same_object']
 		if len(same_object) > 0: same_object = same_object.split(';')
 		
@@ -194,8 +195,8 @@ class MakeInfo:
 		#see also
 		see_also = u''
 		printedPics=[]
-		if len(same_photo) > 0:
-			see_also, printedPics = MakeInfo.makeGallery(u'Different versions of same image', same_photo, self.wikinameD, printed=printedPics, addTo=see_also)
+		#if len(same_photo) > 0:
+		#	see_also, printedPics = MakeInfo.makeGallery(u'Different versions of same image', same_photo, self.wikinameD, printed=printedPics, addTo=see_also)
 		if len(same_object) > 0:
 			see_also, printedPics = MakeInfo.makeGallery(u'Different images of same object', same_object, self.wikinameD, printed=printedPics, addTo=see_also)
 		if objData[u'related']:

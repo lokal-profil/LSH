@@ -10,7 +10,8 @@ import codecs
 from common import Common
 
 class MakeInfo:
-    flog = codecs.open(u'deriv-phoId.log', 'w', 'utf-8') #logfile
+    flog = codecs.open(u'¤MakeInfo.log', 'w', 'utf-8') #logfile
+    skiplist = [] #list for storing e.g. id's between testruns
     #Test suit
     def quicktest(self):
         self.readInLibraries()
@@ -50,7 +51,7 @@ class MakeInfo:
                         (u'5078:105807', u'tavla'),
                         (u'220:193815', u'negativ')]
         for pho_mull in pho_mullList:
-            wName, out = self.infoFromPhoto(pho_mull[0], preview=False)
+            wName, out = self.infoFromPhoto(pho_mull[0], preview=False, testing=False)
             if out:
                 bName = u'%s.txt' %wName[:-4].replace(u' ',u'_')
                 f = codecs.open(u'output/%s' %bName, 'w', 'utf-8')
@@ -59,6 +60,40 @@ class MakeInfo:
                 print u'%s outputed to %s' %(pho_mull[0],bName)
             else:
                 print u'%s failed to make infopage. See log' %pho_mull[0]
+    #
+    def catTest(self):
+        self.readInLibraries()
+        self.readConnections()
+        f = codecs.open(u'output/catStats.csv', 'w', 'utf-8')
+        f.write(u'#RealCats/MetaCats|cat1;cat2...')
+        count=0
+        for pho_mull in self.photoD.keys():
+            count=count+1
+            if pho_mull in self.skiplist:
+                continue
+            wName, out = self.infoFromPhoto(pho_mull, testing=True)
+            if out:
+                f.write(out+'\n')
+            if count%1000==0:
+                print count
+            self.skiplist.append(pho_mull)
+        f.close()
+    
+    def catTestBatch(self, pho_mull_list, log):
+        self.readInLibraries()
+        self.readConnections()
+        log.write(u'#RealCats/MetaCats|cat1;cat2...')
+        count=0
+        for pho_mull in pho_mull_list:
+            count=count+1
+            if pho_mull in self.skiplist:
+                continue
+            wName, out = self.infoFromPhoto(pho_mull, testing=True)
+            if out:
+                log.write(out+'\n')
+            if count%1000==0:
+                print count
+            self.skiplist.append(pho_mull)
     #End of test suite
     
     def readInLibraries(self, verbose=False, careful=False):
@@ -91,7 +126,7 @@ class MakeInfo:
         MakeInfo.makeAbbrevSource(self)
         MakeInfo.makePhotographers(self)
     #
-    def infoFromPhoto(self, pho_mull, preview=True):
+    def infoFromPhoto(self, pho_mull, preview=True, testing=False):
         phoInfo = self.photoD[pho_mull]
         
         #skip any which don't have a filename
@@ -189,17 +224,27 @@ class MakeInfo:
                 if v[u'manufacturer']:
                     for m in v[u'manufacturer']: objData[u'manufacturer'].append(u'%s: %s' %(v[u'invNr'], m))
                 if v[u'depicted']: #note that this is different
-                    objData[u'depicted'].append((v[u'invNr'], d))
+                    for d in v[u'depicted']: objData[u'depicted'].append(u'%s: %s' %(v[u'invNr'], d))
                 if v[u'cat_depicted']: objData[u'cat_depicted'] = objData[u'cat_depicted'] + v[u'cat_depicted']
         
         #see also
         see_also = u''
         printedPics=[]
-        #if len(same_photo) > 0:
-        #   see_also, printedPics = MakeInfo.makeGallery(u'Different versions of same image', same_photo, self.wikinameD, printed=printedPics, addTo=see_also)
         if len(same_object) > 0:
+            killist = [] #there is a chance that one of these is one of the filenameless files
+            for so in same_object: #there is a chance that this is one of the filenameless files
+                if not so in self.wikinameD.keys():
+                    killist.append(so)
+            for so in killist:
+                same_object.remove(so)
             see_also, printedPics = MakeInfo.makeGallery(u'Different images of same object', same_object, self.wikinameD, printed=printedPics, addTo=see_also)
         if objData[u'related']:
+            killist = []
+            for ro in objData[u'related']:
+                if not ro in self.wikinameD.keys():
+                    killist.append(ro)
+            for ro in killist:
+                objData[u'related'].remove(ro)
             see_also, printedPics = MakeInfo.makeGallery(u'Related objects', objData[u'related'], self.wikinameD, has_captions=True, printed=printedPics, addTo=see_also)
             
         #Categories need deduplidication
@@ -221,6 +266,10 @@ class MakeInfo:
         if len(cat_meta)>0:
             cat_meta = list(set(cat_meta))
             categories, printedCats = MakeInfo.makeCategory(u'Maintanance categories', cat_meta, pre=u'Media contributed by LSH: ', printed=printedCats, addTo=categories)
+        
+        if testing:
+            catData = u'%r/%r|%s' % (len(printedCats)-len(cat_meta), len(cat_meta), ';'.join(printedCats))
+            return (None, catData)
         
         text = MakeInfo.makeTemplate(wikiname, 
                                     origFile, 
@@ -426,7 +475,7 @@ class MakeInfo:
                 if roleCmt in badRoleCmts: continue
                 if role in okRoles:
                     name = MakeInfo.formatKuenstler(self, kueId, cat_meta, role in (artistRoles+manufacturerRoles))
-                    if role in self.rolesC.keys(): name = u'%s: %s' %(self.rolesC[role] + name)
+                    if role in self.rolesC.keys(): name = u'%s: %s' %(self.rolesC[role], name)
                 if role in manufacturerRoles: manufacturer.append(name)
                 elif role in ownerRoles: owner.append(name)
                 elif role in depictedRoles: depicted.append(name)
@@ -670,8 +719,8 @@ class MakeInfo:
                     owner, depicted, death_year, exhibits, orig_event, place, title_orig, title_en, material_tech, signature, dimensions, 
                     multiple, preview=False):
         #event (orig_event)
-        text = u'%s\n' % wikiname
-        text = text + u'{{LSH artwork\n'
+        #text = u'%s\n' % wikiname
+        text = u'{{LSH artwork\n'
         text = text + u'|artist= '
         if artist:
             if len(artist)>1: text = text + u'* '

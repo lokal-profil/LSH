@@ -70,7 +70,8 @@ def makeFilenames(filenameP=u'deriv-photo_multimedia_ObjIds_stichID_samesame_rea
         if len(log) > 0:
             flog.write(u'%s\n' %log.strip('\t'))
         if cOut%250==0:
-            fbesk.write(u'|}\n')
+            if cOut != 0: fbesk.write(u'|}\n')
+            fbesk.write(u'\n')
             fbesk.write(u'====%r-%r====\n' %(cOut,cOut+250))
             fbesk.write(u'{| class="wikitable sortable"\n|-\n! PhoId !! generated <descr> !! improved <descr>\n')
         cOut = cOut+1
@@ -201,7 +202,7 @@ def getDescFromObj(obj):
 def cleanName(text):
     '''removes forbidden characters and unwanted strings'''
     #simple strings to remove
-    easyBadStrings = [u'Fler inventarienr.', u'Fler inventarienr' , u'(?)']
+    easyBadStrings = [u'Fler inventarienr.', u'Fler inventarienr', u'Flera inventarienr.', u'Flera inventarienr', u'Fler inventareinr' , u'(?)']
     for b in easyBadStrings:
         text = text.replace(b,'').strip()
     #bad characters  - extend as more are identified

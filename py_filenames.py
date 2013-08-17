@@ -237,6 +237,8 @@ def insufficient(text):
 def shortenNames(text):
     '''if a string is larger than MAXLENGTH then this tries to find a sensibel shortening'''
     badchar = u'-., ' #kanske även " 
+    if u'<!>' in text:
+        text = text[:text.find(u'<!>')]
     #is ok?
     if len(text) < GOODLENGTH:
         return text

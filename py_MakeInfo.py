@@ -65,7 +65,7 @@ class MakeInfo:
         self.readInLibraries()
         self.readConnections()
         f = codecs.open(u'output/catStats.csv', 'w', 'utf-8')
-        f.write(u'#RealCats/MetaCats|cat1;cat2...')
+        f.write(u'#RealCats/MetaCats|cat1;cat2...\n')
         count=0
         for pho_mull in self.photoD.keys():
             count=count+1
@@ -82,7 +82,8 @@ class MakeInfo:
     def catTestBatch(self, pho_mull_list, log):
         self.readInLibraries()
         self.readConnections()
-        log.write(u'#RealCats/MetaCats|cat1;cat2...')
+        f = codecs.open(u'output/catStats2.csv', 'w', 'utf-8')
+        f.write(u'#RealCats/MetaCats|cat1;cat2...\n')
         count=0
         for pho_mull in pho_mull_list:
             count=count+1
@@ -90,7 +91,7 @@ class MakeInfo:
                 continue
             wName, out = self.infoFromPhoto(pho_mull, testing=True)
             if out:
-                log.write(out+'\n')
+                f.write(out+'\n')
             if count%1000==0:
                 print count
             self.skiplist.append(pho_mull)
@@ -732,10 +733,17 @@ class MakeInfo:
             text = text + u'%s\n' % '\n* '.join(manufacturer)
         text = text + u'|title= '
         if title_orig or title_en:
-            if title_orig: text = text + u'%s\n' % title_orig[0]
-            if title: text = text + u'{{sv|%s}}\n' % title
-            if title_en: text = text + u'{{en|%s}}\n' % title_en[0]
-        elif title: text = text + u'%s\n' % title
+            titlar = u'{{Title\n'
+            if title_orig: titlar = titlar + u'|%s\n' % title_orig[0]
+            if title_en: titlar = titlar + u'|en = %s\n' % title_en[0]
+            if title: titlar = titlar + u'|sv = %s\n' % title
+            text = text + titlar+ u'}}\n'
+        elif title: text = text + u'{{Title|%s}}\n' % title
+        #if title_orig or title_en:
+            #if title_orig: text = text + u'%s\n' % title_orig[0]
+            #if title: text = text + u'{{sv|%s}}\n' % title
+            #if title_en: text = text + u'{{en|%s}}\n' % title_en[0]
+        #elif title: text = text + u'%s\n' % title
         else: text = text + u'\n'
         text = text + u'|description= '
         if depicted:

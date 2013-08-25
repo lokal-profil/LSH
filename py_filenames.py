@@ -139,6 +139,19 @@ def phoBesConv(text):
                     pos2 = posStop
                 #end of ugly
                 if pos2 > 0:
+                    #See if there is a list of ids
+                    while(True):
+                        pos3 = text.find(',', pos2+len(sep))
+                        if pos3>0:
+                            bit = text[pos2+len(sep):pos3]
+                            if len(bit.strip('0123456789-,. '))==0:
+                                pos2=pos3+1-len(sep)
+                                continue
+                        else:
+                            bit = text[pos2+len(sep):]
+                            if len(bit.strip('0123456789-,. '))==0:
+                                pos2=pos2+len(bit)
+                        break
                     log = u'%s%s\t' %(log, text[pos:pos2])
                     text = u'%s%s %s' %(text[:pos].strip(badchar),sep,text[pos2+len(sep):].strip(badchar))
                 else:

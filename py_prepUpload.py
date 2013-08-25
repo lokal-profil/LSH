@@ -20,8 +20,12 @@ def findFiles(path = u'.', filetypes=[u'.tif',u'.jpg']):
     files = []
     subdirs = []
     for filename in os.listdir(path):
-        if any(filename.endswith(x) for x in filetypes):
-            files.append(os.path.join(path,filename))
+        try:
+            if any(filename.endswith(x) for x in filetypes):
+                files.append(os.path.join(path,filename))
+        except UnicodeDecodeError:
+            print 'UnicodeDecodeError: %s' %os.path.join(path,filename)
+            exit
         if os.path.isdir(os.path.join(path,filename)):
             subdirs.append(os.path.join(path,filename))
     for subdir in subdirs:
@@ -77,7 +81,7 @@ def moveHits(path):
     os.chdir(path)
     subdirs = []
     for filename in os.listdir('.'):
-        if os.path.isdir(os.path.join('.',filename)):
+        if os.path.isdir(os.path.join('.',filename)) and filename.isupper():
             subdirs.append(filename)
     for subdir in subdirs:
         (counter, fileNum) = moveFiles(subdir.lower(), tree, path = subdir, filetypes=[u'.tif',u'.jpg'])
@@ -149,8 +153,26 @@ def negPosInfo(infoFile, filename):
     '''
     generate a negative and positive version of the given info file
     '''
-    neg = u'{{LSH negative|%s}}\n%s' %(filename,infoFile)
-    pos = u'{{LSH positive|%s}}\n%s' %(u'%s-negative.%s' %(filename[:-4],filename[-3:]),infoFile)
+    #for negative we want to remove cats (i.e. anything after </gallery>\n}} )
+    #instead go through info and identify |source= LRK + end position
+    end = infoFile.find(u'</gallery>\n}}')
+    if end>0:
+        end=end+len(u'</gallery>\n}}')
+    else:
+        end = infoFile.find(u'|other_versions= \n}}')
+        if end>0:
+            end=end+len(u'|other_versions= \n}}')
+        else:
+            print '%s: could not find end of template' %filename
+            end = ''
+    source=u''
+    lines=infoFile.split('\n')
+    for l in lines:
+        if l.startswith(u'|source='):
+            source = l.split(u'=')[-1].strip()
+            break
+    pos = u'%s\n{{LSH positive|%s}}\n%s' %(infoFile[:end], u'%s-negative.%s' %(filename[:-4],filename[-3:]), infoFile[end:])
+    neg = u'{{LSH negative|%s|%s}}\n%s' %(filename, source, infoFile[:end])
     return (neg, pos)
 
 def catTest(path, nameToPho=None):

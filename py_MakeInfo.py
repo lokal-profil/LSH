@@ -79,11 +79,12 @@ class MakeInfo:
             self.skiplist.append(pho_mull)
         f.close()
     
-    def catTestBatch(self, pho_mull_list, log):
+    def catTestBatch(self, pho_mull_list, log=None):
         self.readInLibraries()
         self.readConnections()
-        f = codecs.open(u'output/catStats2.csv', 'w', 'utf-8')
-        f.write(u'#RealCats/MetaCats|cat1;cat2...\n')
+        if not log:
+            log = codecs.open(u'output/catStats2.csv', 'w', 'utf-8')
+        log.write(u'#RealCats/MetaCats|cat1;cat2...\n')
         count=0
         for pho_mull in pho_mull_list:
             count=count+1
@@ -91,7 +92,7 @@ class MakeInfo:
                 continue
             wName, out = self.infoFromPhoto(pho_mull, testing=True)
             if out:
-                f.write(out+'\n')
+                log.write(out+'\n')
             if count%1000==0:
                 print count
             self.skiplist.append(pho_mull)

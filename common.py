@@ -186,7 +186,7 @@ class Common:
                     if len(date) == 4:
                         return u'{{other date|%s|%r}}' %(v,int(date[:2])+1)
                     elif len(date) == 9:
-                        return u'{{other date|%s|{{other date|-|%s|%s}}}}' %(v,int(date[:2])+1,int(date[5:7])+1)
+                        return u'{{other date|-|{{other date|%s|%s}}|{{other date|%s|%s}}}}' %(v,int(date[:2])+1,v,int(date[5:7])+1)
                     else:
                         return None
                 else:

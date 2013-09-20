@@ -161,8 +161,9 @@ def negPosInfo(infoFile, filename):
     '''
     generate a negative and positive version of the given info file
     '''
+    ovPos = infoFile.find(u'|other_versions=')
     #for negative we want to remove cats (i.e. anything after </gallery>\n}} )
-    #instead go through info and identify |source= LRK + end position
+    #so need to identify end position
     end = infoFile.find(u'</gallery>\n}}')
     if end>0:
         end=end+len(u'</gallery>\n}}')
@@ -173,14 +174,8 @@ def negPosInfo(infoFile, filename):
         else:
             print '%s: could not find end of template' %filename
             end = ''
-    source=u''
-    lines=infoFile.split('\n')
-    for l in lines:
-        if l.startswith(u'|source='):
-            source = l.split(u'=')[-1].strip()
-            break
-    pos = u'%s\n{{LSH positive|%s}}\n%s' %(infoFile[:end], u'%s-negative.%s' %(filename[:-4],filename[-3:]), infoFile[end:])
-    neg = u'{{LSH negative|%s|%s}}\n%s' %(filename, source, infoFile[:end])
+    pos = u'%s|negative= %s\n%s' %(infoFile[:ovPos], u'%s-negative.%s' %(filename[:-4],filename[-3:]), infoFile[ovPos:])
+    neg = u'%s|positive= %s\n%s' %(infoFile[:ovPos], filename, infoFile[ovPos:end])
     return (neg, pos)
 
 def catTest(path, nameToPho=None):

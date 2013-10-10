@@ -755,7 +755,7 @@ class MakeInfo:
                     text = text + MakeInfo.depictedFormater(depicted, invNr=invNr)
             else:
                 text = text + MakeInfo.depictedFormater(depicted)
-        if description: text = text + u'{{sv|%s}}\n' % description
+        if description: text = text + u'{{sv|1=%s}}\n' % description
         else: text = text + u'%s\n' % orig_descr
         text = text + u'|original caption= %s' % orig_descr
         if len(orig_stich)>0:

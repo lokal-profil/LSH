@@ -54,7 +54,7 @@ def upFiles(path, password=config.password, user=config.username, target=u'Uploa
     os.chdir(cwd) #so that same path structure can be used for next call
     flog.close()
 
-def updateInfoLocal(path, password=config.password, user=config.username, target=u'Updated'):
+def updateInfoLocal(path, password=config.password, user=config.username, target=u'Updated', comment = u'Updating information page due to improved algorithm for batch upload. See [[Commons:Batch_uploading/LSH]] for more info'):
     '''
     Overwrites the information on the given filepages. Essentially upFiles without the filetransfer
     '''
@@ -62,7 +62,6 @@ def updateInfoLocal(path, password=config.password, user=config.username, target
     os.chdir(path)
     commons = setUp(password, user)
     flog = codecs.open(u'¤updater.log','a', 'utf-8') #redirect print to logfile for the sake of PyCJWiki
-    comment = u'Updating information page due to improved algorithm for batch upload. See [[Commons:Batch_uploading/LSH]] for more info'
     #sys.stdout = open(os.path.join(os.getcwd(),u'¤uploader.log'), 'w') #redirect print to logfile for the sake of PyCJWiki
     
     #create targetdirectory if it doesn't exist
@@ -90,7 +89,7 @@ def updateInfoLocal(path, password=config.password, user=config.username, target
     os.chdir(cwd) #so that same path structure can be used for next call
     flog.close()
     
-def updateInfoOnline(path, password=config.password, user=config.username, target=u'Updated', live=True):
+def updateInfoOnline(path, password=config.password, user=config.username, target=u'Updated', live=False, comment = u'Updating information page due to improved algorithm for batch upload. See [[Commons:Batch_uploading/LSH]] for more info'):
     '''
     Rewrites the currently uploaded information, sends it to a modifier and uploads the new result
     '''
@@ -98,7 +97,6 @@ def updateInfoOnline(path, password=config.password, user=config.username, targe
     os.chdir(path)
     commons = setUp(password, user)
     flog = codecs.open(u'¤updater.log','a', 'utf-8') #redirect print to logfile for the sake of PyCJWiki
-    comment = u'Updating information page due to improved algorithm for batch upload. See [[Commons:Batch_uploading/LSH]] for more info'
     
     #create targetdirectory if it doesn't exist
     if not os.path.isdir(target):
@@ -140,4 +138,5 @@ def changeInfo(fileName, oldInfo):
     '''
     Takes filename and oldInfo and changes into the new info. This method is expected to change each time
     '''
+    #return txt.strip()
     return False

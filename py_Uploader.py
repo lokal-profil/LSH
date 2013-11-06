@@ -2,7 +2,11 @@
 #
 # Uploading files
 #
-'''Specifications:
+'''
+Uploader for all files in a folder files where discription pages have already ben created
+and files renamed to target filename on commons.
+
+Also contains a functions for updating info pages
     
 '''
 import codecs, os, sys
@@ -44,7 +48,7 @@ def upFiles(path, password=config.password, user=config.username, target=u'Uploa
             infoIn = codecs.open(infoFile, 'r', 'utf-8')
             info = infoIn.read()
             infoIn.close()
-            result = commons.chunkupload(f,f,info,u'Batch upload for [[COM:LSH]]. Working on folder: %s. See [[Commons:Batch_uploading/LSH]] for more info' %path.split(u'/')[-1].upper())
+            result = commons.chunkupload(f,f,info,info)
             flog.write(u'%s\n' %result.decode('utf8'))
             flog.flush()
             #Move files

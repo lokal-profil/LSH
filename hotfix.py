@@ -51,6 +51,34 @@ def findMissingImages():
             print m
     f.close()
 
+def findAllMissing(infile=u'deriv-filenames.csv'):
+    '''
+    Goes through the filenames file and checks for existence for each file in it
+    '''
+    comApi = wikiApi.WikiApi.setUpApi(user=config.username, password=config.password, site=config.site)
+    
+    f = codecs.open(infile,'r','utf8')
+    lines=f.read().split('\n')
+    f.close()
+    
+    f = codecs.open(u'AllMissingFiles.csv','w','utf8')
+    f.write(u'%s\n' %lines.pop(0))
+    
+    files = {}
+    for l in lines:
+        if len(l)==0:continue
+        PhoId, MulId, MulPfadS, MulDateiS, filename = l.split('|')
+        files[u'File:%s' %filename]=l
+    
+    print u'Found %r filenames' %len(files)
+    
+    fileInfos = comApi.getPageInfo(files.keys())
+    for name, info in fileInfos.iteritems():
+        if 'missing' in info.keys():
+            f.write(u'%s\n' %files[name])
+    f.close()
+    
+
 class WikiApiHotfix(wikiApi.WikiApi):
     '''Extends the WikiApi class with hotfix specific methods'''
     

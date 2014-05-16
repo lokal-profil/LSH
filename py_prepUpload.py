@@ -75,7 +75,7 @@ def makeHitlist():
 def moveHits(path):
     '''
     run from main dir
-    path=path from running directory to direcotry with image file structure
+    path=path from running directory to directory with image file structure
     '''
     (tree, nameToPho) = makeHitlist()
     cwd = os.getcwd()

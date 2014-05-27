@@ -101,15 +101,15 @@ class MakeInfo:
     def readInLibraries(self, verbose=False, careful=False):
         '''reads the given files into dictionaries'''
         
-        self.photoD     = Common.file_to_dict(u'deriv-photo_multimedia_ObjIds_stichID_samesame_real_noDupes.csv', idcol=[0,1], verbose=verbose, careful=careful)
-        self.stichD     = Common.file_to_dict(u'deriv-Photo_stichwort_trim.csv', verbose=verbose, careful=careful)
-        self.massD      = Common.file_to_dict(u'deriv-ObjMass.csv', verbose=verbose, careful=careful)
-        self.multiD     = Common.file_to_dict(u'deriv-ObjMultiple.csv', verbose=verbose, careful=careful)
-        self.objD       = Common.file_to_dict(u'deriv-ObjDaten-trimmed_Ausstellung_sam_eregnis_kuenstler_MulMass.csv', verbose=verbose, careful=careful)
-        self.aussD      = Common.file_to_dict(u'deriv-Ausstellung_trim.csv', verbose=verbose, careful=careful)
-        self.ereignisD  = Common.file_to_dict(u'deriv-Ereignis_trim.csv', verbose=verbose, careful=careful)
-        self.kuenstlerD = Common.file_to_dict(u'deriv-kuenstler_trim.csv', verbose=verbose, careful=careful)
-        self.wikinameD  = Common.file_to_dict(u'deriv-filenames.csv', idcol=[0,1], verbose=verbose, careful=careful)
+        self.photoD     = Common.file_to_dict(u'data/deriv-photo_multimedia_ObjIds_stichID_samesame_real_noDupes.csv', idcol=[0,1], verbose=verbose, careful=careful)
+        self.stichD     = Common.file_to_dict(u'data/deriv-Photo_stichwort_trim.csv', verbose=verbose, careful=careful)
+        self.massD      = Common.file_to_dict(u'data/deriv-ObjMass.csv', verbose=verbose, careful=careful)
+        self.multiD     = Common.file_to_dict(u'data/deriv-ObjMultiple.csv', verbose=verbose, careful=careful)
+        self.objD       = Common.file_to_dict(u'data/deriv-ObjDaten-trimmed_Ausstellung_sam_eregnis_kuenstler_MulMass.csv', verbose=verbose, careful=careful)
+        self.aussD      = Common.file_to_dict(u'data/deriv-Ausstellung_trim.csv', verbose=verbose, careful=careful)
+        self.ereignisD  = Common.file_to_dict(u'data/deriv-Ereignis_trim.csv', verbose=verbose, careful=careful)
+        self.kuenstlerD = Common.file_to_dict(u'data/deriv-kuenstler_trim.csv', verbose=verbose, careful=careful)
+        self.wikinameD  = Common.file_to_dict(u'data/deriv-filenames.csv', idcol=[0,1], verbose=verbose, careful=careful)
     #
     def readConnections(self, verbose=False):
         '''reads the commonsconections files into dictionaries'''

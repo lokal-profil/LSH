@@ -7,7 +7,8 @@ Uploader for all files in a folder files where discription pages have already be
 and files renamed to target filename on commons.
 
 Also contains a functions for updating info pages
-    
+
+TODO: Change over from PyCJWiki to WikiApi
 '''
 import codecs, os, sys
 from PyCJWiki import Wiki

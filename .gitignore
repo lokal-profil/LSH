@@ -1,5 +1,4 @@
 config.py
 *.log
-*.csv
 *.txt
 py-*.py

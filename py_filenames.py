@@ -13,7 +13,7 @@ from common import Common
 GOODLENGTH = 100
 MAXLENGTH = 128
 
-def makeFilenames(filenameP=u'deriv-photo_multimedia_ObjIds_stichID_samesame_real_noDupes.csv', filenameO=u'deriv-ObjDaten-trimmed_Ausstellung_sam_eregnis_kuenstler_MulMass.csv'):
+def makeFilenames(filenameP=u'data/deriv-photo_multimedia_ObjIds_stichID_samesame_real_noDupes.csv', filenameO=u'data/deriv-ObjDaten-trimmed_Ausstellung_sam_eregnis_kuenstler_MulMass.csv'):
     '''
     Generating filenames from photo and object descriptions
     '''
@@ -21,9 +21,9 @@ def makeFilenames(filenameP=u'deriv-photo_multimedia_ObjIds_stichID_samesame_rea
     
     oDict = Common.file_to_dict(filenameO)
     
-    f = codecs.open(u'deriv-filenames.csv', 'w', 'utf-8') #new csv file
-    fbesk = codecs.open(u'deriv-filenames_forCommons.log', 'w', 'utf-8') #new csv file for Commons
-    flog = codecs.open(u'deriv-filenames.log', 'w', 'utf-8') #logfile (for any unmerged rows)
+    f = codecs.open(u'data/deriv-filenames.csv', 'w', 'utf-8') #new csv file
+    fbesk = codecs.open(u'data/deriv-filenames_forCommons.log', 'w', 'utf-8') #new csv file for Commons
+    flog = codecs.open(u'data/deriv-filenames.log', 'w', 'utf-8') #logfile (for any unmerged rows)
     
     #write headers
     f.write(u'%s|%s|%s|%s|filename\n' % (headerP[0], headerP[1], headerP[9], headerP[10]))

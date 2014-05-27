@@ -51,7 +51,7 @@ def findMissingImages():
             print m
     f.close()
 
-def findAllMissing(infile=u'deriv-filenames.csv'):
+def findAllMissing(infile=u'data/deriv-filenames.csv'):
     '''
     Goes through the filenames file and checks for existence for each file in it
     '''

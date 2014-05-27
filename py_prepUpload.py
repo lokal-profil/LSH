@@ -54,7 +54,7 @@ def makeHitlist():
     Goes through the allowed filenames and builds up a treestructure as well as a
     look-up dictionary for filenames to phoId (and new filenames).
     '''
-    f=codecs.open(u'deriv-filenames.csv','r','utf8')
+    f=codecs.open(u'data/deriv-filenames.csv','r','utf8')
     lines=f.read().split('\n')
     tree = {}
     nameToPho = {}

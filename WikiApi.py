@@ -1,1 +1,1 @@
-/lokal-profil/ODOK/tools/WikiApi.py
+/home/andre/Dropbox/@wmse/ODOK/tools/WikiApi.py

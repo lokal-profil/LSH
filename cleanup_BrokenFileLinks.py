@@ -1,3 +1,7 @@
+#
+# Cleanup
+# Replacing "see also" file links for images where filending was initially believed to be tif
+#
 #!/usr/bin/python
 # -*- coding: utf-8  -*-
 import WikiApi as wikiApi

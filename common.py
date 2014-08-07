@@ -142,8 +142,10 @@ class Common:
                 return None #por man's error handling
         return connection.strip()
     @staticmethod
-    def stdDate(date):
-        '''returns a standardised date in isoform or for other date template'''
+    def stdDate(date, risky=False):
+        '''returns a standardised date in isoform or for other date template
+        risky=True for additional logic which has not yet been tested in full production
+        '''
         #interpret semicolon as multiple dates
         if ';' in date:
             combined = []
@@ -155,17 +157,17 @@ class Common:
         
         #A single date, or range
         date=date.strip(u'.  ')
-        if len(date) == 0:
+        if len(date) == 0 or date == u'n.d':
             return u'' #this is equivalent to u'{{other date|unknown}}'
         date=date.replace(u' - ', u'-')
         endings = {u'?':u'?',
-                u'(?)':u'?', 
-                u'c':u'ca', 
-                u'ca':u'ca', 
-                u'cirka':u'ca',                 
+                u'(?)':u'?',
+                u'c':u'ca',
+                u'ca':u'ca',
+                u'cirka':u'ca',
                 u'Cirka':u'ca',
-                u'andra hälft':u'2half', 
-                u'första hälft':u'1half', 
+                u'andra hälft':u'2half',
+                u'första hälft':u'1half',
                 u'början':u'early',
                 u'slut':u'end',
                 u'mitt':u'mid',
@@ -173,12 +175,21 @@ class Common:
                 u'andra fjärdedel':u'2quarter',
                 u'tredje fjärdedel':u'3quarter',
                 u'fjärde fjärdedel':u'4quarter',
+                u'sista fjärdedel':u'4quarter',
                 u'Före':u'<',
                 u'Efter':u'>',
                 u'före':u'<',
                 u'efter':u'>'}
         starts = {u'tidigt':u'early',
-                u'sent':u'late'}
+                u'br av':u'early',
+                u'tid ':u'early',
+                u'sent':u'late',
+                u'sl av':u'late',
+                u'ca':u'ca',
+                u'Våren':u'spring',
+                u'Sommaren':u'summer',
+                u'Hösten':u'fall',
+                u'Vintern':u'winter'}
         talEndings = [u'-talets', u'-tal', u'-talet', u' talets']
         modalityEndings = [u'troligen',u'sannolikt']
         for k,v in starts.iteritems():
@@ -231,6 +242,13 @@ class Common:
         elif ldate == 4: #YYYY
             if Common.is_number(date):
                 return date
+        elif risky and (len(date.split(u'-')) == 2): #as a last attempt try to match this with a complex between pattern
+            combined = []
+            for p in date.split(u'-'):
+                combined.append(Common.stdDate(p))
+                if combined[-1] is None: #if any fails then fail all
+                    return None
+            return u'{{other date|-|%s|%s}}' %(combined[0],combined[1])
         else:
             return None
     @staticmethod

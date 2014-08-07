@@ -144,7 +144,8 @@ class Common:
     @staticmethod
     def stdDate(date, risky=False):
         '''returns a standardised date in isoform or for other date template
-        risky=True for additional logic which has not yet been tested in full production
+        risky=True for additional logic
+        Note that risky has not yet been tested in full production and is never suitable as a first run
         '''
         #interpret semicolon as multiple dates
         if ';' in date:
@@ -160,6 +161,18 @@ class Common:
         if len(date) == 0 or date == u'n.d':
             return u'' #this is equivalent to u'{{other date|unknown}}'
         date=date.replace(u' - ', u'-')
+        
+        #Atempt risky tactic
+        #Note that this should only be run on values which have failed a first run
+        #Note also that it calls the stdDate function WITHOUT the risky option
+        if risky and (len(date.split(u'-')) == 2): #as a last attempt try to match this with a complex between pattern
+            combined = []
+            for p in date.split(u'-'):
+                combined.append(Common.stdDate(p))
+                if combined[-1] is None: #if any fails then fail all
+                    return None
+            return u'{{other date|-|%s|%s}}' %(combined[0],combined[1])
+        #Non-risky continues
         endings = {u'?':u'?',
                 u'(?)':u'?',
                 u'c':u'ca',
@@ -242,13 +255,6 @@ class Common:
         elif ldate == 4: #YYYY
             if Common.is_number(date):
                 return date
-        elif risky and (len(date.split(u'-')) == 2): #as a last attempt try to match this with a complex between pattern
-            combined = []
-            for p in date.split(u'-'):
-                combined.append(Common.stdDate(p))
-                if combined[-1] is None: #if any fails then fail all
-                    return None
-            return u'{{other date|-|%s|%s}}' %(combined[0],combined[1])
         else:
             return None
     @staticmethod

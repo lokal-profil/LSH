@@ -144,6 +144,16 @@ class Common:
     @staticmethod
     def stdDate(date):
         '''returns a standardised date in isoform or for other date template'''
+        #interpret semicolon as multiple dates
+        if ';' in date:
+            combined = []
+            for p in date.split(';'):
+                combined.append(Common.stdDate(p))
+                if combined[-1] is None: #if any fails then fail all
+                    return None
+            return u'; '.join(combined)
+        
+        #A single date, or range
         date=date.strip(u'.  ')
         if len(date) == 0:
             return u'' #this is equivalent to u'{{other date|unknown}}'

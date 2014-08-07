@@ -347,8 +347,8 @@ class MakeInfo:
         
         #datering
         stdDate = Common.stdDate(date)
-        if stdDate: date = stdDate
-        else: cat_meta.append(u'malformated year')
+        if stdDate is None: cat_meta.append(u'malformated year')
+        else: date = stdDate
         data[u'date'] = date
         
         #exhibits

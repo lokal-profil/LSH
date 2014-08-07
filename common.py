@@ -145,6 +145,8 @@ class Common:
     def stdDate(date):
         '''returns a standardised date in isoform or for other date template'''
         date=date.strip(u'.  ')
+        if len(date) == 0:
+            return u'' #this is equivalent to u'{{other date|unknown}}'
         date=date.replace(u' - ', u'-')
         endings = {u'?':u'?',
                 u'(?)':u'?', 

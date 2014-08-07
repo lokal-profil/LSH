@@ -177,8 +177,15 @@ class Common:
                 u'Efter':u'>',
                 u'före':u'<',
                 u'efter':u'>'}
+        starts = {u'tidigt':u'early',
+                u'sent':u'late'}
         talEndings = [u'-talets', u'-tal', u'-talet', u' talets']
         modalityEndings = [u'troligen',u'sannolikt']
+        for k,v in starts.iteritems():
+            if date.startswith(k):
+                again = Common.stdDate(date[len(k):])
+                if again: return u'{{other date|%s|%s}}' % (v, again)
+                else: return None
         for k,v in endings.iteritems():
             if date.endswith(k):
                 again = Common.stdDate(date[:-len(k)])

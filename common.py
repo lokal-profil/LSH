@@ -202,7 +202,8 @@ class Common:
                 u'Våren':u'spring',
                 u'Sommaren':u'summer',
                 u'Hösten':u'fall',
-                u'Vintern':u'winter'}
+                u'Vintern':u'winter',
+                u'sekelskiftet':u'turn of the century'}
         talEndings = [u'-talets', u'-tal', u'-talet', u' talets']
         modalityEndings = [u'troligen',u'sannolikt']
         for k,v in starts.iteritems():

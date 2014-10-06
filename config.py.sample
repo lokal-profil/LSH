@@ -1,0 +1,9 @@
+#!/usr/bin/python
+# -*- coding: utf-8  -*-
+'''
+Configuration for LSHuploadBot. Don't commit the real deal!
+'''
+
+username = u'Some_Username'
+password = u'some_Password'
+site = 'https://commons.wikimedia.org'

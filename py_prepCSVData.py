@@ -11,6 +11,9 @@
 #
 # Includes the following old files:
 # * FixFile.py
+# * FixFile-fullObjDaten.py (partially)
+#
+# TODO: add a if __name__ == '__main__':
 #
 '''what to run:
 fixFiles() - converts orignal csv to cleaned up csv, run from main folder
@@ -25,7 +28,7 @@ CSV_DIR_CLEAN = u'clean_csv'
 CSV_FILES = {  # all of these must be present
     'ausstellung': u'Ausstellung 1.1.csv',
     'kuenstler': u'kuenstler 1.1.csv',
-    'objDaten': u'ObjDaten 1.1.csv',
+    'objDaten': u'ObjDaten - alla objId 2013-04-11.csv',
     'objMass': u'ObjMass 1.1.csv',
     'photo': u'photo 1.1.csv',
     'stichwort': u'Photo_stichwort 1.1.csv',
@@ -67,6 +70,7 @@ def fixFiles(in_path=CSV_DIR_ORIG, out_path=CSV_DIR_CLEAN, encoding='utf-16'):
         file_out = u'%s/%s.csv' % (out_path, k)
         file_in = u'%s/%s' % (in_path, v)
         fixLinebreak(file_in, file_out, encoding)
+    print u"Done!"
 
 
 # ideally this is removable by correcting the source
@@ -140,7 +144,8 @@ def fixLinebreak(file_in, file_out, encoding):
             fout.write(u'\n%s' % comb[3:])  # remove leading <!>
             prevline = u''         # reset prevline
         elif len(comb.split('|')) > len(header):
-            print 'Found to many pipes in a line: %s' % comb
+            print u'Found to many pipes in a line of %s please ' \
+                  u'correct manually:\n%s' % (file_in, comb[3:])
             break
         else:
             prevline = comb      # set prevline
@@ -152,7 +157,6 @@ def fixLinebreak(file_in, file_out, encoding):
     fout.close()
 
 
-
-
-
-
+if __name__ == '__main__':
+    fixFiles()
+# EoF

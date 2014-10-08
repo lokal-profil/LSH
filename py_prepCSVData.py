@@ -143,7 +143,7 @@ def fixLinebreak(file_in, file_out, encoding):
             prevline = u''         # reset prevline
         elif len(comb.split('|')) > len(header):
             print u'Found to many pipes in a line of %s please ' \
-                  u'correct manually:\n%s' % (file_in, comb[3:])
+                  u'correct manually:\n%s' % (file_out, comb[3:])
             break
         else:
             prevline = comb      # set prevline

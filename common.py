@@ -2,6 +2,8 @@
 #
 # Methods comonly shared by the analysis files
 #
+# TODO: Reuse the common common.py and split off anything LSH specific
+#
 import codecs
 import os
 import operator
@@ -17,6 +19,26 @@ class Common:
         header = lines[0].split('|')
         lines.pop()
         return header, lines
+    @staticmethod
+    def openFileAsDictList(filename):
+        '''
+        opens a given pipe-separated csv file (utf-8)
+        and returns a list of dicts, using header row for keys)
+        '''
+        fin = codecs.open(filename, 'r', 'utf-8')
+        lines = fin.read().split('\n')
+        fin.close()
+        header = lines.pop(0).split('|')
+        
+        entryList = []
+        for l in lines:
+            if len(l) == 0: continue
+            entry = {}
+            parts = l.split('|')
+            for i in range(0, len(header)):
+                entry[header[i]] = parts[i]
+            entryList.append(entry)
+        return entryList
     @staticmethod
     def sortedDict(ddict):
         '''turns a dict into a sorted list'''
@@ -52,7 +74,7 @@ class Common:
         try:
             float(s)
             return True
-        except ValueError:
+        except (ValueError, TypeError):
             return False
     @staticmethod
     def file_to_dict(filename, idcol=0, verbose=False, careful=False):

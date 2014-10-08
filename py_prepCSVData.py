@@ -13,8 +13,6 @@
 # * FixFile.py
 # * FixFile-fullObjDaten.py (partially)
 #
-# TODO: add a if __name__ == '__main__':
-#
 '''what to run:
 fixFiles() - converts orignal csv to cleaned up csv, run from main folder
 '''

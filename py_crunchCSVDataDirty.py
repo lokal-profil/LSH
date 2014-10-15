@@ -14,9 +14,13 @@
 # * py-Ausstellung-trim.py
 # * py-ObjDaten-sam.py
 # * py-Ereignis-trim.py
+# * py-kunstler-trim.py
+# * py-Mul-mass-add.py
+# * py-Mul-mass-trim.py
+# * py-realObjOnly.py
 #
 # TODO: Make sure dicts/txt are del after they are used to free up memory
-# TODO: Stick CSV_FILES in start of file (ore somewhere equally easy
+# TODO: Stick CSV_FILES in start of file (or somewhere equally easy
 #
 '''what to run:
 crunchFiles()
@@ -56,7 +60,7 @@ def crunchFiles(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
     # removes unused Objects from ObjDaten
     # py-TrimObjDaten.py
     objDaten_trim = trimObjDaten(objDaten, photo_multimedia_objIds)
-    del objDaten
+    # objDaten not deleted as used again in realObjOnly()
 
     # Adds the stichwort id column to photo and
     # removes unused photoIds from stichworth
@@ -101,6 +105,26 @@ def crunchFiles(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
     kuenstler = codecs.open(u'%s/kuenstler.csv' % CSV_DIR_CLEAN, 'r', 'utf-8').read()
     objDaten_trim_ausstellung_sam_eregnis_kuenstler, kuenstler_trim, kuenstler_roles = kuenstler_objDaten(objDaten_trim_ausstellung_sam_eregnis, kuenstler, log=u'%s/kuenstler.log' % CSV_DIR_CRUNCH)
     del objDaten_trim_ausstellung_sam_eregnis, kuenstler
+
+    # Add objMul and objMass columns to ObjDaten
+    # then trim objMul and objMass
+    # py-Mul-mass-add.py
+    # py-Mul-mass-trim.py
+    objMass = codecs.open(u'%s/objMass.csv' % CSV_DIR_CLEAN, 'r', 'utf-8').read()
+    objMultiple = codecs.open(u'%s/objMultiple.csv' % CSV_DIR_CLEAN, 'r', 'utf-8').read()
+    objDaten_trim_ausstellung_sam_eregnis_kuenstler_mulMass, objMass_trim, objMultiple_trim = mulMass_add(objMass, objMultiple, objDaten_trim_ausstellung_sam_eregnis_kuenstler, log=u'%s/MulMass.log' % CSV_DIR_CRUNCH)
+    del objMass, objMultiple, objDaten_trim_ausstellung_sam_eregnis_kuenstler
+
+    # Removes objIds from photo which are not in ObjDaten
+    # py-realObjOnly.py
+    photo_multimedia_ObjIds_stichID_samesame_real = realObjOnly(objDaten_trim_ausstellung_sam_eregnis_kuenstler_mulMass, photo_multimedia_ObjIds_stichID_samesame, objDaten, log=u'%s/realObjOnly.log' % CSV_DIR_CRUNCH)
+    del objDaten, photo_multimedia_ObjIds_stichID_samesame
+
+    # de-duplicating phoId
+    # i.e.
+    #     removing depricted objects
+    #	  removing depricated same_obj
+    # TODO
 
 
 def makePhoto_multi(photo, multi, log, tmp):
@@ -843,7 +867,7 @@ def kuenstler_objDaten(objDaten_trim_ausstellung_sam_eregnis, kuenstler, log):
     outK = u''  # kuenstler_trim
     outR = u''  # kuenstler_roles
     flog = codecs.open(log, 'w', 'utf-8')  # logfile
-    print u"Crunching kuenstler"
+    print u"Crunching kuenstler..."
 
     print '\treading Kunstler into dictionary'
     # OkuId|ObjId|ObjAufId|AufAufgabeS|KueId|KueVorNameS|KueNameS|OkuArtS|OkuFunktionS|OkuValidierungS|KudArtS|KudDatierungS|KudJahrVonL|KudJahrBisL|KudOrtS|KudLandS|KueFunktionS|MulId|PhoId
@@ -902,7 +926,6 @@ def kuenstler_objDaten(objDaten_trim_ausstellung_sam_eregnis, kuenstler, log):
         klist = list(set(kDict[kueId]))
         newK[kueId].append(';'.join(klist))
     print u'\tobjIds: %d lines, %d uniques, %d dupes, kueIds: %d, roles: %d, roleCmts: %d' % (len(linesK), len(oDict), dcounter, len(newK), len(roles), len(roleCmts))
-    
 
     print '\tcreating new kunstler...'
     # create trimmed Austellungfile
@@ -975,6 +998,223 @@ def extractYear(lName, bYear, dYear):
                             dYear = test[7:11]
     return (lName, bYear, dYear, log)
 #
+
+
+def mulMass_add(objMass, objMultiple, objDaten_trim_ausstellung_sam_eregnis_kuenstler, log):
+    '''
+    Adds objMul and objMass columns to ObjDaten
+    then trims these
+    '''
+    linesOmul = objMultiple.split('\n')
+    headerOmul = linesOmul.pop(0).split('|')
+    linesObm = objMass.split('\n')
+    headerObm = linesObm.pop(0).split('|')
+    linesO = objDaten_trim_ausstellung_sam_eregnis_kuenstler.split('\n')
+    headerO = linesO.pop(0).split('|')
+    out = u''  # objDaten_trim_ausstellung_sam_eregnis_kuenstler_Mulmass
+    outLog = u''  # used for triming of mul and mass
+    outOmul = u''  # objMultiple_trim
+    outObm = u''  # objMass_trim
+    flog = codecs.open(log, 'w', 'utf-8')  # logfile
+    print u"Putting objMultiple and objMass into objDaten..."
+
+    print '\treading ObjMass into dictionary... (yes this takes some time)'
+    # ObmId|ObmObjId|ObmTypMasseS|ObmMasseS|ObjAufId|AufAufgabeS
+    obmDict = {}
+    dcounter = 0  # number of ignored/duplicate ids
+    for l in linesObm:
+        if len(l) == 0:
+            continue
+        col = l.split('|')
+        obmId = col[0]
+        objId = col[1]
+        Common.addUniqes(obmDict, objId, obmId, dcounter)
+    print '\tobmId:  %d lines, %d uniques, %d dupes' % (len(linesObm), len(obmDict), dcounter)
+
+    print '\treading ObjMultiple into dictionary... (as does this)'
+    # OmuId|OmuObjId|OmuTypS|OmuBemerkungM|OmuInhalt01M|ObjInventarNrS|ObjAufId|AufAufgabeS
+    omulDict = {}
+    dcounter = 0  # number of ignored/duplicate ids
+    for l in linesOmul:
+        if len(l) == 0:
+            continue
+        col = l.split('|')
+        omulId = col[0]
+        objId = col[1]
+        Common.addUniqes(omulDict, objId, omulId, dcounter)
+    print '\tomulId: %d lines, %d uniques, %d dupes' % (len(linesOmul), len(omulDict), dcounter)
+
+    print '\tadding ObjMul and ObjMass id to objDaten... (and this)'
+    # read in photo... and write to new file
+    omulUsed = []
+    obmUsed = []
+    out += u'%s|mulId|massId\n' % '|'.join(headerO)
+    for l in linesO:
+        if len(l) == 0:
+            continue
+        col = l.split('|')
+        objId = col[0]
+        mulId = ''
+        massId = ''
+        if objId in omulDict.keys():
+            omulUsed.append(objId)
+            mulId = ';'.join(omulDict[objId])
+        if objId in obmDict.keys():
+            obmUsed.append(objId)
+            massId = ';'.join(obmDict[objId])
+        out += u'%s|%s|%s\n' % (l, mulId, massId)
+    # make sure nothing is left
+    omulUsed = list(set(omulUsed))  # remove dupes
+    for objId in omulUsed:
+        omulDict.pop(objId)
+    if len(omulDict) != 0:
+        outLog += u'-----left in omulDict------\n'
+        for k, v in omulDict.iteritems():
+            outLog += u'%s|%s\n' % (k, ';'.join(v))
+    obmUsed = list(set(obmUsed))  # remove dupes
+    for objId in obmUsed:
+        obmDict.pop(objId)
+    if len(obmDict) != 0:
+        outLog += u'-----left in obmDict------\n'
+        for k, v in obmDict.iteritems():
+            outLog += u'%s|%s\n' % (k, ';'.join(v))
+    flog.write(outLog)
+    flog.close()
+    # end of py-Mul-mass-add.py
+
+    # start of py-Mul-mass-trim.py
+    linesLog = outLog.split('\n')
+    linesLog.pop(0)  # headerLog
+
+    print '\treading log into dictionaries...'
+    omulDict = {}
+    obmDict = {}
+    while len(linesLog) > 0:
+        l = linesLog.pop()
+        if len(l) == 0:
+            continue
+        if l.startswith(u'---'):
+            break
+        col = l.split('|')
+        obmDict[col[0]] = col[1].split(';')
+    print '\tobmId: %d' % len(obmDict)
+    while len(linesLog) > 0:
+        l = linesLog.pop()
+        if len(l) == 0:
+            continue
+        if l.startswith(u'---'):
+            break
+        col = l.split('|')
+        omulDict[col[0]] = col[1].split(';')
+    print '\tomulId: %d' % len(omulDict)
+
+    print '\twriting trimmed ObjMultiple...'
+    outOmul += u'%s\n' % '|'.join(headerOmul)
+    for l in linesOmul:
+        if len(l) == 0:
+            continue
+        col = l.split('|')
+        omulId = col[0]
+        objId = col[1]
+        if objId in omulDict.keys():
+            if omulId not in omulDict[objId]:
+                print 'crap (Omul)'
+        else:
+            outOmul += u'%s\n' % l
+
+    print '\twriting trimmed ObjMass...'
+    outObm += u'%s\n' % '|'.join(headerObm)
+    for l in linesObm:
+        if len(l) == 0:
+            continue
+        col = l.split('|')
+        obmId = col[0]
+        objId = col[1]
+        if objId in obmDict.keys():
+            if obmId not in obmDict[objId]:
+                print 'crap (Obm)'
+        else:
+            outObm += u'%s\n' % l
+    print u"...done"
+    return out, outObm, outOmul
+
+
+def realObjOnly(objDaten_trim_ausstellung_sam_eregnis_kuenstler_mulMass, photo_multimedia_ObjIds_stichID_samesame, objDaten, log):
+    '''
+    Removes objIds from photo which are not in ObjDaten
+    '''
+    linesP = photo_multimedia_ObjIds_stichID_samesame.split('\n')
+    headerP = linesP.pop(0).split('|')
+    linesO = objDaten_trim_ausstellung_sam_eregnis_kuenstler_mulMass.split('\n')
+    linesO.pop(0)  # headerO
+    linesOld = objDaten.split('\n')
+    linesOld.pop(0)  # headerOld
+    out = u''  # photo_multimedia_ObjIds_stichID_samesame_real
+    flog = codecs.open(log, 'w', 'utf-8')  # logfile
+    print u"Removing non-existent objIds..."
+
+    print '\treading in new objId...'
+    oList = []
+    for l in linesO:
+        if len(l) == 0:
+            continue
+        col = l.split('|')
+        objId = col[0]
+        oList.append(objId)
+    oList = list(set(oList))  # removing dupes
+    print u'\toList: %d lines, %d uniques' % (len(linesO), len(oList))
+
+    print '\treading in old objId...'
+    oldList = []
+    for l in linesOld:
+        if len(l) == 0:
+            continue
+        col = l.split('|')
+        objId = col[0]
+        oldList.append(objId)
+    oldList = list(set(oldList))  # removing dupes
+    print u'\toldldList: %d lines, %d uniques' % (len(linesOld), len(oldList))
+
+    print '\tremoving unexisting ObjId from photo...'
+    once = True
+    log = []
+    wtflog = []
+    out += u'%s\n' % '|'.join(headerP)
+    for l in linesP:
+        if len(l) == 0:
+            continue
+        col = l.split('|')
+        objIds = col[2].split(';')
+        bad = []
+        for o in objIds:
+            if o not in oList:
+                bad.append(o)
+                log.append(o)
+                if o in oldList:
+                    wtflog.append(o)
+                    if once:
+                        print 'WTFUUUUUUUUUUUUUCCCCKKKKKKK..... %s' % o
+                        once = False
+        if len(bad) > 0:
+            for b in bad:
+                objIds.remove(b)
+            col[2] = ';'.join(objIds)
+            out += u'%s\n' % '|'.join(col)
+        else:
+            out += u'%s\n' % l
+    # deal with log
+    print u'\tRAW: removed: %d, wtf\'s: %d' % (len(log), len(wtflog))
+    log = list(set(log))  # removing dupes
+    wtflog = list(set(wtflog))
+    print u'\tUNIQUES: removed: %d, wtf\'s: %d' % (len(log), len(wtflog))
+    for l in log:
+        flog.write('%s\n' % l)
+    flog.write(u'----WTF----\n')
+    for l in wtflog:
+        flog.write('%s\n' % l)
+    flog.close()
+    print u"...done"
+    return out
 
 
 if __name__ == '__main__':

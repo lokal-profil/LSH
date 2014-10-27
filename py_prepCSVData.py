@@ -9,11 +9,15 @@
 # * Original csv must be UTF encoded with "|" as cell separator and no
 #   field separator
 #
+# TODO:
+#   Set up CSV_FILES so that version no/data can more easily be updated/read
+#
 # Includes the following old files:
 # * FixFile.py
 # * FixFile-fullObjDaten.py (partially)
 #
-'''what to run:
+'''
+what to run:
 fixFiles() - converts orignal csv to cleaned up csv, run from main folder
 '''
 import codecs
@@ -24,17 +28,17 @@ CSV_DIR_ORIG = u'original_csv'
 CSV_DIR_CLEAN = u'clean_csv'
 
 CSV_FILES = {  # all of these must be present
-    'ausstellung': u'Ausstellung 1.1.csv',
-    'kuenstler': u'kuenstler 1.1.csv',
-    'objDaten': u'ObjDaten - alla objId 2013-04-11.csv',
-    'objMass': u'ObjMass 1.1.csv',
-    'photo': u'photo 1.1.csv',
-    'stichwort': u'Photo_stichwort 1.1.csv',
-    'ereignis': u'Ereignis 1.1.csv',
-    'multimedia': u'multimedia 1.1.csv',
-    'objDatenSam': u'ObjDaten - samhФrande nr.csv',
-    'objMultiple': u'ObjMultiple 1.1.csv',
-    'photoObjDaten': u'Photo - ObjDaten 1.1.csv'
+    'ausstellung': u'Ausstellung 2.0.csv',
+    'kuenstler': u'kuenstler 2.0.csv',
+    'objDaten': u'ObjDaten 2.0 - alla objId 2014-10-23.csv',
+    'objMass': u'ObjMass 2.0.csv',
+    'photo': u'photo 2.0.csv',
+    'stichwort': u'Photo_stichwort 2.0.csv',
+    'ereignis': u'Ereignis 2.0.csv',
+    'multimedia': u'multimedia 2.0.csv',
+    'objDatenSam': u'ObjDaten - samhФrande nr 2.0.csv',
+    'objMultiple': u'ObjMultiple 2.0.csv',
+    'photoObjDaten': u'Photo - ObjDaten 2.0.csv'
 }
 
 
@@ -48,6 +52,11 @@ def fixFiles(in_path=CSV_DIR_ORIG, out_path=CSV_DIR_CLEAN, encoding='utf-16'):
     param: (optional) out_path - the folder to which cleand csv are written
     param: (optional) encoding - encoding of the original files
     '''
+    # convert to unicode if not the case
+    if type(in_path) == str:
+        in_path = unicode(in_path)
+    if type(out_path) == str:
+        out_path = unicode(out_path)
     # check that path is a directory and all files are present
     if not os.path.isdir(in_path):
         print u"Given path \"%s\" is not a directory" % in_path
@@ -61,10 +70,6 @@ def fixFiles(in_path=CSV_DIR_ORIG, out_path=CSV_DIR_CLEAN, encoding='utf-16'):
 
     # convert the files and output a clean copy
     for k, v in CSV_FILES.iteritems():
-        if k == 'objDatenSam':
-            # temporary until source file is fixed
-            print 'still skipping %s' % v
-            continue
         file_out = u'%s/%s.csv' % (out_path, k)
         file_in = u'%s/%s' % (in_path, v)
         fixLinebreak(file_in, file_out, encoding)
@@ -76,19 +81,11 @@ def hackfix(txt, file_out):
     '''
     runs a few hackish fixes to correct problems discovered
     in the original csv files
-    Ausstellung
-    1) |titel|plats|2010 2001| --> |||2010 2011|
-    2) LIvrustkammaren --> Livrustkammaren
     ObjMultiple:
     1) Remove any S:\[...].jpg
     '''
     txt_orig = txt
-    if file_out.endswith(u'ausstellung.csv'):
-        txt = txt.replace(u'|titel|plats|2010 2001|', u'|||2010 2011|')
-        txt = txt.replace(u'LIvrustkammaren', u'Livrustkammaren')
-        if txt_orig == txt:
-            print "hackfix not needed for ausstellung"
-    elif file_out.endswith(u'objMultiple.csv'):
+    if file_out.endswith(u'objMultiple.csv'):
         txt = re.sub(r'S:\\[^.]*.(jpg|JPG)', u'', txt)
         if txt_orig == txt:
             print "hackfix not needed for objMultiple"
@@ -156,5 +153,17 @@ def fixLinebreak(file_in, file_out, encoding):
 
 
 if __name__ == '__main__':
-    fixFiles()
+    import sys
+    usage = '''Usage:\tpython py_prepCSVData.py in_path out_path
+\tin_path (optional): the relative pathname to the csv directory
+\tout_path (optional):the relative pathname to the target directory
+\tEither provide both or leave them out (thus defaulting to "%s", "%s")
+''' % (CSV_DIR_ORIG, CSV_DIR_CLEAN)
+    argv = sys.argv[1:]
+    if len(argv) == 0:
+        fixFiles()
+    elif len(argv) == 2:
+        fixFiles(in_path=argv[0], out_path=argv[1])
+    else:
+        print usage
 # EoF

@@ -36,7 +36,7 @@ def findFiles(path = u'.', filetypes=[u'.tif',u'.jpg']):
 def moveFiles(target, tree, path = u'.', filetypes=[u'.tif',u'.jpg']):
     '''move all files in the given dir and subdirs of the specified filetypes
     to the target dir'''
-    #create target if it doesn't exist
+    # create target if it doesn't exist
     if not os.path.isdir(target):
         os.mkdir(target)
     files = findFiles(path, filetypes)
@@ -64,7 +64,7 @@ def makeHitlist():
             first = False
             continue
         (phoId,mullId,path,name,new_name) = l.split('|')
-        path = path.replace('\\','/') #linux<->windows
+        path = path.replace('\\','/')  # linux<->windows
         if path in tree.keys():
             tree[path].append(name)
         else:
@@ -96,12 +96,12 @@ def makeAndRename(path):
     '''
     (tree, nameToPho) = makeHitlist()
     catTest(path)
-    flog = codecs.open(os.path.join(path,u'¤generator.log'), 'w', 'utf-8') #logfile
+    flog = codecs.open(os.path.join(path,u'¤generator.log'), 'w', 'utf-8')  # logfile
     maker = MakeInfo()
     maker.readInLibraries()
     maker.readConnections()
     for filename_in in os.listdir(path):
-        if filename_in.startswith(u'¤'): #log files
+        if filename_in.startswith(u'¤'):  # log files
             continue
         elif not filename_in[:-4] in nameToPho.keys():
             flog.write(u'%s did not have a photoId\n' %filename_in)
@@ -110,12 +110,12 @@ def makeAndRename(path):
         filename_out = nameToPho[filename_in[:-4]]['filename'].replace(u' ',u'_')
         wName, out = maker.infoFromPhoto(phoMull, preview=False, testing=False)
         if out:
-            #Make info file
+            # Make info file
             infoFile = u'%s.txt' %filename_out[:-4]
             f = codecs.open(os.path.join(path,infoFile), 'w', 'utf-8')
             f.write(out)
             f.close()
-            #Move image file
+            # Move image file
             os.rename(os.path.join(path,filename_in), os.path.join(path,u'%s%s' %(filename_out[:-4],filename_in[-4:])))
             flog.write(u'%s outputed to %s\n' %(filename_in, filename_out))
         else:
@@ -139,9 +139,9 @@ def negatives(path):
                 continue
             os.rename(os.path.join(path,filename), os.path.join(path,negative))
             imageMagick = u'convert %s -negate -auto-gamma -level 10%%,90%%,1,0 %s' %(os.path.join(path,negative), os.path.join(path,filename))
-            imageMagick = u'%s 2>>%s' %(imageMagick, os.path.join(path,u'¤imageMagick-errors.log')) #pipe errors to file
+            imageMagick = u'%s 2>>%s' %(imageMagick, os.path.join(path,u'¤imageMagick-errors.log'))  # pipe errors to file
             os.system(imageMagick.encode(encoding='UTF-8')) 
-            #new info files
+            # new info files
             infoFilename = u'%s.txt' %filename[:-4]
             f = codecs.open(os.path.join(path,infoFilename), 'r', 'utf-8')
             infoFile = f.read()
@@ -162,8 +162,8 @@ def negPosInfo(infoFile, filename):
     generate a negative and positive version of the given info file
     '''
     ovPos = infoFile.find(u'|other_versions=')
-    #for negative we want to remove cats (i.e. anything after </gallery>\n}} )
-    #so need to identify end position
+    # for negative we want to remove cats (i.e. anything after </gallery>\n}} )
+    # so need to identify end position
     end = infoFile.find(u'</gallery>\n}}')
     if end>0:
         end=end+len(u'</gallery>\n}}')
@@ -184,7 +184,7 @@ def catTest(path, nameToPho=None):
     '''
     if not nameToPho:
         (tree, nameToPho) = makeHitlist()
-    flog = codecs.open(os.path.join(path,u'¤catStats.log'), 'w', 'utf-8') #logfile
+    flog = codecs.open(os.path.join(path,u'¤catStats.log'), 'w', 'utf-8')  # logfile
     maker = MakeInfo()
     phoMull_list=[]
     for filename_in in os.listdir(path):
@@ -208,17 +208,17 @@ def negativeCleanup(path):
         if filename.endswith(u'-negative.tif'):
             positive = filename[:-len(u'-negative.tif')]
             negative = filename[:-len('.tif')]
-            if not os.path.isfile(os.path.join(path, u'%s.tif' %positive)): no_original.append(u'%s.tif' %positive)     #check if .tif exists
-            if not os.path.isfile(os.path.join(path, u'%s.txt' %positive)): no_original_info(u'%s.txt' %positive)       #check if .txt exists
-            if not os.path.isfile(os.path.join(path, u'%s.tif' %negative)): no_invert_info.append(u'%s.txt' %negative)  #check if -negative.txt exists
+            if not os.path.isfile(os.path.join(path, u'%s.tif' %positive)): no_original.append(u'%s.tif' %positive)     # check if .tif exists
+            if not os.path.isfile(os.path.join(path, u'%s.txt' %positive)): no_original_info(u'%s.txt' %positive)       # check if .txt exists
+            if not os.path.isfile(os.path.join(path, u'%s.tif' %negative)): no_invert_info.append(u'%s.txt' %negative)  # check if -negative.txt exists
         elif filename.endswith(u'.tif'):
             positive = filename[:-len(u'.tif')]
             negative = u'%s-negative' %filename[:-len('.tif')]
-            if not os.path.isfile(os.path.join(path, u'%s.tif' %negative)): no_invert.append(u'%s.tif' %negative)       #check if -negative.tif exists
-            if not os.path.isfile(os.path.join(path, u'%s.txt' %positive)): no_original_info(u'%s.txt' %positive)       #check if .txt exists
-            if not os.path.isfile(os.path.join(path, u'%s.tif' %negative)): no_invert_info.append(u'%s.txt' %negative)  #check if -negative.txt exists
+            if not os.path.isfile(os.path.join(path, u'%s.tif' %negative)): no_invert.append(u'%s.tif' %negative)       # check if -negative.tif exists
+            if not os.path.isfile(os.path.join(path, u'%s.txt' %positive)): no_original_info(u'%s.txt' %positive)       # check if .txt exists
+            if not os.path.isfile(os.path.join(path, u'%s.tif' %negative)): no_invert_info.append(u'%s.txt' %negative)  # check if -negative.txt exists
         elif filename.endswith(u'.txt'):
-            #check that either -negative.tif or .tif exists (if so then dealt with by above)
+            # check that either -negative.tif or .tif exists (if so then dealt with by above)
             if filename.endswith(u'-negative.txt'):
                 positive = filename[:-len(u'-negative.txt')]
                 negative = filename[:-len(u'.txt')]
@@ -227,13 +227,13 @@ def negativeCleanup(path):
                 negative = u'%s-negative' % filename[:-len(u'.txt')]
             if not os.path.isfile(os.path.join(path, u'%s.tif' %negative)) and not os.path.isfile(os.path.join(path, u'%s.tif' %positive)):
                 just_info.append(filename)
-    #sort and remove any dupes
+    # sort and remove any dupes
     no_invert = sorted(set(no_invert))
     no_invert_info = sorted(set(no_invert_info))
     no_original = sorted(set(no_original))
     no_original_info = sorted(set(no_original_info))
     just_info = sorted(set(just_info))
-    #output to log
+    # output to log
     logFilename = u'¤conversion-errors.log'
     f = codecs.open(os.path.join(path,logFilename), 'w', 'utf-8')
     f.write(u'Total: %r, problems %r\n' %(len(os.listdir(path)),len(no_invert)+len(no_original)))

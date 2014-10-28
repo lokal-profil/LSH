@@ -155,7 +155,7 @@ class Common:
         return dDict
 
     @staticmethod
-    def makeConnections(filename, useCol=False, start=None, end=None, addpipe=False, verbose=False, multi=False):
+    def makeConnections(filename, useCol=False, start=None, end=None, addpipe=False, verbose=False, multi=False, keepskip=False):
         '''
         Requires file to have the format "*keyword|...|commonsconnection" where - means ignore
            usecol: column containing the relevant value. Default = last one. If a list then values are :-separated
@@ -163,6 +163,7 @@ class Common:
            addpipe: If string ends with "]]" and contains a ":" then a "|" is added just before the "]]". Default = False
            verbose: outputs read lines and found connections. Default = False
            multi: If string contains ";" then a list of values is returned. Default = False
+           keepskip: Also returns "-" instead of skipping these. Default = False
         '''
         dDict = {}
         header, lines = Common.openFile(filename)
@@ -181,7 +182,9 @@ class Common:
                 connection = col[useCol]
             else:
                 connection = col[len(col)-1]
-            if not len(connection) == 0 and not connection == u'-':
+            if keepskip and connection == u'-':
+                dDict[col[0].strip()] = connection
+            elif not len(connection) == 0:
                 connection = connection.replace(u'{{!}}', u'|')
                 if multi:
                     cList = []

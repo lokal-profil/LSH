@@ -1,10 +1,11 @@
 # -*- coding: UTF-8  -*-
 #
-# Class contining info for making info templates
+# Class contining instructions for making info templates
 #
-# mechanism for updating commonsconnections
+# TODO:
+# integrate mechanism for updating commons connections
 # mechanism for getting pho_mull from orig filename(+path?)
-#
+# makePhotographers should use connection file
 #
 import codecs
 from common import Common
@@ -100,7 +101,6 @@ class MakeInfo:
     
     def readInLibraries(self, verbose=False, careful=False):
         '''reads the given files into dictionaries'''
-        
         self.photoD     = Common.file_to_dict(u'data/deriv-photo_multimedia_ObjIds_stichID_samesame_real_noDupes.csv', idcol=[0,1], verbose=verbose, careful=careful)
         self.stichD     = Common.file_to_dict(u'data/deriv-Photo_stichwort_trim.csv', verbose=verbose, careful=careful)
         self.massD      = Common.file_to_dict(u'data/deriv-ObjMass.csv', verbose=verbose, careful=careful)
@@ -111,17 +111,17 @@ class MakeInfo:
         self.kuenstlerD = Common.file_to_dict(u'data/deriv-kuenstler_trim.csv', verbose=verbose, careful=careful)
         self.wikinameD  = Common.file_to_dict(u'data/deriv-filenames.csv', idcol=[0,1], verbose=verbose, careful=careful)
     #
-    def readConnections(self, verbose=False):
-        '''reads the commonsconections files into dictionaries'''
-        self.stichC = Common.makeConnections(u'connections/commons-Keywords.csv', start=u'[[:Category:', end=u']]', multi=True, verbose=verbose)
-        self.placesC = Common.makeConnections(u'connections/commons-Places.csv', addpipe=True, verbose=verbose)
-        self.ereignisC = Common.makeConnections(u'connections/commons-Events.csv', start=u'[[:Category:', end=u']]', multi=True, verbose=verbose)
-        self.ereignisLinkC = Common.makeConnections(u'connections/commons-Events.csv', useCol=2, start=u'[[', end=u']]', verbose=verbose)
-        self.peopleLinkC = Common.makeConnections(u'connections/commons-People.csv', useCol=3, start=u'[[', end=u']]', verbose=verbose)
-        self.peopleCreatC = Common.makeConnections(u'connections/commons-People.csv', useCol=4, start=u'[[', end=u']]', verbose=verbose)
-        self.peopleCatC = Common.makeConnections(u'connections/commons-People.csv', start=u'[[:Category:', end=u']]', verbose=verbose)
-        self.materialC = Common.makeConnections(u'connections/commons-Materials.csv', multi=True, verbose=verbose)
-        self.objCatC = Common.makeConnections(u'connections/commons-ObjKeywords.csv', start=u'[[:Category:', end=u']]', multi=True, verbose=verbose)
+    def readConnections(self, verbose=False, keepskip=False):
+        '''reads the commons connections files into dictionaries'''
+        self.stichC = Common.makeConnections(u'connections/commons-Keywords.csv', start=u'[[:Category:', end=u']]', multi=True, verbose=verbose, keepskip=keepskip)
+        self.placesC = Common.makeConnections(u'connections/commons-Places.csv', addpipe=True, verbose=verbose, keepskip=keepskip)
+        self.ereignisC = Common.makeConnections(u'connections/commons-Events.csv', start=u'[[:Category:', end=u']]', multi=True, verbose=verbose, keepskip=keepskip)
+        self.ereignisLinkC = Common.makeConnections(u'connections/commons-Events.csv', useCol=2, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
+        self.peopleLinkC = Common.makeConnections(u'connections/commons-People.csv', useCol=3, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
+        self.peopleCreatC = Common.makeConnections(u'connections/commons-People.csv', useCol=4, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
+        self.peopleCatC = Common.makeConnections(u'connections/commons-People.csv', start=u'[[:Category:', end=u']]', verbose=verbose, keepskip=keepskip)
+        self.materialC = Common.makeConnections(u'connections/commons-Materials.csv', multi=True, verbose=verbose, keepskip=keepskip)
+        self.objCatC = Common.makeConnections(u'connections/commons-ObjKeywords.csv', start=u'[[:Category:', end=u']]', multi=True, verbose=verbose, keepskip=keepskip)
         MakeInfo.makeRoles(self)
         MakeInfo.makeDimensions(self)
         MakeInfo.makeAbbrevLicense(self)
@@ -679,6 +679,7 @@ class MakeInfo:
             # bredd should be breath but doesn't seem to exist
             # kanske = [u'kaliber', u'antal', u'Omkrets]
     def makePhotographers(self):
+        # TODO: read from connections
         self.photographers = {
             u'Göran Schmidt':(u'[[Creator:Göran Schmidt|]]',u'Göran Schmidt'),
             u'Samuel Uhrdin':(u'[[Creator:Samuel Uhrdin|]]',u'Samuel Uhrdin'),

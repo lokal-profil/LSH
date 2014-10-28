@@ -1,16 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8  -*-
-'''
-Tool for scraping existing wiki lists from commons and
-storing these as correctly formated local files
-How to use:
-    just use "run()"
-
-TODO:
-    Rebuild using WikiApi
-    Propper commenting
-    allow input/output to be set
-'''
+#
+# Tool for scraping existing wiki lists from commons and
+# storing these as correctly formated local files
+# How to use:
+#   just use "run()"
+#
+# TODO:
+#   Rebuild using WikiApi
+#   Propper commenting
+#   Add filenames
 from common import Common as common
 import codecs
 import urllib
@@ -93,7 +92,8 @@ def formatOutput(units, page):
              u'Keywords': u'<!--From: Photo_stichwort_1.2.csv -->\nSet commonsconnection of irrelevant keywords to "-"\n\nMultiple categories are separated by ";"\n===Keyword|frequency|description|commonsconnection===\n',
              u'ObjKeywords': u'These are the keywords used to describe the objects themselves. Classification is used for all items whereas group is only used at HWY.\n\nwhen possible ord1 will be used instead of the more generic ord2.\n===*Keyword|frequency|commonscategory===\n',
              u'Materials': u'<!--From: ObjMultiple_1.2.csv -->\ncommonsconnection is the relevant parameter for {{technique}}. Don\'t forget to add a translation in Swedish at [[Template:Technique/sv]]\n\nSet commonsconnection of irrelevant technique/material to "-".\n\n===technique/material|frequency|commonsconnection===\n',
-             u'Places': u'<!--From: Ausstellung_1.1.csv - col: ausOrt-->\nSet commonsconnection of irrelevant places to "-"\n\nMultiple entries are separated by ";"\n===Place|Frequency|Commonsconnection===\n'
+             u'Places': u'<!--From: Ausstellung_1.1.csv - col: ausOrt-->\nSet commonsconnection of irrelevant places to "-"\n\nMultiple entries are separated by ";"\n===Place|Frequency|Commonsconnection===\n',
+             u'Photographers':  u'<!--From: photo_1.2.csv -->\n===Photographers===\n'
              }
     txt = intro[page]
     for u in units:
@@ -144,9 +144,12 @@ def rowFormat(u, page):
         return u'*%s|%s|%s' % (u['name'], u['frequency'], u['technique'])
     elif page == 'Places':
         return u'*%s|%s|%s' % (u['name'], u['frequency'], u['other'])
+    elif page == 'Photographers':
+        return u'*%s|%s|%s|%s' % (u['name'], u['frequency'], u['creator'], u['category'])
 
 
-def run():
+def run(out_path=u'connections'):
+    import os
     # Define a list of pages and output files
     # where page has the format Commons:Batch uploading/LSH/*
     # and outputfile the format: commons-*.csv
@@ -155,12 +158,18 @@ def run():
              u'ObjKeywords': u'ObjKeywords',
              u'Keywords': u'Keywords',  # stichwort
              u'Materials': u'Materials',
-             u'Places': u'Places'
+             u'Places': u'Places',
+             u'Photographers': u'Photographers'
              }
+    # create out_path if it doesn't exist
+    if not os.path.isdir(out_path):
+        os.mkdir(out_path)
+    # fetch, parse and save each page
     for k, v in pages.iteritems():
         contents = getPage(u'Commons:Batch uploading/LSH/%s' % k)
         units = parseEntries(contents)
         output = formatOutput(units, k)
-        out = codecs.open(u'connections/commons-%s.csv' % v, 'w', 'utf8')
+        out = codecs.open(u'%s/commons-%s.csv' % (out_path, v), 'w', 'utf8')
         out.write(output)
         out.close()
+        print u'Created %s/commons-%s.csv' % (out_path, v)

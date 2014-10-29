@@ -8,6 +8,7 @@
 #
 import codecs
 from common import Common
+import os
 
 # limitations on namelength
 # shorten if longer GOODLENGTH cut if longer than MAXLENGTH
@@ -16,6 +17,7 @@ MAXLENGTH = 128
 PHOTO_FILE = u'photo_multimedia_etc.csv'
 OBJDATEN_FILE = u'objDaten_etc.csv'
 CSV_FOLDER = u'data'
+LOG_SUBFOLDER = u'logs'
 MAPPING_FOLDER = u'mappings'
 
 
@@ -23,13 +25,20 @@ def makeFilenames(folder=CSV_FOLDER, mapping=MAPPING_FOLDER, filenameP=PHOTO_FIL
     '''
     Generating filenames from photo and object descriptions
     '''
+    # input files
     headerP, linesP = Common.openFile(u'%s/%s' % (folder, filenameP))
-
     oDict = Common.file_to_dict(u'%s/%s' % (folder, filenameO))
 
-    f = codecs.open(u'%s/deriv-filenames.csv' % folder, 'w', 'utf-8')  # new csv file
-    fbesk = codecs.open(u'%s/Filenames.txt' % mapping, 'w', 'utf-8')  # new csv file for Commons
-    flog = codecs.open(u'%s/deriv-filenames.log' % folder, 'w', 'utf-8')  # logfile (for any unmerged rows)
+    # output files
+    csvFile = u'%s/filenames.csv' % folder
+    mappingFile = u'%s/Filenames.txt' % mapping
+    logFile = u'%s/%s/filenames.log' % (folder, LOG_SUBFOLDER)
+    # create target if it doesn't exist
+    if not os.path.isdir(mapping):
+        os.mkdir(mapping)
+    f = codecs.open(csvFile, 'w', 'utf-8')  # new csv file
+    fbesk = codecs.open(mappingFile, 'w', 'utf-8')  # new csv file for Commons
+    flog = codecs.open(logFile, 'w', 'utf-8')  # logfile (for any unmerged rows)
 
     # write headers
     f.write(u'%s|%s|%s|%s|filename|ext\n' % (headerP[0], headerP[1], headerP[9], headerP[10]))
@@ -99,6 +108,7 @@ def makeFilenames(folder=CSV_FOLDER, mapping=MAPPING_FOLDER, filenameP=PHOTO_FIL
     f.close()
     fbesk.write(u'|}')
     fbesk.close()
+    print u'Created %s, %s, %s' % (csvFile, mappingFile, logFile)
 
 
 def museumConv(text):
@@ -310,3 +320,13 @@ def shortenNames(text):
                         text = u'%s...' % text[:MAXLENGTH-3]
                     return text
     return shortenNames(text[:pos].strip(badchar))
+
+if __name__ == '__main__':
+    import sys
+    usage = u'Usage:\tpython py_filenames.py\n'
+    argv = sys.argv[1:]
+    if len(argv) == 0:
+        makeFilenames()
+    else:
+        print usage
+# EoF

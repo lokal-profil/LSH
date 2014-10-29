@@ -154,11 +154,11 @@ def fixLinebreak(file_in, file_out, encoding):
 
 if __name__ == '__main__':
     import sys
-    usage = '''Usage:\tpython py_prepCSVData.py in_path out_path
-\tin_path (optional): the relative pathname to the csv directory
-\tout_path (optional):the relative pathname to the target directory
-\tEither provide both or leave them out (thus defaulting to "%s", "%s")
-''' % (CSV_DIR_ORIG, CSV_DIR_CLEAN)
+    usage = u'Usage:\tpython py_prepCSVData.py in_path out_path\n' \
+        u'\tin_path (optional): the relative pathname to the csv directory.\n' \
+        u'out_path (optional):the relative pathname to the target directory.\n' \
+        u'\tEither provide both or leave them out ' \
+        u'(thus defaulting to "%s", "%s")' % (CSV_DIR_ORIG, CSV_DIR_CLEAN)
     argv = sys.argv[1:]
     if len(argv) == 0:
         fixFiles()

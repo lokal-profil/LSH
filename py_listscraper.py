@@ -16,6 +16,7 @@ import urllib
 import urllib2
 from json import loads
 
+OUT_PATH = u'connections'
 
 def getPage(page, verbose=False):
     '''
@@ -143,7 +144,7 @@ def rowFormat(u, page):
         return u'*%s|%s|%s|%s' % (u['name'], u['frequency'], u['creator'], u['category'])
 
 
-def run(out_path=u'connections'):
+def run(out_path=OUT_PATH):
     import os
     # Define a list of pages and output files
     # where page has the format Commons:Batch uploading/LSH/*
@@ -173,7 +174,7 @@ if __name__ == '__main__':
     import sys
     usage = u'Usage:\tpython py_listscraper.py out_path\n' \
         + u'\tout_path (optional):the relative pathname to the target \n' \
-        + u'directory. Defaults to "connections"'
+        + u'directory. Defaults to "%s"' % OUT_PATH
     argv = sys.argv[1:]
     if len(argv) == 0:
         run()

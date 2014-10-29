@@ -504,12 +504,14 @@ def combineEvents(oldCatDict, oldLinkDict, newDict):
             if oldCatDict[k] is not None:
                 newDict[k][u'cat'] = oldCatDict[k]
             if oldLinkDict[k] is not None:
-                link = oldLinkDict[k][1:].replace(' ', '_')
-                if link != newDict[k][u'link']:
+                oldlink = oldLinkDict[k]
+                newlink = newDict[k][u'link'].replace('_', ' ').strip(u'[]')
+                if oldlink != newlink:
                     # check if the same, otherwise use old
-                    if len(newDict[k][u'link']) != 0:
-                        print u'Eregnis: replaced %s by %s' % (newDict[k][u'link'], link)
-                    newDict[k][u'link'] = link
+                    if len(newlink) != 0:
+                        print u'Eregnis: replaced %s by %s' % (newlink, oldlink)
+                    newlink = oldlink
+                newDict[k][u'link'] = newlink  # reformated and possibly replaced
             del oldCatDict[k]  # no need to delete oldLinkDict if we iterate over cat
 
     # add any previous mapping

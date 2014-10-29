@@ -126,7 +126,7 @@ def run(in_path=IN_PATH, out_path=OUT_PATH):
     writeKeywords(u'%s/Keywords.txt' % out_path, keywords)  # Keywords
     writeEvents(u'%s/Events.txt' % out_path, events)  # Events
     writePeople(u'%s/People.txt' % out_path, people)  # People
-    writePhotographers(u'%s/Photographers.txt' % out_path, people)  # Photographers
+    writePhotographers(u'%s/Photographers.txt' % out_path, photographers)  # Photographers
 
 
 def makePlaceAndMaterial(A, oDict):
@@ -279,13 +279,13 @@ def combinePhotographers(oldDict, newDict):
     comboDict = {}
     # add made mappings to new frequencies
     for k, v in newDict.iteritems():
-        comboDict[k] = {u'freq': v, u'creator': u'', u'category': u''}
+        comboDict[k] = {u'freq': v, u'creator': u'', u'cat': u''}
         if k in oldDict.keys():
             creator, category = oldDict[k]
             if creator is not None:
                 comboDict[k][u'creator'] = creator
             if category is not None:
-                comboDict[k][u'category'] = category
+                comboDict[k][u'cat'] = category
             del oldDict[k]
     # add any previous mapping
     for k, v in oldDict.iteritems():
@@ -295,7 +295,7 @@ def combinePhotographers(oldDict, newDict):
                 creator = u''
             if category is None:
                 category = u''
-            newDict[k] = {u'freq': 0, u'creator': creator, u'category': category}
+            newDict[k] = {u'freq': 0, u'creator': creator, u'cat': category}
     return comboDict
 
 
@@ -312,7 +312,8 @@ def writePhotographers(filename, dDict):
         + u'|category  = %s\n' \
         + u'}}\n'
     footer = u'|}\n'
-    intro = u'<!--From: %s -->\n\n' % CSV_FILES[u'photo']
+    intro = u'<!--From: %s -->\n\n' % CSV_FILES[u'photo'] \
+          + u'===Photographers===\n'
     # output
     once = True
     f = codecs.open(filename, 'w', 'utf8')

@@ -6,6 +6,7 @@
 # integrate mechanism for updating commons connections
 # mechanism for getting pho_mull from orig filename(+path?)
 # makePhotographers should use connection file
+# data files should not be hardcoded
 #
 import codecs
 from common import Common
@@ -111,17 +112,17 @@ class MakeInfo:
         self.kuenstlerD = Common.file_to_dict(u'data/deriv-kuenstler_trim.csv', verbose=verbose, careful=careful)
         self.wikinameD  = Common.file_to_dict(u'data/deriv-filenames.csv', idcol=[0,1], verbose=verbose, careful=careful)
     #
-    def readConnections(self, verbose=False, keepskip=False):
+    def readConnections(self, verbose=False, keepskip=False, folder=u'connections'):
         '''reads the commons connections files into dictionaries'''
-        self.stichC = Common.makeConnections(u'connections/commons-Keywords.csv', start=u'[[:Category:', end=u']]', multi=True, verbose=verbose, keepskip=keepskip)
-        self.placesC = Common.makeConnections(u'connections/commons-Places.csv', addpipe=True, verbose=verbose, keepskip=keepskip)
-        self.ereignisC = Common.makeConnections(u'connections/commons-Events.csv', start=u'[[:Category:', end=u']]', multi=True, verbose=verbose, keepskip=keepskip)
-        self.ereignisLinkC = Common.makeConnections(u'connections/commons-Events.csv', useCol=2, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
-        self.peopleLinkC = Common.makeConnections(u'connections/commons-People.csv', useCol=3, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
-        self.peopleCreatC = Common.makeConnections(u'connections/commons-People.csv', useCol=4, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
-        self.peopleCatC = Common.makeConnections(u'connections/commons-People.csv', start=u'[[:Category:', end=u']]', verbose=verbose, keepskip=keepskip)
-        self.materialC = Common.makeConnections(u'connections/commons-Materials.csv', multi=True, verbose=verbose, keepskip=keepskip)
-        self.objCatC = Common.makeConnections(u'connections/commons-ObjKeywords.csv', start=u'[[:Category:', end=u']]', multi=True, verbose=verbose, keepskip=keepskip)
+        self.stichC = Common.makeConnections(u'%s/commons-Keywords.csv' % folder, start=u'[[:Category:', end=u']]', multi=True, verbose=verbose, keepskip=keepskip)
+        self.placesC = Common.makeConnections(u'%s/commons-Places.csv' % folder, addpipe=True, verbose=verbose, keepskip=keepskip)
+        self.ereignisC = Common.makeConnections(u'%s/commons-Events.csv' % folder, start=u'[[:Category:', end=u']]', multi=True, verbose=verbose, keepskip=keepskip)
+        self.ereignisLinkC = Common.makeConnections(u'%s/commons-Events.csv' % folder, useCol=2, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
+        self.peopleLinkC = Common.makeConnections(u'%s/commons-People.csv' % folder, useCol=3, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
+        self.peopleCreatC = Common.makeConnections(u'%s/commons-People.csv' % folder, useCol=4, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
+        self.peopleCatC = Common.makeConnections(u'%s/commons-People.csv' % folder, start=u'[[:Category:', end=u']]', verbose=verbose, keepskip=keepskip)
+        self.materialC = Common.makeConnections(u'%s/commons-Materials.csv' % folder, multi=True, verbose=verbose, keepskip=keepskip)
+        self.objCatC = Common.makeConnections(u'%s/commons-ObjKeywords.csv' % folder, start=u'[[:Category:', end=u']]', multi=True, verbose=verbose, keepskip=keepskip)
         MakeInfo.makeRoles(self)
         MakeInfo.makeDimensions(self)
         MakeInfo.makeAbbrevLicense(self)

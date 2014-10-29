@@ -80,7 +80,7 @@ class MakeInfo:
                 print count
             self.skiplist.append(pho_mull)
         f.close()
-    
+
     def catTestBatch(self, pho_mull_list, log=None):
         self.readInLibraries()
         self.readConnections()
@@ -99,7 +99,7 @@ class MakeInfo:
                 print count
             self.skiplist.append(pho_mull)
     # End of test suite
-    
+
     def readInLibraries(self, verbose=False, careful=False):
         '''reads the given files into dictionaries'''
         self.photoD     = Common.file_to_dict(u'data/deriv-photo_multimedia_ObjIds_stichID_samesame_real_noDupes.csv', idcol=[0,1], verbose=verbose, careful=careful)
@@ -131,17 +131,22 @@ class MakeInfo:
     #
     def infoFromPhoto(self, pho_mull, preview=True, testing=False):
         phoInfo = self.photoD[pho_mull]
-        
+
         # skip any which don't have a filename
-        if not pho_mull in self.wikinameD.keys():
+        if pho_mull not in self.wikinameD.keys():
             self.flog.write('No filename: %s\n' %pho_mull)
             return ('No filename: %s\n' %pho_mull, None)
-        
+
         # maintanance categories
         cat_meta = []
+
+        # temporary check 
+        if self.wikinameD[pho_mull][u'ext'] == u'':
+            print u'Found a file without an extention!: %s' % pho_mull
         
         # collect info from Photo.csv
-        wikiname = self.wikinameD[pho_mull][u'filename']
+        wikiname = u'%s.%s' %(self.wikinameD[pho_mull][u'filename'],
+                              self.wikinameD[pho_mull][u'ext'])
         origFile = self.wikinameD[pho_mull][u'MulDateiS']
         photo_license = self.lic[phoInfo[u'PhoAufnahmeortS']]
         photo_id = phoInfo[u'PhoId']
@@ -158,7 +163,7 @@ class MakeInfo:
         # if len(same_photo) > 0: same_photo = same_photo.split(';')
         same_object = phoInfo[u'same_object']
         if len(same_object) > 0: same_object = same_object.split(';')
-        
+
         # category-stichwort
         orig_stich=[]
         cat_stich=[]
@@ -176,32 +181,32 @@ class MakeInfo:
             orig_stich = u''
         else:
             orig_stich = ', '.join(orig_stich)
-        
+
         # objId(s)
         objData= {u'invNr':None,
-            u'title':None,
-            u'description':None,
-            u'date':None,
-            u'artist':None,
-            u'manufacturer':None,
-            u'owner':None,
-            u'depicted':None,
-            u'death_year':None,
-            u'exhibits':None,
-            u'orig_event':None,
-            u'place':None,
-            u'title_orig':None,
-            u'title_en':None,
-            u'material_tech':None,
-            u'signature':None,
-            u'dimensions':None,
-            u'related':None,
-            u'cat_meta':None,
-            u'cat_event':None,
-            u'cat_artist':None,
-            u'cat_depicted':None,
-            u'cat_obj':None,
-            u'multiple':False}
+                  u'title':None,
+                  u'description':None,
+                  u'date':None,
+                  u'artist':None,
+                  u'manufacturer':None,
+                  u'owner':None,
+                  u'depicted':None,
+                  u'death_year':None,
+                  u'exhibits':None,
+                  u'orig_event':None,
+                  u'place':None,
+                  u'title_orig':None,
+                  u'title_en':None,
+                  u'material_tech':None,
+                  u'signature':None,
+                  u'dimensions':None,
+                  u'related':None,
+                  u'cat_meta':None,
+                  u'cat_event':None,
+                  u'cat_artist':None,
+                  u'cat_depicted':None,
+                  u'cat_obj':None,
+                  u'multiple':False}
         # Deal with info from objIds
         if len(objIds) == 0:  # do nothing
             cat_meta.append(u'no objects')
@@ -229,14 +234,14 @@ class MakeInfo:
                 if v[u'depicted']:  # note that this is different
                     for d in v[u'depicted']: objData[u'depicted'].append(u'%s: %s' %(v[u'invNr'], d))
                 if v[u'cat_depicted']: objData[u'cat_depicted'] = objData[u'cat_depicted'] + v[u'cat_depicted']
-        
+
         # see also
         see_also = u''
         printedPics=[]
         if len(same_object) > 0:
             killist = []  # there is a chance that one of these is one of the filenameless files
             for so in same_object:  # there is a chance that this is one of the filenameless files
-                if not so in self.wikinameD.keys():
+                if so not in self.wikinameD.keys():
                     killist.append(so)
             for so in killist:
                 same_object.remove(so)
@@ -244,12 +249,12 @@ class MakeInfo:
         if objData[u'related']:
             killist = []
             for ro in objData[u'related']:
-                if not ro in self.wikinameD.keys():
+                if ro not in self.wikinameD.keys():
                     killist.append(ro)
             for ro in killist:
                 objData[u'related'].remove(ro)
             see_also, printedPics = MakeInfo.makeGallery(u'Related objects', objData[u'related'], self.wikinameD, has_captions=True, printed=printedPics, addTo=see_also)
-            
+
         # Categories need deduplidication
         categories = u''
         printedCats=[]
@@ -269,49 +274,49 @@ class MakeInfo:
         if len(cat_meta)>0:
             cat_meta = list(set(cat_meta))
             categories, printedCats = MakeInfo.makeCategory(u'Maintanance categories', cat_meta, pre=u'Media contributed by LSH: ', printed=printedCats, addTo=categories)
-        
+
         if testing:
             catData = u'%r/%r|%s' % (len(printedCats)-len(cat_meta), len(cat_meta), ';'.join(printedCats))
             return (None, catData)
-        
-        text = MakeInfo.makeTemplate(wikiname, 
-                                    origFile, 
-                                    photo_license, 
-                                    photo_id, 
-                                    source, 
-                                    orig_descr, 
-                                    orig_stich, 
-                                    photographer, 
-                                    objIds, 
-                                    see_also, 
-                                    categories, 
-                                    objData[u'invNr'],
-                                    objData[u'title'],
-                                    objData[u'description'],
-                                    objData[u'date'],
-                                    objData[u'artist'],
-                                    objData[u'manufacturer'],
-                                    objData[u'owner'],
-                                    objData[u'depicted'],
-                                    objData[u'death_year'],
-                                    objData[u'exhibits'],
-                                    objData[u'orig_event'],
-                                    objData[u'place'],
-                                    objData[u'title_orig'],
-                                    objData[u'title_en'],
-                                    objData[u'material_tech'],
-                                    objData[u'signature'],
-                                    objData[u'dimensions'],
-                                    objData[u'multiple'],
-                                    preview=preview)
+
+        text = MakeInfo.makeTemplate(wikiname,
+                                     origFile,
+                                     photo_license,
+                                     photo_id,
+                                     source,
+                                     orig_descr,
+                                     orig_stich,
+                                     photographer,
+                                     objIds,
+                                     see_also,
+                                     categories,
+                                     objData[u'invNr'],
+                                     objData[u'title'],
+                                     objData[u'description'],
+                                     objData[u'date'],
+                                     objData[u'artist'],
+                                     objData[u'manufacturer'],
+                                     objData[u'owner'],
+                                     objData[u'depicted'],
+                                     objData[u'death_year'],
+                                     objData[u'exhibits'],
+                                     objData[u'orig_event'],
+                                     objData[u'place'],
+                                     objData[u'title_orig'],
+                                     objData[u'title_en'],
+                                     objData[u'material_tech'],
+                                     objData[u'signature'],
+                                     objData[u'dimensions'],
+                                     objData[u'multiple'],
+                                     preview=preview)
         return (wikiname, text)
-        
+
     #
     def infoFromObject(self, objId, data):
         '''returns a dictionary of information based on an objId'''
         objInfo = self.objD[objId]
         cat_meta = []
-        
+
         # collect info from ObjDaten.csv
         source         = self.source[objInfo[u'AufAufgabeS']]
         nyckelord      = objInfo[u'ObjTitelOriginalS']  # titel/nyckelord
@@ -334,25 +339,25 @@ class MakeInfo:
         if len(mulId) > 0: mulId = mulId.split(';')
         dimensions = objInfo[u'massId']
         if len(dimensions) > 0: dimensions = dimensions.split(';')
-        
+
         # InvNr. Note that Skokloster boksamling uses kort
         # Specifically Skokloster boksamling uses Signumno. instead of inv. no.
         if len(invNr) == 0: invNr = kort
         data[u'invNr'] = u'%s %s' %(source, invNr)
-        
+
         # Title
         if source == u'LRK': data[u'title'] = kort
         else: data[u'title'] = nyckelord
-        
+
         # description
         if len(description) >0: data[u'description'] = description
-        
+
         # datering
         stdDate = Common.stdDate(date)
         if stdDate is None: cat_meta.append(u'malformated year')
         else: date = stdDate
         data[u'date'] = date
-        
+
         # exhibits
         if len(exhibits)>0:
             data[u'exhibits'] = []
@@ -369,8 +374,8 @@ class MakeInfo:
                 else:  out = u'%s: %s' %(exName, exPlace)
                 exhibitD['%s%r' %(exYear,counter)] = out.strip(u': ')
             for key in sorted(exhibitD.iterkeys()):
-                data[u'exhibits'].append(exhibitD[key])     
-        
+                data[u'exhibits'].append(exhibitD[key])
+
         # events
         if len(events)>0:
             orig_event=[]
@@ -387,16 +392,16 @@ class MakeInfo:
                 else: orig_event.append(eventKey)
             if len(cat_event) != 0: data[u'cat_event'] = cat_event
             if len(orig_event) != 0: data[u'orig_event'] = orig_event
-        
+
         # ObjMul
         if len(mulId)>0: MakeInfo.multiCruncher(self, mulId, data, cat_meta)
-        
+
         # ObjMass
         if len(dimensions)>0:
             dims = []
             for d in dimensions:
                 dType = self.massD[d][u'ObmTypMasseS']
-                if not dType in self.massC.keys(): continue  # filter on translatable values
+                if dType not in self.massC.keys(): continue  # filter on translatable values
                 dType = self.massC[dType]
                 dValue = self.massD[d][u'ObmMasseS']
                 dims.append((dType, dValue))
@@ -404,7 +409,7 @@ class MakeInfo:
             dims = MakeInfo.dimensionCruncher(self, dims, cat_meta)  # takes a list of tuples and returns a list of strings
             if len(dims) >0:
                 data[u'dimensions'] = dims
-        
+
         # objcategories from group and classification
         cat_obj=[]
         # group if source == HWY
@@ -417,7 +422,7 @@ class MakeInfo:
         # classifiction for the others
         # note failiure for ord2 keywords containing a comma
         if len(classification)>0:
-            if not u'(' in classification:
+            if u'(' not in classification:
                 if classification in self.objCatC.keys() and self.objCatC[classification]:
                     for sc in self.objCatC[classification]:
                         cat_obj.append(sc)
@@ -441,13 +446,13 @@ class MakeInfo:
                                     cat_obj.append(sc)
                             elif ord2 in self.objCatC.keys(): cat_meta.append(u'unmatched objKeyword')
         if len(cat_obj) >0: data[u'cat_obj'] = cat_obj
-        
+
         # related
         if len(related)>0:
             relList=[]
             relDict = {}
             for r in related:
-                if not r in self.objD.keys(): continue  # skip items without uploaded images
+                if r not in self.objD.keys(): continue  # skip items without uploaded images
                 rInvNr  = self.objD[r][u'ObjInventarNrS']
                 rSource = self.source[self.objD[r][u'AufAufgabeS']]
                 if len(rInvNr) == 0: rInvNr = self.objD[r][u'ObjTitelWeitereM']
@@ -458,13 +463,13 @@ class MakeInfo:
                 for r_pho_mull, rPhoto in self.photoD.iteritems():
                     rObjId = rPhoto[u'PhoObjId']
                     if rObjId in relDict.keys():
-                        if not r_pho_mull in self.wikinameD.keys(): continue
+                        if r_pho_mull not in self.wikinameD.keys(): continue
                         relDict[rObjId] = [r_pho_mull, relDict[rObjId][1]]
                 for r, v in relDict.iteritems():
                     if len(v[0]) == 0: continue
                     relList.append(v)
                 if len(relList)>0: data[u'related'] = relList
-        
+
         # roles
         artistRoles = [u'Konstnär', u'Upphovsman', u'Författare', u'Kompositör']
         manufacturerRoles =[u'Tillverkare', u'Gravör']
@@ -490,7 +495,7 @@ class MakeInfo:
                 if role in depictedRoles:
                     if kueId in self.peopleCatC.keys() and self.peopleCatC[kueId]:
                         cat_depicted.append(self.peopleCatC[kueId])
-                if role in artistRoles:     
+                if role in artistRoles:
                     death_year = self.kuenstlerD[kueId][u'KudJahrBisL']
                     if len(death_year) > 0:
                         if data[u'death_year']: death_year = max(data[u'death_year'],int(death_year))
@@ -560,6 +565,7 @@ class MakeInfo:
                 data[u'place'].append(u'%s / %s' %(tOrt, tLand))
         elif len(tOrt)>0: data[u'place'] = tOrt
         elif len(tLand)>0: data[u'place'] = tLand
+
     def dimensionCruncher(self, dims, cat_meta, debug=''):
         '''takes a list of tuples and returns a list of strings'''
         # check if all are simply formatted
@@ -607,13 +613,13 @@ class MakeInfo:
             for d in nice_dims:
                 role, prefix, num, unit, ca = d
                 if role == u'weight':
-                    if not unit in wUnits:
+                    if unit not in wUnits:
                         cat_meta.append(u'dim-with weird units|%s%s in %s' %(debug, role, unit))
                     if len(prefix)>0: prefix = u' (%s)' %prefix
                     if len(ca)>0: ca = u'{{circa}} '
                     returns.append(u'%s{{weight|%s|%s}}%s' %(ca, unit, num, prefix))
                 else:
-                    if not unit in lUnits:
+                    if unit not in lUnits:
                         cat_meta.append(u'dim-with weird units|%s%s in %s' %(debug, role, unit))
                     unit_size = unit
                     prefix_size = prefix
@@ -631,11 +637,11 @@ class MakeInfo:
                 if len(prefix)>0: prefix = u' (%s)' %prefix
                 if len(ca)>0: ca = u'{{circa}} '
                 if role == u'weight':
-                    if not unit in wUnits:
+                    if unit not in wUnits:
                         cat_meta.append(u'dim-with weird units|%s%s in %s' %(debug, role, unit))
                     returns.append(u'%s{{weight|%s|%s}}%s' %(ca, unit, num, prefix))
                 else:
-                    if not unit in lUnits:
+                    if unit not in lUnits:
                         cat_meta.append(u'dim-with weird units|%s%s in %s' %(debug, role, unit))
                     returns.append(u'%s{{size|unit=%s|%s=%s}}%s' %(ca, unit, role, num, prefix))
         else:  # ill formated
@@ -647,7 +653,7 @@ class MakeInfo:
     def makeAbbrevLicense(self):
         self.lic = {
             u'CC BY-SA':u'CC-BY-SA',
-            u'CC0':u'CC0', 
+            u'CC0':u'CC0',
             u'Public Domain':u'PD'
                     }
     def makeAbbrevSource(self):
@@ -677,8 +683,8 @@ class MakeInfo:
             u'Vikt':u'weight',
             u'Vidd':u'width'
                         }
-            # bredd should be breath but doesn't seem to exist
-            # kanske = [u'kaliber', u'antal', u'Omkrets]
+        # bredd should be breath but doesn't seem to exist
+        # kanske = [u'kaliber', u'antal', u'Omkrets]
     def makePhotographers(self):
         # TODO: read from connections
         self.photographers = {
@@ -719,9 +725,9 @@ class MakeInfo:
         out = u'%s%s%s' %(name.strip(), bracket, place.strip())
         return out.strip()
     @staticmethod
-    def makeTemplate(wikiname, origFile, photo_license, photo_id, source, orig_descr, 
+    def makeTemplate(wikiname, origFile, photo_license, photo_id, source, orig_descr,
                     orig_stich, photographer, objIds, see_also, categories, invNr, title, description, date, artist, manufacturer,
-                    owner, depicted, death_year, exhibits, orig_event, place, title_orig, title_en, material_tech, signature, dimensions, 
+                    owner, depicted, death_year, exhibits, orig_event, place, title_orig, title_en, material_tech, signature, dimensions,
                     multiple, preview=False):
         # event (orig_event)
         # text = u'%s\n' % wikiname
@@ -850,7 +856,7 @@ class MakeInfo:
         # output
         text = addTo + u'\n<gallery caption="%s">\n' % caption
         for s in lList:
-            if has_captions: text = text + u'File:%s|%s\n' % (dDict[s[0]][col],s[1])
+            if has_captions: text = text + u'File:%s|%s\n' % (dDict[s[0]][col], s[1])
             else: text = text + u'File:%s\n' % dDict[s][col]
         text = text + u'</gallery>'
         return text, printed
@@ -860,7 +866,7 @@ class MakeInfo:
         for p in printed:
             if p in lList: lList.remove(p)
         printed = printed+lList
-        if len(lList)==0: return addTo, printed
+        if len(lList) == 0: return addTo, printed
         # output
         text = addTo + u'\n<!--%s-->\n' %caption
         for c in lList:

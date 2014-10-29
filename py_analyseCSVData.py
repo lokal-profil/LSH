@@ -30,17 +30,20 @@ import os
 from common import Common
 
 CSV_DIR_CLEAN = u'clean_csv'
-CSV_DIR_ANALYS = u'analys'
+LOG_FILE = u'¤csv_analys.log'
 
 
-def run(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_ANALYS):
+def run(in_path=CSV_DIR_CLEAN, log_file=LOG_FILE):
     # stop if in_path doesn't exist
     if not os.path.isdir(in_path):
         print u'%s is not a valid path' % in_path
         exit(0)
     # create out_path if it doesn't exist
-    if not os.path.isdir(out_path):
-        os.mkdir(out_path)
+    if type(log_file) == str:
+        log_file = unicode(log_file)
+    
+    # create log file
+    f = codecs.open(log_file, 'w', 'utf-8')
 
     # Load known variables
     A = MakeInfo()
@@ -48,19 +51,14 @@ def run(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_ANALYS):
     A.makeAbbrevSource()
 
     # start analysis
-    analyseYear(file_in=u'%s/%s.csv' % (in_path, 'ausstellung'),
-                file_out=u'%s/analys-%s.txt' % (out_path, 'ausstellung')
-                )
-    analysePhoto(A,
-                 file_in=u'%s/%s.csv' % (in_path, 'photo'),
-                 file_out=u'%s/analys-%s.txt' % (out_path, 'photo')
-                 )
-    analyseMulti(file_in=u'%s/%s.csv' % (in_path, 'multimedia'),
-                 file_out=u'%s/analys-%s.txt' % (out_path, 'multimedia')
-                 )
+    analysePhoto(A, f, file_in=u'%s/%s.csv' % (in_path, 'photo'))
+    analyseMulti(f, file_in=u'%s/%s.csv' % (in_path, 'multimedia'))
+    analyseYear(f, file_in=u'%s/%s.csv' % (in_path, 'ausstellung'))
+    
+    print u'Created %s' % log_file
 
 
-def analyseYear(file_in=u'Ausstellung_1.1.csv', file_out=u'analys-Ausstellung.txt'):
+def analyseYear(f, file_in=u'Ausstellung_1.1.csv'):
     '''
     Exhibitanalyser:
     verifies that the year can be interpreted
@@ -118,8 +116,7 @@ def analyseYear(file_in=u'Ausstellung_1.1.csv', file_out=u'analys-Ausstellung.tx
                 elif lytil != 0 and int(year[-4:]) != int(ytil[:4]):
                     data.append(u'error y3|%s' % lout)
     # loop done
-    f = codecs.open(file_out, 'w', 'utf-8')
-    f.write(u'<!--From: %s -->\n' % file_in)
+    f.write(u'\n\n<!--From: %s -->\n' % file_in)
     f.write(u'===year problems===\n')
     f.write(u'y1:\t Could not match JahrS to any YYYY or YYYY-YYYY or YYYY-YY\n')
     f.write(u'y2:\t JahrS is not the same as starting year in Von-Bis range')
@@ -133,11 +130,10 @@ def analyseYear(file_in=u'Ausstellung_1.1.csv', file_out=u'analys-Ausstellung.tx
         for s in splits:
             txt = u'%s\t%s' % (txt, s)
         f.write(u'%s\n' % txt[7:])
-    f.close()
 # done
 
 
-def analysePhoto(A, file_in=u'photo_1.2.csv', file_out=u'analys-photo.txt'):
+def analysePhoto(A, f, file_in=u'photo_1.2.csv'):
     '''
     Verifies that all licenses and sources can be parsed correctly and
     that there are no duplicates
@@ -158,7 +154,6 @@ def analysePhoto(A, file_in=u'photo_1.2.csv', file_out=u'analys-photo.txt'):
     # AdrVorNameS
     # AdrNameS
     # PhoSystematikS
-    f = codecs.open(file_out, 'w', 'utf-8')
     f.write(u'<!--From: %s -->\n' % file_in)
     first = True
     for l in lines:
@@ -203,11 +198,10 @@ def analysePhoto(A, file_in=u'photo_1.2.csv', file_out=u'analys-photo.txt'):
         f.write(u'---Duplicate phoIds with different info---\n')
         for k, v in dupePhoid.iteritems():
             f.write(u'%s: %s <> %s\n' % (v[0], k, v[1]))
-    f.close()
 # done
 
 
-def analyseMulti(file_in=u'multimedia_1.2.csv', file_out=u'analys-multimedia.txt'):
+def analyseMulti(f, file_in=u'multimedia_1.2.csv'):
     '''
     Identifies dupes
     identifies images with filetype in the filename
@@ -227,8 +221,7 @@ def analyseMulti(file_in=u'multimedia_1.2.csv', file_out=u'analys-multimedia.txt
     # MulPfadS
     # MulDateiS
     # MulExtentS
-    f = codecs.open(file_out, 'w', 'utf-8')
-    f.write(u'<!--From: %s -->\n' % file_in)
+    f.write(u'\n\n<!--From: %s -->\n' % file_in)
     first = True
     for l in lines:
         if first:
@@ -241,7 +234,7 @@ def analyseMulti(file_in=u'multimedia_1.2.csv', file_out=u'analys-multimedia.txt
         if fullname in ndict.keys():
             if idd != ndict[fullname]:
                 ndiffCount = ndiffCount+1
-                print idd, ndict[fullname]
+                # print idd, ndict[fullname]
         else:
             ndict[fullname] = idd
         # testing mullId/phoId duplication
@@ -281,24 +274,21 @@ def analyseMulti(file_in=u'multimedia_1.2.csv', file_out=u'analys-multimedia.txt
         f.write(u'===BadNames===\n')
         for b in bad:
             f.write(u'%s\n' % b)
-    f.close()
-    print sameCount, diffCount, ccount, ndiffCount
-    print len(lines), len(ids)
 # done
 
 
 if __name__ == '__main__':
     import sys
     usage = u'Usage:\tpython py_analyseCSVData.py in_path out_path\n' \
-        + u'\tin_path (optional):the relative pathname to the ' \
+        + u'\tin_path (optional): the relative pathname to the ' \
         + u'cleaned csv directory. Defaults to "%s"\n' % CSV_DIR_CLEAN \
-        + u'\tout_path (optional):the relative pathname to the target ' \
-        + u'directory. Defaults to "%s"' % CSV_DIR_ANALYS
+        + u'\tlog_file (optional): the log to which the analysis is ' \
+        + u'written. Defaults to "%s"' % LOG_FILE
     argv = sys.argv[1:]
     if len(argv) == 0:
         run()
     elif len(argv) == 2:
-        run(in_path=argv[0], out_path=argv[1])
+        run(in_path=argv[0], log_file=argv[1])
     else:
         print usage
 # EoF

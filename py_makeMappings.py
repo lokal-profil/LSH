@@ -778,9 +778,9 @@ def sortedBy(dDict, sortkey=u'freq'):
 if __name__ == '__main__':
     import sys
     usage = u'Usage:\tpython py_makeMappings.py in_path out_path\n' \
-        + u'\tin_path (optional):the relative pathname to relevant \n' \
-        + u'connections directory. Defaults to "%s"' % IN_PATH \
-        + u'\tout_path (optional):the relative pathname to the target \n' \
+        + u'\tin_path (optional):the relative pathname to relevant ' \
+        + u'connections directory. Defaults to "%s"\n' % IN_PATH \
+        + u'\tout_path (optional):the relative pathname to the target ' \
         + u'directory. Defaults to "%s"' % OUT_PATH
     argv = sys.argv[1:]
     if len(argv) == 0:

@@ -41,7 +41,7 @@ def run(in_path=CSV_DIR_CLEAN, log_file=LOG_FILE):
     # create out_path if it doesn't exist
     if type(log_file) == str:
         log_file = unicode(log_file)
-    
+
     # create log file
     f = codecs.open(log_file, 'w', 'utf-8')
 
@@ -54,7 +54,7 @@ def run(in_path=CSV_DIR_CLEAN, log_file=LOG_FILE):
     analysePhoto(A, f, file_in=u'%s/%s.csv' % (in_path, 'photo'))
     analyseMulti(f, file_in=u'%s/%s.csv' % (in_path, 'multimedia'))
     analyseYear(f, file_in=u'%s/%s.csv' % (in_path, 'ausstellung'))
-    
+
     print u'Created %s' % log_file
 
 
@@ -105,22 +105,22 @@ def analyseYear(f, file_in=u'Ausstellung_1.1.csv'):
             elif lyear == 7 and (year[4:5] != '-' and year[4:5] != ' '):
                 # if not YYYY-YY or YYYY YY
                 data.append(u'error y1|%s' % lout)  # y6
-            elif (lyear == 4) and (lyfrom != 0):
-                if int(year) != int(yfrom[:4]):
-                    data.append(u'error y2|%s' % lout)
-                # elif lytil != 0 and int(ytil[:4]) != int(year):
-                #    data.append(u'error y7|%s' % lout)
             elif (lyear == 9) and (lyfrom != 0 or lytil != 0):
                 if lyfrom != 0 and int(year[:4]) != int(yfrom[:4]):
                     data.append(u'error y3|%s' % lout)
                 elif lytil != 0 and int(year[-4:]) != int(ytil[:4]):
                     data.append(u'error y3|%s' % lout)
+            # elif (lyear == 4) and (lyfrom != 0):
+            #    if int(year) != int(yfrom[:4]):
+            #        data.append(u'error y2|%s' % lout)
+                # elif lytil != 0 and int(ytil[:4]) != int(year):
+                #    data.append(u'error y7|%s' % lout)
     # loop done
     f.write(u'\n\n<!--From: %s -->\n' % file_in)
     f.write(u'===year problems===\n')
     f.write(u'y1:\t Could not match JahrS to any YYYY or YYYY-YYYY or YYYY-YY\n')
-    f.write(u'y2:\t JahrS is not the same as starting year in Von-Bis range')
-    f.write(u'- please amend JahrS\n')
+    # f.write(u'y2:\t JahrS is not the same as starting year in Von-Bis range')
+    # f.write(u'- unless amended Von will be used\n')
     f.write(u'y3:\t JahrS is span which doesn\'t match in Von-Bis range')
     f.write(u'- please amend as appropriate\n')
     f.write(u'#error\tAusId\tAusJahrS\tAusDatumVonD\tAusDatumBisD\n')
@@ -193,7 +193,7 @@ def analysePhoto(A, f, file_in=u'photo_1.2.csv'):
         if l not in A.lic.keys():
             f.write(u'Found an incompatible license: %s\n' % l)
     if nodupes:
-        f.write(u'there are NO dupes in MullId\n')
+        f.write(u'there are NO dupes in MullId =)\n')
     if len(dupePhoid) != 0:
         f.write(u'---Duplicate phoIds with different info---\n')
         for k, v in dupePhoid.iteritems():
@@ -264,16 +264,19 @@ def analyseMulti(f, file_in=u'multimedia_1.2.csv'):
         else:
             mm[m] = 2
             tot = tot+2
-    f.write(u'===duplicates===\n')
-    f.write(u'#Total: %r\n' % tot)
-    f.write(u'#MulPhoId|antal\n')
-    sortMults = Common.sortedDict(mm)
-    for s in sortMults:
-        f.write(u'%s|%r\n' % (s[0], s[1]))
+    if len(mm) > 0:
+        f.write(u'===duplicates===\n')
+        f.write(u'#Total: %r\n' % tot)
+        f.write(u'#MulPhoId|antal\n')
+        sortMults = Common.sortedDict(mm)
+        for s in sortMults:
+            f.write(u'%s|%r\n' % (s[0], s[1]))
     if len(bad) > 0:
         f.write(u'===BadNames===\n')
         for b in bad:
             f.write(u'%s\n' % b)
+    if len(bad) == 0 and len(mm) == 0:
+        f.write(u'there are no problems with multimedia file =)')
 # done
 
 

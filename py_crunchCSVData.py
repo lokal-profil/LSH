@@ -19,7 +19,6 @@
 # * py-Mul-mass-trim.py
 # * py-realObjOnly.py
 #
-# TODO: Make sure dicts/txt are del after they are used to free up memory
 # TODO: Stick CSV_FILES in start of file (or somewhere equally easy)
 #
 '''what to run:
@@ -33,7 +32,7 @@ import os
 from common import Common
 
 CSV_DIR_CLEAN = u'clean_csv'
-CSV_DIR_CRUNCH = u'deriv_csv'
+CSV_DIR_CRUNCH = u'data'
 
 
 def crunchFiles(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
@@ -694,6 +693,9 @@ def stdYear(year, yfrom, ytil):
     elif lyear == 7:  # YYYY-YY
         return '%r-%r%r' % (int(year[:4]), int(year[:2]), int(year[5:]))
     elif lyear == 4:  # YYYY
+        if lyfrom != 0 and int(yfrom[:4]) != int(year):
+            # yfrom takes precedence over year
+            year = int(yfrom[:4])
         if lytil != 0 and int(ytil[:4]) != int(year):
             return '%r-%r' % (int(year), int(ytil[:4]))
         else:

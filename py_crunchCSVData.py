@@ -44,13 +44,16 @@ def crunchFiles(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
     # create target if it doesn't exist
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
+    log_path = u'%s/logs' % out_path
+    if not os.path.isdir(log_path):
+        os.mkdir(log_path)
 
     # start crunching
     # combine photo and multi
     # py-makePhoto_multi.py
     photo = codecs.open(u'%s/photo.csv' % in_path, 'r', 'utf-8').read()
     multi = codecs.open(u'%s/multimedia.csv' % in_path, 'r', 'utf-8').read()
-    photo_multi = makePhoto_multi(photo, multi, log=u'%s/photo_multimedia.log' % out_path, tmp=u'%s/tmp-photo-multi.csv' % out_path)
+    photo_multi = makePhoto_multi(photo, multi, log=u'%s/photo_multimedia.log' % log_path, tmp=u'%s/tmp-photo-multi.csv' % out_path)
     del photo, multi
 
     # combine photo and Photo-ObjDaten
@@ -58,7 +61,7 @@ def crunchFiles(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
     # py-Photo-ObjDaten
     photoObjDaten = codecs.open(u'%s/photoObjDaten.csv' % in_path, 'r', 'utf-8').read()
     objDaten = codecs.open(u'%s/objDaten.csv' % in_path, 'r', 'utf-8').read()
-    photo_multimedia_objIds = photo_ObjDaten(photo_multi, photoObjDaten, objDaten, log=u'%s/photo_objDaten.log' % out_path)
+    photo_multimedia_objIds = photo_ObjDaten(photo_multi, photoObjDaten, objDaten, log=u'%s/photo_objDaten.log' % log_path)
     del photo_multi, photoObjDaten
 
     # removes unused Objects from ObjDaten
@@ -70,7 +73,7 @@ def crunchFiles(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
     # removes unused photoIds from stichworth
     # py-Stichwort-photo.py
     stichwort = codecs.open(u'%s/stichwort.csv' % in_path, 'r', 'utf-8').read()
-    photo_multimedia_ObjIds_stichID, stichwort_trim = stichworth_photo(photo_multimedia_objIds, stichwort, log=u'%s/stichworth_photo.log' % out_path)
+    photo_multimedia_ObjIds_stichID, stichwort_trim = stichworth_photo(photo_multimedia_objIds, stichwort, log=u'%s/stichworth_photo.log' % log_path)
     del photo_multimedia_objIds, stichwort
 
     # Add two columns to photo:
@@ -86,19 +89,19 @@ def crunchFiles(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
           u"log have been corrected and the updated ausstellung file saved..."
     raw_input(u"...by pressing enter when done")
     ausstellung = codecs.open(u'%s/ausstellung.csv' % in_path, 'r', 'utf-8').read()
-    ausstellung_trim, objDaten_trim_ausstellung = ausstellung_objDaten(ausstellung, objDaten_trim, log=u'%s/ausstellung.log' % out_path)
+    ausstellung_trim, objDaten_trim_ausstellung = ausstellung_objDaten(ausstellung, objDaten_trim, log=u'%s/ausstellung.log' % log_path)
     del ausstellung, objDaten_trim
 
     # adds ObjDaten-samhörande column to ObjDaten
     # py-ObjDaten-sam.py
     objDatenSam = codecs.open(u'%s/objDatenSam.csv' % in_path, 'r', 'utf-8').read()
-    objDaten_trim_ausstellung_sam = objDaten_sam(objDatenSam, objDaten_trim_ausstellung, log=u'%s/objDatenSam.log' % out_path)
+    objDaten_trim_ausstellung_sam = objDaten_sam(objDatenSam, objDaten_trim_ausstellung, log=u'%s/objDatenSam.log' % log_path)
     del objDatenSam, objDaten_trim_ausstellung
 
     # trimms Eregnis to unique ids and adds Eregnis column to ObjDaten
     # py-Ereignis-trim.py
     ereignis = codecs.open(u'%s/ereignis.csv' % in_path, 'r', 'utf-8').read()
-    objDaten_trim_ausstellung_sam_eregnis, ereignis_trim = ereignis_objDaten(ereignis, objDaten_trim_ausstellung_sam, log=u'%s/ereignis.log' % out_path)
+    objDaten_trim_ausstellung_sam_eregnis, ereignis_trim = ereignis_objDaten(ereignis, objDaten_trim_ausstellung_sam, log=u'%s/ereignis.log' % log_path)
     del ereignis, objDaten_trim_ausstellung_sam
 
     # Trims kuenstler to remove certain irrelevant roles and dummy entries
@@ -106,7 +109,7 @@ def crunchFiles(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
     # appends kuenstler id's to objDaten
     # py-kunstler-trim.py
     kuenstler = codecs.open(u'%s/kuenstler.csv' % in_path, 'r', 'utf-8').read()
-    objDaten_trim_ausstellung_sam_eregnis_kuenstler, kuenstler_trim, kuenstler_roles = kuenstler_objDaten(objDaten_trim_ausstellung_sam_eregnis, kuenstler, log=u'%s/kuenstler.log' % out_path)
+    objDaten_trim_ausstellung_sam_eregnis_kuenstler, kuenstler_trim, kuenstler_roles = kuenstler_objDaten(objDaten_trim_ausstellung_sam_eregnis, kuenstler, log=u'%s/kuenstler.log' % log_path)
     del objDaten_trim_ausstellung_sam_eregnis, kuenstler
     del kuenstler_roles  # makeRoles in MakeInfo is hardcoded so currently no need to keep
 
@@ -116,12 +119,12 @@ def crunchFiles(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
     # py-Mul-mass-trim.py
     objMass = codecs.open(u'%s/objMass.csv' % in_path, 'r', 'utf-8').read()
     objMultiple = codecs.open(u'%s/objMultiple.csv' % in_path, 'r', 'utf-8').read()
-    objDaten_trim_ausstellung_sam_eregnis_kuenstler_mulMass, objMass_trim, objMultiple_trim = mulMass_add(objMass, objMultiple, objDaten_trim_ausstellung_sam_eregnis_kuenstler, log=u'%s/MulMass.log' % out_path)
+    objDaten_trim_ausstellung_sam_eregnis_kuenstler_mulMass, objMass_trim, objMultiple_trim = mulMass_add(objMass, objMultiple, objDaten_trim_ausstellung_sam_eregnis_kuenstler, log=u'%s/MulMass.log' % log_path)
     del objMass, objMultiple, objDaten_trim_ausstellung_sam_eregnis_kuenstler
 
     # Removes objIds from photo which are not in ObjDaten
     # py-realObjOnly.py
-    photo_multimedia_ObjIds_stichID_samesame_real = realObjOnly(objDaten_trim_ausstellung_sam_eregnis_kuenstler_mulMass, photo_multimedia_ObjIds_stichID_samesame, objDaten, log=u'%s/realObjOnly.log' % out_path)
+    photo_multimedia_ObjIds_stichID_samesame_real = realObjOnly(objDaten_trim_ausstellung_sam_eregnis_kuenstler_mulMass, photo_multimedia_ObjIds_stichID_samesame, objDaten, log=u'%s/realObjOnly.log' % log_path)
     del objDaten, photo_multimedia_ObjIds_stichID_samesame
 
     # output all the above

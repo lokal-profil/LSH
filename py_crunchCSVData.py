@@ -83,9 +83,8 @@ def crunchFiles(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
 
     # Trimms Ausstellung to unique ids and adds Ausstellung column to ObjDaten
     # py-Ausstellung-trim.py
-    print u"Confirm that any year formating issues mentioned in %s " \
-          u"have been corrected and the updated ausstellung file saved..." \
-          % 'analys-austellung.txt'
+    print u"Confirm that any year formating issues mentioned in the analysis " \
+          u"log have been corrected and the updated ausstellung file saved..."
     raw_input(u"...by pressing enter when done")
     ausstellung = codecs.open(u'%s/ausstellung.csv' % in_path, 'r', 'utf-8').read()
     ausstellung_trim, objDaten_trim_ausstellung = ausstellung_objDaten(ausstellung, objDaten_trim, log=u'%s/ausstellung.log' % out_path)
@@ -209,8 +208,9 @@ def makePhoto_multi(photo, multi, log, tmp):
     for k, rowM in mDict.iteritems():
         phId = rowM[1]
         mId = rowM[0]
-        del rowM[1]
-        del rowM[0]
+        rowM[2] = rowM[2].replace(u'R:\web\hires\\', u'')  # trim filepath
+        rowM[4] = u''  # MulExtentS is always wrong
+        del rowM[1], rowM[0]
         if phId in pDict.keys():
             rowP = list(pDict[phId])  # clone
             del rowP[5]
@@ -321,7 +321,8 @@ def photo_ObjDaten(photo_multi, photoObjDaten, objDaten, log):
     flog.close()
     print u"...done"
     return out
-#
+
+
 def makePOdict(photoObjDaten):
     '''
     called by photo_ObjDaten()
@@ -356,7 +357,8 @@ def makePOdict(photoObjDaten):
     # ftempPO.close()
     # print 'wrote to tempPO'
     return poDict
-#
+
+
 def makeOdict(objDaten):
     '''
     called by photo_ObjDaten()
@@ -677,7 +679,8 @@ def ausstellung_objDaten(austellung, objDaten_trim, log):
     flog.close()
     print u"...done"
     return outA, out
-#
+
+
 def stdYear(year, yfrom, ytil):
     '''returns a standardised year in either YYYY or YYYY-YYYY
        assumes all errors part from y1 and y7 (in py-Ausstellung) have been fixed
@@ -985,7 +988,8 @@ def kuenstler_objDaten(objDaten_trim_ausstellung_sam_eregnis, kuenstler, log):
     flog.close()
     print u"...done"
     return out, outK, outR
-#
+
+
 def extractYear(lName, bYear, dYear):
     log = ''
     if len(lName) > 8:
@@ -1236,11 +1240,11 @@ def realObjOnly(objDaten_trim_ausstellung_sam_eregnis_kuenstler_mulMass, photo_m
 
 if __name__ == '__main__':
     import sys
-    usage = '''Usage:\tpython py_crunchCSVDataDirty.py in_path out_path
-\tin_path (optional): the relative pathname to the csv directory
-\tout_path (optional):the relative pathname to the target directory
-\tEither provide both or leave them out (thus defaulting to "%s", "%s")
-''' % (CSV_DIR_CLEAN, CSV_DIR_CRUNCH)
+    usage = u'Usage:\tpython py_crunchCSVDataDirty.py in_path out_path\n' \
+        + u'\tin_path (optional): the relative pathname to the csv directory\n' \
+        + u'\tout_path (optional):the relative pathname to the target directory\n' \
+        + u'\tEither provide both or leave them out ' \
+        + u'(thus defaulting to "%s", "%s")' % (CSV_DIR_CLEAN, CSV_DIR_CRUNCH)
     argv = sys.argv[1:]
     if len(argv) == 0:
         crunchFiles()

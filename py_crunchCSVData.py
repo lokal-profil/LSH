@@ -20,6 +20,7 @@
 # * py-realObjOnly.py
 #
 # TODO: Stick CSV_FILES in start of file (or somewhere equally easy)
+# TODO: Cut down log files to only ones worht reading
 #
 '''what to run:
 crunchFiles()
@@ -119,7 +120,7 @@ def crunchFiles(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
     # py-Mul-mass-trim.py
     objMass = codecs.open(u'%s/objMass.csv' % in_path, 'r', 'utf-8').read()
     objMultiple = codecs.open(u'%s/objMultiple.csv' % in_path, 'r', 'utf-8').read()
-    objDaten_trim_ausstellung_sam_eregnis_kuenstler_mulMass, objMass_trim, objMultiple_trim = mulMass_add(objMass, objMultiple, objDaten_trim_ausstellung_sam_eregnis_kuenstler, log=u'%s/MulMass.log' % log_path)
+    objDaten_trim_ausstellung_sam_eregnis_kuenstler_mulMass, objMass_trim, objMultiple_trim = mulMass_add(objMass, objMultiple, objDaten_trim_ausstellung_sam_eregnis_kuenstler, log=u'%s/mulMass.log' % log_path)
     del objMass, objMultiple, objDaten_trim_ausstellung_sam_eregnis_kuenstler
 
     # Removes objIds from photo which are not in ObjDaten

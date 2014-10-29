@@ -52,10 +52,12 @@ def parseEntries(contents):
     row_t = u'{{User:Lokal Profil/LSH3'
     while(True):
         table, contents, lead_in = common.findUnit(contents, header_t, u'|}')
-        if not table: break
+        if not table:
+            break
         while(True):
             unit, table, dummy = common.findUnit(table, row_t, u'}}', brackets={u'{{': u'}}'})
-            if not unit: break
+            if not unit:
+                break
             params = {u'name': '',
                       u'more': '',
                       u'frequency': '',
@@ -67,7 +69,8 @@ def parseEntries(contents):
                       }
             while(True):
                 part, unit, dummy = common.findUnit(unit, u'|', u'\n', brackets={u'[[': u']]', u'{{': u'}}'})
-                if not part: break
+                if not part:
+                    break
                 if u'=' in part:
                     part = part.replace(u'<small>', '').replace(u'</small>', '')
                     part = part.strip(' \n\t')
@@ -87,17 +90,9 @@ def parseEntries(contents):
 
 
 def formatOutput(units, page):
-    intro = {u'People': u'<!--From: kuenstler_1.2.csv -->\n\'\'wikipedia-link\'\' is used for descriptive texts whereas creator is a creator template on commons and \'\'commoncat\'\' is a relevant category on commons.\n\nSet commonsconnection of irrelevant events to "-". Note that creator is only relevant for artists\n\n===kueId|frequency|name|wikipedia-link|creator|commoncat===\n',
-             u'Events': u'<!--From: Ereignis_1.1.csv -->\n\'\'wikipedia-link\'\' are used for descriptive texts whereas \'\'commonsconnection\'\' is a relevant category on commons.\n\nSet commonsconnection of irrelevant events to "-"\n\nMultiple categories are separated by ";"\n\n*död/begravning: [[:Category:Funeral of X of Sweden]]\n*kröning: [[:Category:Coronation of X of Sweden]]\n*bröllop:[[:Category:Wedding of X and Y of Sweden]]\n===Event|Frequency|wikipedia-link|Commonsconnection===\n',
-             u'Keywords': u'<!--From: Photo_stichwort_1.2.csv -->\nSet commonsconnection of irrelevant keywords to "-"\n\nMultiple categories are separated by ";"\n===Keyword|frequency|description|commonsconnection===\n',
-             u'ObjKeywords': u'These are the keywords used to describe the objects themselves. Classification is used for all items whereas group is only used at HWY.\n\nwhen possible ord1 will be used instead of the more generic ord2.\n===*Keyword|frequency|commonscategory===\n',
-             u'Materials': u'<!--From: ObjMultiple_1.2.csv -->\ncommonsconnection is the relevant parameter for {{technique}}. Don\'t forget to add a translation in Swedish at [[Template:Technique/sv]]\n\nSet commonsconnection of irrelevant technique/material to "-".\n\n===technique/material|frequency|commonsconnection===\n',
-             u'Places': u'<!--From: Ausstellung_1.1.csv - col: ausOrt-->\nSet commonsconnection of irrelevant places to "-"\n\nMultiple entries are separated by ";"\n===Place|Frequency|Commonsconnection===\n',
-             u'Photographers':  u'<!--From: photo_1.2.csv -->\n===Photographers===\n'
-             }
-    txt = intro[page]
+    txt = u''
     for u in units:
-        txt = u'%s%s\n' % (txt, rowFormat(u, page))
+        txt += u'%s\n' % rowFormat(u, page)
     return txt
 
 
@@ -173,3 +168,17 @@ def run(out_path=u'connections'):
         out.write(output)
         out.close()
         print u'Created %s/commons-%s.csv' % (out_path, v)
+
+if __name__ == '__main__':
+    import sys
+    usage = u'Usage:\tpython py_listscraper.py out_path\n' \
+        + u'\tout_path (optional):the relative pathname to the target \n' \
+        + u'directory. Defaults to "connections"'
+    argv = sys.argv[1:]
+    if len(argv) == 0:
+        run()
+    elif len(argv) == 1:
+        run(out_path=argv[0])
+    else:
+        print usage
+# EoF

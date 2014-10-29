@@ -167,13 +167,8 @@ class Common:
         '''
         dDict = {}
         header, lines = Common.openFile(filename)
-        intro = True
         c = 0
         for l in lines:
-            if intro:
-                if l.startswith(u'==='):
-                    intro = False
-                continue
             if l.startswith(u'===') or len(l) == 0:
                 continue  # allow lists to be split by subheadings, ignore empty lines
             c = c+1

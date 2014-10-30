@@ -1,8 +1,8 @@
+#!/usr/bin/python
 # -*- coding: UTF-8  -*-
 #
 # Preparing files for upload and adding file extentions to filenames
 #
-# TODO: Make imagemagic handle ")"-characters
 #
 import os
 import codecs
@@ -134,7 +134,7 @@ def makeAndRename(path):
             flog.write(u'%s did not have a photoId\n' % filename_in)
             continue
         phoMull = nameToPho[filename_in[:-4]]['phoMull']
-        filename_out = nameToPho[filename_in[:-4]]['filename'].replace(u' ', u'_')
+        filename_out = u'%s.%s' % (nameToPho[filename_in[:-4]]['filename'].replace(u' ', u'_'), nameToPho[filename_in[:-4]]['ext'])
         wName, out = maker.infoFromPhoto(phoMull, preview=False, testing=False)
         if out:
             # Make info file
@@ -143,7 +143,7 @@ def makeAndRename(path):
             f.write(out)
             f.close()
             # Move image file
-            os.rename(os.path.join(path, filename_in), os.path.join(path, u'%s%s' % (filename_out[:-4], filename_in[-4:])))
+            os.rename(os.path.join(path, filename_in), os.path.join(path, filename_out))
             flog.write(u'%s outputed to %s\n' % (filename_in, filename_out))
         else:
             flog.write(u'%s failed to make infopage. See log\n' % filename_in)
@@ -166,8 +166,8 @@ def negatives(path):
                 skipcount += 1
                 continue
             os.rename(os.path.join(path, filename), os.path.join(path, negative))
-            imageMagick = u'convert %s -negate -auto-gamma -level 10%%,90%%,1,0 %s' % (os.path.join(path, negative), os.path.join(path, filename))
-            imageMagick = u'%s 2>>%s' % (imageMagick, os.path.join(path, u'¤imageMagick-errors.log'))  # pipe errors to file
+            imageMagick = u'convert %s -negate -auto-gamma -level 10%%,90%%,1,0 %s' % (shellquote(os.path.join(path, negative)), shellquote(os.path.join(path, filename)))
+            imageMagick = u'%s 2>>%s' % (imageMagick, shellquote(os.path.join(path, u'¤imageMagick-errors.log')))  # pipe errors to file
             os.system(imageMagick.encode(encoding='UTF-8'))
             # new info files
             infoFilename = u'%s.txt' % filename[:-4]
@@ -294,6 +294,10 @@ def negativeCleanup(path):
     for i in just_info:
         f.write(u'%s\n' % i)
     f.close()
+
+
+def shellquote(s):
+    return "'" + s.replace("'", "'\\''") + "'"
 
 
 if __name__ == '__main__':

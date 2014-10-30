@@ -16,13 +16,17 @@
 # If PhoSystematikS is introduced in photo then search thorugh comments
 # to see where editing is needed
 #
+# TODO: Once MakeInfo uses Photographers from connections the source and
+#       The parameters used here will have to be updated
+#
 from py_MakeInfo import MakeInfo
-from py_prepCSVData import CSV_FILES  # so as to be able to reference these in output
+from py_prepCSVData import CSV_FILES  # these are mentioned in output
 import codecs
 import os
 
 # roller som inte tas med i People
-ROLE_BLACKLIST = [u'Säljare', u'Auktion', u'Förmedlare', u'Givare', u'Återförsäljare', u'Konservator']
+ROLE_BLACKLIST = [u'Säljare', u'Auktion', u'Förmedlare', u'Givare',
+                  u'Återförsäljare', u'Konservator']
 IN_PATH = u'old_connections'
 OUT_PATH = u'mappings'
 
@@ -74,53 +78,12 @@ def run(in_path=IN_PATH, out_path=OUT_PATH):
     emptyObjCats = simpleEmpty(A.objCatC, [ord1Dict, ord2Dict, gruppDict])
 
     # output
-    # needes to be adapted to sort by 'freq' value and deal with more complex
-    # needs to consider categories/link formats etc. Needs to consider multi valued
-    # put 'freq==0' under a new heading
-
     # create target if it doesn't exist
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
     # several dicts per file
-    # Places
-    f = codecs.open(u'%s/Places.txt' % out_path, 'w', 'utf8')
-    intro = u'<!--From: %s - col: ausOrt-->\n' % CSV_FILES[u'ausstellung'] \
-          + u'<!--From: %s for OmuTypS = Tillverkningsland -->\n' % CSV_FILES[u'objMultiple'] \
-          + u'<!--From: %s for OmuTypS = Tillverkningsort-->\n' % CSV_FILES[u'objMultiple'] \
-          + u'Set commonsconnection of irrelevant places to "-"\n\n' \
-          + u'===Place|Frequency|Commonsconnection===\n'
-    f.write(intro)
-    f.write(u'\n====exhibit places====\n')
-    simpleWrite(f, exhibitPlaces, label=u'name=Place|other=Commons connection')
-    f.write(u'\n====origin-Countries====\n')
-    simpleWrite(f, landDict, label=u'name=Place|other=Commons connection')
-    f.write(u'\n====origin-cities====\n')
-    simpleWrite(f, ortDict, label=u'name=Place|other=Commons connection')
-    f.write(u'\n====Preserved mappings====\n')
-    simpleWrite(f, emptyPlaces, label=u'name=Place|other=Commons connection')
-    f.close()
-    print u'Created %s/Places.txt' % out_path
-    # ObjKeywords
-    f = codecs.open(u'%s/ObjKeywords.txt' % out_path, 'w', 'utf8')
-    intro = u'<!--From: %s -->\n' % CSV_FILES[u'objDaten'] \
-          + u'These are the keywords used to describe the objects ' \
-          + u'themselves. Classification is used for all items whereas ' \
-          + u'group is only used at HWY.\n\n' \
-          + u'when possible ord1 will be used instead of the more ' \
-          + u'generic ord2.\n\n' \
-          + u'Multile categores are separated by a "/"\n' \
-          + u'===Keyword|frequency|commonscategory===\n'
-    f.write(intro)
-    f.write(u'\n====class: ord1====\n')
-    simpleWrite(f, ord1Dict, label=u'category=', other_tag=u'category')
-    f.write(u'\n====class: ord2====\n')
-    simpleWrite(f, ord2Dict, label=u'category=', other_tag=u'category')
-    f.write(u'\n====class: HWY-grupp====\n')
-    simpleWrite(f, gruppDict, label=u'category=', other_tag=u'category')
-    f.write(u'\n====Preserved mappings====\n')
-    simpleWrite(f, emptyObjCats, label=u'category=', other_tag=u'category')
-    f.close()
-    print u'Created %s/ObjKeywords.txt' % out_path
+    writePlaces(u'%s/Places.txt' % out_path, exhibitPlaces, landDict, ortDict, emptyPlaces)  # Places
+    writeObjKeywords(u'%s/ObjKeywords.txt' % out_path, ord1Dict, ord2Dict, gruppDict, emptyObjCats)  # ObjKeywords
     # one dict per file
     writeMaterials(u'%s/Materials.txt' % out_path, techDict)  # Materials
     writeKeywords(u'%s/Keywords.txt' % out_path, keywords)  # Keywords
@@ -182,12 +145,12 @@ def writeMaterials(filename, dDict):
         + u'}}\n'
     footer = u'|}\n'
     intro = u'<!--From: %s -->\n' % CSV_FILES[u'objMultiple'] \
-          + u'commonsconnection is the relevant parameter for ' \
-          + u'{{tl|technique}}. Don\'t forget to add a translation in ' \
-          + u'Swedish at [[Template:Technique/sv]]\n\n' \
-          + u'Set commonsconnection of irrelevant technique/material ' \
-          + u'to "-".\n\n' \
-          + u'===technique/material|frequency|commonsconnection===\n'
+        + u'commonsconnection is the relevant parameter for ' \
+        + u'{{tl|technique}}. Don\'t forget to add a translation in ' \
+        + u'Swedish at [[Template:Technique/sv]]\n\n' \
+        + u'Set commonsconnection of irrelevant technique/material ' \
+        + u'to "-".\n\n' \
+        + u'===technique/material|frequency|commonsconnection===\n'
     # output
     once = True
     f = codecs.open(filename, 'w', 'utf8')
@@ -199,7 +162,7 @@ def writeMaterials(filename, dDict):
             f.write(footer)
             f.write(u'\n===Preserved mappings===\n')
             f.write(header)
-        f.write(row % (key, val[u'freq'], val[u'connect']))
+        f.write(row % (key, val[u'freq'], '/'.join(val[u'connect'])))
     f.write(footer)
     f.close()
     print u'Created %s' % filename
@@ -221,7 +184,9 @@ def makeObjKeywords(A, oDict):
                 gruppDict[grupp] = gruppDict[grupp]+1
             else:
                 gruppDict[grupp] = 1
-        # ord1 OR ord1 (ord2, ord3) OR ord1.1 (ord2.1, ord3.1), ord1.2 (ord2.2, ord3.2)
+        # ord1 OR
+        # ord1 (ord2, ord3) OR
+        # ord1.1 (ord2.1, ord3.1), ord1.2 (ord2.2, ord3.2)
         if len(classification) > 0:
             if u'(' not in classification:
                 if classification in ord1Dict.keys():
@@ -241,7 +206,7 @@ def makeObjKeywords(A, oDict):
                         pos = d.find('(')
                         ord1 = d[:pos].strip(', ')
                         ord2s = d[pos+1:].split(',')
-                        ord2 = ord2s[len(ord2s)-1].strip()  # keep only last word
+                        ord2 = ord2s[len(ord2s)-1].strip()  # keep last word only
                         if ord1 in ord1Dict.keys():
                             ord1Dict[ord1] = ord1Dict[ord1]+1
                         else:
@@ -282,20 +247,22 @@ def combinePhotographers(oldDict, newDict):
         comboDict[k] = {u'freq': v, u'creator': u'', u'cat': u''}
         if k in oldDict.keys():
             creator, category = oldDict[k]
-            if creator is not None:
-                comboDict[k][u'creator'] = creator
+            if creator is not None and creator.startswith('[['):
+                comboDict[k][u'creator'] = creator[len(u'[[Creator:'):-3]
             if category is not None:
                 comboDict[k][u'cat'] = category
             del oldDict[k]
     # add any previous mapping
     for k, v in oldDict.iteritems():
         creator, category = oldDict[k]
-        if creator is not None or category is not None:
-            if creator is None:
+        if (creator is not None and creator.startswith('[[')) or (category is not None):
+            if creator is None or not creator.startswith('[['):
                 creator = u''
+            else:
+                creator = creator[len(u'[[Creator:'):-3]
             if category is None:
                 category = u''
-            newDict[k] = {u'freq': 0, u'creator': creator, u'cat': category}
+            comboDict[k] = {u'freq': 0, u'creator': creator, u'cat': category}
     return comboDict
 
 
@@ -304,16 +271,17 @@ def writePhotographers(filename, dDict):
     output photographers in Commons format
     '''
     # set-up
-    header = u'{{user:Lokal Profil/LSH2|name=Photographer|creator=|category=}}\n'
+    header = u'{{user:Lokal Profil/LSH2|name=Photographer|' \
+        u'creator=|category=}}\n'
     row = u'{{User:Lokal Profil/LSH3\n' \
-        + u'|name      = %s\n' \
-        + u'|frequency = %d\n' \
-        + u'|creator   = %s\n' \
-        + u'|category  = %s\n' \
-        + u'}}\n'
+        u'|name      = %s\n' \
+        u'|frequency = %d\n' \
+        u'|creator   = %s\n' \
+        u'|category  = %s\n' \
+        u'}}\n'
     footer = u'|}\n'
     intro = u'<!--From: %s -->\n\n' % CSV_FILES[u'photo'] \
-          + u'===Photographers===\n'
+        + u'===Photographers===\n'
     # output
     once = True
     f = codecs.open(filename, 'w', 'utf8')
@@ -394,16 +362,16 @@ def writeKeywords(filename, dDict):
     # set-up
     header = u'{{user:Lokal Profil/LSH2|category=}}\n'
     row = u'{{User:Lokal Profil/LSH3\n' \
-        + u'|name      = %s\n' \
-        + u'|more      = %s\n' \
-        + u'|frequency = %d\n' \
-        + u'|category  = %s\n' \
-        + u'}}\n'
+        u'|name      = %s\n' \
+        u'|more      = %s\n' \
+        u'|frequency = %d\n' \
+        u'|category  = %s\n' \
+        u'}}\n'
     footer = u'|}\n'
     intro = u'<!--From: %s -->\n' % CSV_FILES[u'stichwort'] \
-          + u'Set commonsconnection of irrelevant keywords to "-"\n\n' \
-          + u'Multiple categories are separated by "/"\n' \
-          + u'===Keyword|frequency|description|commonsconnection===\n'
+        + u'Set commonsconnection of irrelevant keywords to "-"\n\n' \
+        + u'Multiple categories are separated by "/"\n' \
+        + u'===Keyword|frequency|description|commonsconnection===\n'
     # output
     once = True
     f = codecs.open(filename, 'w', 'utf8')
@@ -415,7 +383,7 @@ def writeKeywords(filename, dDict):
             f.write(footer)
             f.write(u'\n===Preserved mappings===\n')
             f.write(header)
-        f.write(row % (key, val[u'descr'], val[u'freq'], '/'.join(val[u'cat'])))
+        f.write(row % (key, '/'.join(val[u'descr']), val[u'freq'], '/'.join(val[u'cat'])))
     f.write(footer)
     f.close()
     print u'Created %s' % filename
@@ -518,7 +486,7 @@ def combineEvents(oldCatDict, oldLinkDict, newDict):
     for k, v in oldCatDict.iteritems():
         cat = v
         link = oldLinkDict[k]
-        if cat is not None or link is not None:
+        if (cat is not None) or (link is not None):
             if cat is None:
                 cat = u''
             if link is None:
@@ -533,24 +501,25 @@ def writeEvents(filename, dDict):
     output events in Commons format
     '''
     # set-up
-    header = u'{{user:Lokal Profil/LSH2|name=Event|link=Wikipedia-link|category=}}\n'
+    header = u'{{user:Lokal Profil/LSH2|name=Event|' \
+        u'link=Wikipedia-link|category=}}\n'
     row = u'{{User:Lokal Profil/LSH3\n' \
-        + u'|name      = %s\n' \
-        + u'|frequency = %d\n' \
-        + u'|link      = %s\n' \
-        + u'|category  = %s\n' \
-        + u'}}\n'
+        u'|name      = %s\n' \
+        u'|frequency = %d\n' \
+        u'|link      = %s\n' \
+        u'|category  = %s\n' \
+        u'}}\n'
     footer = u'|}\n'
     intro = u'<!--From: %s -->' % CSV_FILES[u'ereignis'] \
-          + u'\'\'wikipedia-link\'\' are used for descriptive texts ' \
-          + u'whereas \'\'commonsconnection\'\' is a relevant category ' \
-          + u'on commons.\n\n' \
-          + u'Set commonsconnection of irrelevant events to "-"\n\n' \
-          + u'Multiple categories are separated by "/"\n\n' \
-          + u'*död/begravning: [[:Category:Funeral of X of Sweden]]\n' \
-          + u'*kröning: [[:Category:Coronation of X of Sweden]]\n' \
-          + u'*bröllop: [[:Category:Wedding of X and Y of Sweden]]\n' \
-          + u'===Event|Frequency|wikipedia-link|Commonsconnection===\n'
+        + u'\'\'wikipedia-link\'\' are used for descriptive texts ' \
+        + u'whereas \'\'commonsconnection\'\' is a relevant category ' \
+        + u'on commons.\n\n' \
+        + u'Set commonsconnection of irrelevant events to "-"\n\n' \
+        + u'Multiple categories are separated by "/"\n\n' \
+        + u'*död/begravning: [[:Category:Funeral of X of Sweden]]\n' \
+        + u'*kröning: [[:Category:Coronation of X of Sweden]]\n' \
+        + u'*bröllop: [[:Category:Wedding of X and Y of Sweden]]\n' \
+        + u'===Event|Frequency|wikipedia-link|Commonsconnection===\n'
     # output
     once = True
     f = codecs.open(filename, 'w', 'utf8')
@@ -645,7 +614,7 @@ def combinePeople(oldLink, oldCreat, oldCat, newDict):
         link = v
         cat = oldCat[k]
         creator = oldCreat[k]
-        if cat is not None or link is not None or creator is not None:
+        if (cat is not None) or (link is not None) or (creator is not None):
             if cat is None:
                 cat = u''
             if link is None:
@@ -667,23 +636,23 @@ def writePeople(filename, dDict):
     '''
     # set-up
     header = u'{{user:Lokal Profil/LSH2|name=Name <small>(kueId)</small>' \
-           + u'|link=Wikipedia-link|creator=|category=}}\n'
+        u'|link=Wikipedia-link|creator=|category=}}\n'
     row = u'{{User:Lokal Profil/LSH3\n' \
-        + u'|name      = %s\n' \
-        + u'|more      = %s\n' \
-        + u'|frequency = %d\n' \
-        + u'|link      = %s\n' \
-        + u'|creator   = %s\n' \
-        + u'|category  = %s\n' \
-        + u'}}\n'
+        u'|name      = %s\n' \
+        u'|more      = %s\n' \
+        u'|frequency = %d\n' \
+        u'|link      = %s\n' \
+        u'|creator   = %s\n' \
+        u'|category  = %s\n' \
+        u'}}\n'
     footer = u'|}\n'
     intro = u'<!--From: %s -->\n' % CSV_FILES[u'kuenstler'] \
-          + u'\'\'wikipedia-link\'\' is used for descriptive texts whereas ' \
-          + u'creator is a creator template on commons and ' \
-          + u'\'\'commoncat\'\' is a relevant category on commons.\n\n' \
-          + u'Set commonsconnection of irrelevant events to "-". ' \
-          + u'Note that creator is only relevant for artists.\n\n' \
-          + u'===kueId|frequency|name|wikipedia-link|creator|commoncat===\n'
+        + u'\'\'wikipedia-link\'\' is used for descriptive texts whereas ' \
+        + u'creator is a creator template on commons and ' \
+        + u'\'\'commoncat\'\' is a relevant category on commons.\n\n' \
+        + u'Set commonsconnection of irrelevant events to "-". ' \
+        + u'Note that creator is only relevant for artists.\n\n' \
+        + u'===kueId|frequency|name|wikipedia-link|creator|commoncat===\n'
     # output
     once = True
     f = codecs.open(filename, 'w', 'utf8')
@@ -695,7 +664,99 @@ def writePeople(filename, dDict):
             f.write(footer)
             f.write(u'\n===Preserved mappings===\n')
             f.write(header)
-        f.write(row % (key, val[u'descr'], val[u'freq'], val[u'link'], val[u'creator'], val[u'cat']))
+        f.write(row % (val[u'descr'], key, val[u'freq'], val[u'link'], val[u'creator'], val[u'cat']))
+    f.write(footer)
+    f.close()
+    print u'Created %s' % filename
+
+
+def writeObjKeywords(filename, ord1Dict, ord2Dict, gruppDict, emptyObjCats):
+    '''
+    output ObjKeywords in Commons format
+    '''
+    # set-up
+    header = u'{{user:Lokal Profil/LSH2|category=}}\n'
+    row = u'{{User:Lokal Profil/LSH3\n' \
+        u'|name      = %s\n' \
+        u'|frequency = %d\n' \
+        u'|category  = %s\n' \
+        u'}}\n'
+    footer = u'|}\n'
+    intro = u'<!--From: %s -->\n' % CSV_FILES[u'objDaten'] \
+        + u'These are the keywords used to describe the objects ' \
+        + u'themselves. Classification is used for all items whereas ' \
+        + u'group is only used at HWY.\n\n' \
+        + u'when possible ord1 will be used instead of the more ' \
+        + u'generic ord2.\n\n' \
+        + u'Multile categores are separated by a "/"\n' \
+        + u'===Keyword|frequency|commonscategory===\n'
+    # output
+    f = codecs.open(filename, 'w', 'utf8')
+    f.write(intro)
+    f.write(u'\n====class: ord1====\n')
+    f.write(header)
+    for key, val in sortedBy(ord1Dict):
+        f.write(row % (key, val[u'freq'], '/'.join(val[u'connect'])))
+    f.write(footer)
+    f.write(u'\n====class: ord2====\n')
+    f.write(header)
+    for key, val in sortedBy(ord2Dict):
+        f.write(row % (key, val[u'freq'], '/'.join(val[u'connect'])))
+    f.write(footer)
+    f.write(u'\n====class: class: HWY-grupp====\n')
+    f.write(header)
+    for key, val in sortedBy(gruppDict):
+        f.write(row % (key, val[u'freq'], '/'.join(val[u'connect'])))
+    f.write(footer)
+    f.write(u'\n====Preserved mappings====\n')
+    f.write(header)
+    for key, val in sortedBy(emptyObjCats):
+        f.write(row % (key, val[u'freq'], '/'.join(val[u'connect'])))
+    f.write(footer)
+    f.close()
+    print u'Created %s' % filename
+
+
+def writePlaces(filename, exhibitPlaces, landDict, ortDict, emptyPlaces):
+    '''
+    output Places in Commons format
+    '''
+    # set-up
+    header = u'{{user:Lokal Profil/LSH2|name=Place|' \
+        u'other=Commons connection}}\n'
+    row = u'{{User:Lokal Profil/LSH3\n' \
+        u'|name      = %s\n' \
+        u'|frequency = %d\n' \
+        u'|other     = %s\n' \
+        u'}}\n'
+    footer = u'|}\n'
+    intro = u'<!--From: %s - col: ausOrt-->\n' % CSV_FILES[u'ausstellung'] \
+        + u'<!--From: %s for OmuTypS = Tillverkningsland -->\n' % CSV_FILES[u'objMultiple'] \
+        + u'<!--From: %s for OmuTypS = Tillverkningsort-->\n' % CSV_FILES[u'objMultiple'] \
+        + u'Set commonsconnection of irrelevant places to "-"\n\n' \
+        + u'===Place|Frequency|Commonsconnection===\n'
+    # output
+    f = codecs.open(filename, 'w', 'utf8')
+    f.write(intro)
+    f.write(u'\n====exhibit places====\n')
+    f.write(header)
+    for key, val in sortedBy(exhibitPlaces):
+        f.write(row % (key, val[u'freq'], val[u'connect']))
+    f.write(footer)
+    f.write(u'\n====origin-Countries====\n')
+    f.write(header)
+    for key, val in sortedBy(landDict):
+        f.write(row % (key, val[u'freq'], val[u'connect']))
+    f.write(footer)
+    f.write(u'\n====origin-cities====\n')
+    f.write(header)
+    for key, val in sortedBy(ortDict):
+        f.write(row % (key, val[u'freq'], val[u'connect']))
+    f.write(footer)
+    f.write(u'\n====Preserved mappings====\n')
+    f.write(header)
+    for key, val in sortedBy(emptyPlaces):
+        f.write(row % (key, val[u'freq'], val[u'connect']))
     f.write(footer)
     f.close()
     print u'Created %s' % filename
@@ -707,7 +768,6 @@ def simpleCombine(oldDict, newDict, addEmpty=False):
     simple connection files (word|frequency|connection) are dicts where
     the value is either the connection or None (for either blank or -)
     Previously made mappings are retained even if no frequency
-    TODO: figure out a way of retaining "-" info (by passing extra parameter to readConnections
     param addEmpty: Adds any remaining items in oldDict to combo with freq=0
     '''
     # Working on a local copy allows us to use the
@@ -748,25 +808,6 @@ def simpleEmpty(oldDict, newDicts):
             emptyDict[k] = {u'freq': 0, u'connect': v}
 
     return emptyDict
-
-
-def simpleWrite(f, dDict, label=u'other=Commons connection', other_tag=u'other'):
-    '''
-    Outputs a simple mapping in the standard form
-    '''
-    # set-up
-    header = u'{{user:Lokal Profil/LSH2|%s}}\n' % label
-    row = u'{{User:Lokal Profil/LSH3\n' \
-        + u'|name      = %s\n' \
-        + u'|frequency = %d\n' \
-        + u'|%s     = %s\n' \
-        + u'}}/n'
-    footer = u'|}\n'
-    # output
-    f.write(header)
-    for key, val in sortedBy(dDict):
-        f.write(row % (key, val[u'freq'], other_tag, val[u'connect']))
-    f.write(footer)
 
 
 def sortedBy(dDict, sortkey=u'freq'):

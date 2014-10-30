@@ -1,15 +1,9 @@
 # -*- coding: UTF-8  -*-
 #
-# Preparing files for upload
+# Preparing files for upload and adding file extentions to filenames
 #
-# TODO: Don't hardcode path to deriv-filenames
+# TODO: Make imagemagic handle ")"-characters
 #
-'''Specifications:
-    moveHits(path=u'../diskkopia') to move all relevant files to the base folders
-    makeAndRename(path=u'../diskkopia/m_dig') etc. to make info files and rename
-    negatives(path=u'../diskkopia/m_b') etc. for the folders starting A, B, E, O
-    negativeCleanup(path=u'../diskkopia/m_b') etc. to spot any conversion problems
-'''
 import os
 import codecs
 from py_MakeInfo import MakeInfo
@@ -109,14 +103,15 @@ def moveHits(path):
     lines = f.read().split('\n')
     f.close()
     f = codecs.open(FILENAMES, 'w', 'utf8')
-    f.write(lines.pop(0))  # write header row
+    header = lines.pop(0)
+    f.write(u'%s\n' % header)
     for l in lines:
         if len(l) == 0:
             continue
         col = l.split('|')
         name = col[3]
         if name in nameToPho.keys():
-            col[5] = nameToPho[name]['ext']  #overwrite extention
+            col[5] = nameToPho[name]['ext']  # overwrite extention
         f.write(u'%s\n' % '|'.join(col))
     f.close()
 
@@ -126,7 +121,7 @@ def makeAndRename(path):
     Create infofile and rename image file
     path is the realtive path to the folder in which to process the files
     '''
-    (tree, nameToPho) = makeHitlist()
+    tree, nameToPho = makeHitlist()
     catTest(path)
     flog = codecs.open(os.path.join(path, u'¤generator.log'), 'w', 'utf-8')  # logfile
     maker = MakeInfo()
@@ -208,8 +203,12 @@ def negPosInfo(infoFile, filename):
         else:
             print '%s: could not find end of template' % filename
             end = ''
-    pos = u'%s|negative= %s\n%s' % (infoFile[:ovPos], u'%s-negative.%s' % (filename[:-4], filename[-3:]), infoFile[ovPos:])
-    neg = u'%s|positive= %s\n%s' % (infoFile[:ovPos], filename, infoFile[ovPos:end])
+    pos = u'%s|negative= %s\n%s' % (infoFile[:ovPos],
+                                    u'%s-negative.%s' % (filename[:-4], filename[-3:]),
+                                    infoFile[ovPos:])
+    neg = u'%s|positive= %s\n%s' % (infoFile[:ovPos],
+                                    filename,
+                                    infoFile[ovPos:end])
     return (neg, pos)
 
 
@@ -259,7 +258,8 @@ def negativeCleanup(path):
             if not os.path.isfile(os.path.join(path, u'%s.tif' % negative)):  # check if -negative.txt exists
                 no_invert_info.append(u'%s.txt' % negative)
         elif filename.endswith(u'.txt'):
-            # check that either -negative.tif or .tif exists (if so then dealt with by above)
+            # check that either -negative.tif or .tif exists
+            # (if so then dealt with by above)
             if filename.endswith(u'-negative.txt'):
                 positive = filename[:-len(u'-negative.txt')]
                 negative = filename[:-len(u'.txt')]
@@ -294,3 +294,38 @@ def negativeCleanup(path):
     for i in just_info:
         f.write(u'%s\n' % i)
     f.close()
+
+
+if __name__ == '__main__':
+    import sys
+    usage = u'Usage:\tpython py_prepUpload.py action path\n' \
+        u'\taction: moveHits - moves the relevant files to base folders ' \
+        u'and adds extention to filenames\n' \
+        u'\t\tpath: relative pathname to main directory for images\n' \
+        u'\taction: makeAndRename - make info files and rename\n' \
+        u'\t\tpath: relative pathname to a directory containing images\n' \
+        u'\taction: negatives - create positives for the relevant folders\n' \
+        u'\t\tpath: relative pathname to a directory containing images\n' \
+        u'\taction: negativeCleanup - spot any conversion problems from negatives\n' \
+        u'\t\tpath: relative pathname to a directory containing images\n' \
+        u'\tExamples:\n' \
+        u'\tmoveHits ../diskkopia\n' \
+        u'\tmakeAndRename ../diskkopia/m_dig\n' \
+        u'\tnegatives ../diskkopia/m_b\n' \
+        u'\tnegativeCleanup ../diskkopia/m_b'
+    argv = sys.argv[1:]
+    if len(argv) == 2:
+        argv[1] = unicode(argv[1])  # risky but unsure how else t
+        if argv[0] == 'moveHits':
+            moveHits(path=argv[1])
+        elif argv[0] == 'makeAndRename':
+            makeAndRename(path=argv[1])
+        elif argv[0] == 'negatives':
+            negatives(path=argv[1])
+        elif argv[0] == 'negativeCleanup':
+            negativeCleanup(path=argv[1])
+        else:
+            print usage
+    else:
+        print usage
+# EoF

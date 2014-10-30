@@ -171,7 +171,7 @@ class Common:
         for l in lines:
             if l.startswith(u'===') or len(l) == 0:
                 continue  # allow lists to be split by subheadings, ignore empty lines
-            c = c+1
+            c += 1
             col = l[1:].split('|')  # remove leading *
             if useCol:
                 connection = col[useCol]
@@ -179,7 +179,7 @@ class Common:
                 connection = col[len(col)-1]
             if keepskip and connection == u'-':
                 dDict[col[0].strip()] = connection
-            elif not len(connection) == 0:
+            elif not len(connection) == 0 and not connection==u'-':
                 connection = connection.replace(u'{{!}}', u'|')
                 if multi:
                     cList = []

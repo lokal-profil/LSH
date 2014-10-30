@@ -11,6 +11,7 @@
 import codecs
 from common import Common
 
+
 class MakeInfo:
     flog = codecs.open(u'¤MakeInfo.log', 'w', 'utf-8')  # logfile
     skiplist = []  # list for storing e.g. id's between testruns
@@ -27,7 +28,7 @@ class MakeInfo:
                         (u'85130:187720', u'many objects'),
                         (u'9309:208654', u'no filename')]
         for pho_mull in pho_mullList:
-            self.flog.write('\n====%s====\n' %pho_mull[1])
+            self.flog.write('\n====%s====\n' % pho_mull[1])
             wName, out = self.infoFromPhoto(pho_mull[0])
             if out:
                 self.flog.write(out)
@@ -40,7 +41,7 @@ class MakeInfo:
                         (u'5078:105807', u'tavla'),
                         (u'220:193815', u'negativ')]
         for pho_mull in pho_mullList:
-            self.flog.write('\n====%s====\n' %pho_mull[1])
+            self.flog.write('\n====%s====\n' % pho_mull[1])
             wName, out = self.infoFromPhoto(pho_mull[0])
             if out:
                 self.flog.write(out)
@@ -55,13 +56,13 @@ class MakeInfo:
         for pho_mull in pho_mullList:
             wName, out = self.infoFromPhoto(pho_mull[0], preview=False, testing=False)
             if out:
-                bName = u'%s.txt' %wName[:-4].replace(u' ',u'_')
-                f = codecs.open(u'output/%s' %bName, 'w', 'utf-8')
+                bName = u'%s.txt' % wName[:-4].replace(u' ',u'_')
+                f = codecs.open(u'output/%s' % bName, 'w', 'utf-8')
                 f.write(out)
                 f.close()
-                print u'%s outputed to %s' %(pho_mull[0],bName)
+                print u'%s outputed to %s' % (pho_mull[0],bName)
             else:
-                print u'%s failed to make infopage. See log' %pho_mull[0]
+                print u'%s failed to make infopage. See log' % pho_mull[0]
     #
     def catTest(self):
         self.readInLibraries()
@@ -134,8 +135,8 @@ class MakeInfo:
 
         # skip any which don't have a filename
         if pho_mull not in self.wikinameD.keys():
-            self.flog.write('No filename: %s\n' %pho_mull)
-            return ('No filename: %s\n' %pho_mull, None)
+            self.flog.write('No filename: %s\n' % pho_mull)
+            return ('No filename: %s\n' % pho_mull, None)
 
         # maintanance categories
         cat_meta = []
@@ -145,8 +146,8 @@ class MakeInfo:
             print u'Found a file without an extention!: %s' % pho_mull
         
         # collect info from Photo.csv
-        wikiname = u'%s.%s' %(self.wikinameD[pho_mull][u'filename'],
-                              self.wikinameD[pho_mull][u'ext'])
+        wikiname = u'%s.%s' % (self.wikinameD[pho_mull][u'filename'],
+                               self.wikinameD[pho_mull][u'ext'])
         origFile = self.wikinameD[pho_mull][u'MulDateiS']
         photo_license = self.lic[phoInfo[u'PhoAufnahmeortS']]
         photo_id = phoInfo[u'PhoId']
@@ -223,16 +224,16 @@ class MakeInfo:
                 manyData[o] = MakeInfo.infoFromObject(self, o, {u'invNr':None, u'title':'', u'date':None, u'artist':None, u'cat_artist':None, u'manufacturer':None, u'depicted':None, u'cat_depicted':None})
             objData[u'invNr'] = []; objData[u'date'] = []; objData[u'artist'] = []; objData[u'cat_artist'] = []; objData[u'manufacturer'] = []; objData[u'depicted'] = []; objData[u'cat_depicted'] = []
             for k,v in manyData.iteritems():
-                if len(v[u'title'])>0: v[u'title'] = u' - %s' %v[u'title']
-                objData[u'invNr'].append(u'{{LSH-link|%s|%s}}%s' %(k, v[u'invNr'], v[u'title']))
-                if v[u'date']: objData[u'date'].append(u'%s: %s' %(v[u'invNr'], v[u'date']))
+                if len(v[u'title'])>0: v[u'title'] = u' - %s' % v[u'title']
+                objData[u'invNr'].append(u'{{LSH-link|%s|%s}}%s' % (k, v[u'invNr'], v[u'title']))
+                if v[u'date']: objData[u'date'].append(u'%s: %s' % (v[u'invNr'], v[u'date']))
                 if v[u'artist']:
-                    for a in v[u'artist']: objData[u'artist'].append(u'%s: %s' %(v[u'invNr'], a))
+                    for a in v[u'artist']: objData[u'artist'].append(u'%s: %s' % (v[u'invNr'], a))
                 if v[u'cat_artist']: objData[u'cat_artist'] = objData[u'cat_artist'] + v[u'cat_artist']
                 if v[u'manufacturer']:
-                    for m in v[u'manufacturer']: objData[u'manufacturer'].append(u'%s: %s' %(v[u'invNr'], m))
+                    for m in v[u'manufacturer']: objData[u'manufacturer'].append(u'%s: %s' % (v[u'invNr'], m))
                 if v[u'depicted']:  # note that this is different
-                    for d in v[u'depicted']: objData[u'depicted'].append(u'%s: %s' %(v[u'invNr'], d))
+                    for d in v[u'depicted']: objData[u'depicted'].append(u'%s: %s' % (v[u'invNr'], d))
                 if v[u'cat_depicted']: objData[u'cat_depicted'] = objData[u'cat_depicted'] + v[u'cat_depicted']
 
         # see also
@@ -343,7 +344,7 @@ class MakeInfo:
         # InvNr. Note that Skokloster boksamling uses kort
         # Specifically Skokloster boksamling uses Signumno. instead of inv. no.
         if len(invNr) == 0: invNr = kort
-        data[u'invNr'] = u'%s %s' %(source, invNr)
+        data[u'invNr'] = u'%s %s' % (source, invNr)
 
         # Title
         if source == u'LRK': data[u'title'] = kort
@@ -370,9 +371,9 @@ class MakeInfo:
                 exYear = self.aussD[e][u'std_year']
                 if exPlace in self.placesC.keys() and self.placesC[exPlace]: exPlace = self.placesC[exPlace]
                 elif exPlace in self.placesC.keys(): cat_meta.append(u'unmatched place')
-                if len(exYear)>0: out = u'%s (%s) %s' %(exName, exYear, exPlace)
-                else:  out = u'%s: %s' %(exName, exPlace)
-                exhibitD['%s%r' %(exYear,counter)] = out.strip(u': ')
+                if len(exYear)>0: out = u'%s (%s) %s' % (exName, exYear, exPlace)
+                else:  out = u'%s: %s' % (exName, exPlace)
+                exhibitD['%s%r' % (exYear,counter)] = out.strip(u': ')
             for key in sorted(exhibitD.iterkeys()):
                 data[u'exhibits'].append(exhibitD[key])
 
@@ -388,7 +389,7 @@ class MakeInfo:
                         cat_event.append(ec)
                 elif eventKey in self.ereignisC.keys(): cat_meta.append(u'unmatched event')
                 if eventKey in self.ereignisLinkC.keys() and self.ereignisLinkC[eventKey]:
-                    orig_event.append(u'[[%s|%s]]' %(self.ereignisLinkC[eventKey],eventKey))
+                    orig_event.append(u'[[%s|%s]]' % (self.ereignisLinkC[eventKey],eventKey))
                 else: orig_event.append(eventKey)
             if len(cat_event) != 0: data[u'cat_event'] = cat_event
             if len(orig_event) != 0: data[u'orig_event'] = orig_event
@@ -405,7 +406,7 @@ class MakeInfo:
                 dType = self.massC[dType]
                 dValue = self.massD[d][u'ObmMasseS']
                 dims.append((dType, dValue))
-                # dims.append(u'%s: %s' %(dType, dValue))  # temporary solution
+                # dims.append(u'%s: %s' % (dType, dValue))  # temporary solution
             dims = MakeInfo.dimensionCruncher(self, dims, cat_meta)  # takes a list of tuples and returns a list of strings
             if len(dims) >0:
                 data[u'dimensions'] = dims
@@ -456,7 +457,7 @@ class MakeInfo:
                 rInvNr  = self.objD[r][u'ObjInventarNrS']
                 rSource = self.source[self.objD[r][u'AufAufgabeS']]
                 if len(rInvNr) == 0: rInvNr = self.objD[r][u'ObjTitelWeitereM']
-                rInvNr = u'%s %s' %(rSource, rInvNr)
+                rInvNr = u'%s %s' % (rSource, rInvNr)
                 relDict[r] = ['',rInvNr]
             if len(relDict)>0:
                 # file assoicated filenames (only use those with an unique objId)
@@ -484,7 +485,7 @@ class MakeInfo:
                 if roleCmt in badRoleCmts: continue
                 if role in okRoles:
                     name = MakeInfo.formatKuenstler(self, kueId, cat_meta, role in (artistRoles+manufacturerRoles))
-                    if role in self.rolesC.keys(): name = u'%s: %s' %(self.rolesC[role], name)
+                    if role in self.rolesC.keys(): name = u'%s: %s' % (self.rolesC[role], name)
                 if role in manufacturerRoles: manufacturer.append(name)
                 elif role in ownerRoles: owner.append(name)
                 elif role in depictedRoles: depicted.append(name)
@@ -521,13 +522,13 @@ class MakeInfo:
             if typ in okTypes and len(value)>0:
                 if len(val_cmt)==0 or val_cmt==value: val_cmt=None
                 if typ in sigTypes:
-                    if val_cmt: value = u'%s [%s]' %(value, val_cmt)
+                    if val_cmt: value = u'%s [%s]' % (value, val_cmt)
                     sign.append(value)
                 elif typ in mat_techTypes:
                     if value in self.materialC.keys() and self.materialC[value]:
                         for sc in self.materialC[value]:
-                            value = u'{{technique|%s}}' %sc
-                            if val_cmt: value = u'%s (%s)' %(value, val_cmt)
+                            value = u'{{technique|%s}}' % sc
+                            if val_cmt: value = u'%s (%s)' % (value, val_cmt)
                             material_tech.append(value)
                     elif value in self.materialC.keys(): cat_meta.append(u'unmatched material')
                 elif typ == u'Tillverkningsort':
@@ -537,15 +538,15 @@ class MakeInfo:
                 elif typ == u'Tillverkningsland':
                     if value in self.placesC.keys() and self.placesC[value]: value = self.placesC[value]
                     elif value in self.placesC.keys(): cat_meta.append(u'unmatched place')
-                    if val_cmt: value = u'%s (%s)' %(value, val_cmt)
+                    if val_cmt: value = u'%s (%s)' % (value, val_cmt)
                     tLand.append(value)
                 elif typ == u'Titel (engelsk)':
                     if value !=data[u'title']:
-                        if val_cmt: value = u'%s (%s)' %(value, val_cmt)
+                        if val_cmt: value = u'%s (%s)' % (value, val_cmt)
                         title_en.append(value)
                 elif typ == u'Titel':
                     if value !=data[u'title']:
-                        if val_cmt: value = u'%s (%s)' %(value, val_cmt)
+                        if val_cmt: value = u'%s (%s)' % (value, val_cmt)
                         title_orig.append(value)
         # format and send to relevant field
         # this is were Connection-lookup shold be done add maintanance cat if lookup fails
@@ -557,12 +558,12 @@ class MakeInfo:
             data[u'place'] = []
             if len(tOrt) == len(tLand):
                 for i in range(0,len(tLand)):
-                    place = '%s, %s' %(tOrt[i],tLand[i])
+                    place = '%s, %s' % (tOrt[i],tLand[i])
                     data[u'place'].append(place)
             else:
                 tOrt = '; '.join(tOrt)
                 tLand = '; '.join(tLand)
-                data[u'place'].append(u'%s / %s' %(tOrt, tLand))
+                data[u'place'].append(u'%s / %s' % (tOrt, tLand))
         elif len(tOrt)>0: data[u'place'] = tOrt
         elif len(tLand)>0: data[u'place'] = tLand
 
@@ -587,7 +588,7 @@ class MakeInfo:
                 vals = d[1].replace('  ', ' ').split(' ')
             i = len(vals)-2
             if i < 0:
-                cat_meta.append(u'dim-without units|%s%s' %(debug, d[0]))
+                cat_meta.append(u'dim-without units|%s%s' % (debug, d[0]))
                 nice = False
                 break
             if not Common.is_number(vals[i].replace(',','.')):
@@ -614,40 +615,40 @@ class MakeInfo:
                 role, prefix, num, unit, ca = d
                 if role == u'weight':
                     if unit not in wUnits:
-                        cat_meta.append(u'dim-with weird units|%s%s in %s' %(debug, role, unit))
-                    if len(prefix)>0: prefix = u' (%s)' %prefix
+                        cat_meta.append(u'dim-with weird units|%s%s in %s' % (debug, role, unit))
+                    if len(prefix)>0: prefix = u' (%s)' % prefix
                     if len(ca)>0: ca = u'{{circa}} '
-                    returns.append(u'%s{{weight|%s|%s}}%s' %(ca, unit, num, prefix))
+                    returns.append(u'%s{{weight|%s|%s}}%s' % (ca, unit, num, prefix))
                 else:
                     if unit not in lUnits:
-                        cat_meta.append(u'dim-with weird units|%s%s in %s' %(debug, role, unit))
+                        cat_meta.append(u'dim-with weird units|%s%s in %s' % (debug, role, unit))
                     unit_size = unit
                     prefix_size = prefix
                     circa_size= ca
-                    size = u'%s|%s=%s' %(size,role,num)
+                    size = u'%s|%s=%s' % (size,role,num)
             if len(size)>0:
-                if len(prefix_size)>0: prefix_size = u' (%s)' %prefix_size
+                if len(prefix_size)>0: prefix_size = u' (%s)' % prefix_size
                 if len(circa_size)>0: circa_size = u'{{circa}} '
-                returns.append(u'%s{{size|unit=%s%s}}%s' %(circa_size,unit_size, size, prefix_size))
+                returns.append(u'%s{{size|unit=%s%s}}%s' % (circa_size,unit_size, size, prefix_size))
         elif nice:
             # well formated but separate templates needed
             cat_meta.append(u'dim-with multiple size templates')
             for d in nice_dims:
                 role, prefix, num, unit, ca = d
-                if len(prefix)>0: prefix = u' (%s)' %prefix
+                if len(prefix)>0: prefix = u' (%s)' % prefix
                 if len(ca)>0: ca = u'{{circa}} '
                 if role == u'weight':
                     if unit not in wUnits:
-                        cat_meta.append(u'dim-with weird units|%s%s in %s' %(debug, role, unit))
-                    returns.append(u'%s{{weight|%s|%s}}%s' %(ca, unit, num, prefix))
+                        cat_meta.append(u'dim-with weird units|%s%s in %s' % (debug, role, unit))
+                    returns.append(u'%s{{weight|%s|%s}}%s' % (ca, unit, num, prefix))
                 else:
                     if unit not in lUnits:
-                        cat_meta.append(u'dim-with weird units|%s%s in %s' %(debug, role, unit))
-                    returns.append(u'%s{{size|unit=%s|%s=%s}}%s' %(ca, unit, role, num, prefix))
+                        cat_meta.append(u'dim-with weird units|%s%s in %s' % (debug, role, unit))
+                    returns.append(u'%s{{size|unit=%s|%s=%s}}%s' % (ca, unit, role, num, prefix))
         else:  # ill formated
             cat_meta.append(u'dim-with unformated dimensions')
             for d in dims:
-                returns.append(u'%s: %s' %(d[0], d[1]))
+                returns.append(u'%s: %s' % (d[0], d[1]))
         return returns
     # create these once - ideally they should query commonspage directly
     def makeAbbrevLicense(self):
@@ -705,24 +706,24 @@ class MakeInfo:
     # formating output
     def formatKuenstler(self, kueId, cat_meta, creative=False):
         if creative and kueId in self.peopleCreatC.keys() and self.peopleCreatC[kueId]:
-            return u'{{%s}}' %self.peopleCreatC[kueId]
+            return u'{{%s}}' % self.peopleCreatC[kueId]
         elif creative and kueId in self.peopleCreatC.keys(): cat_meta.append(u'unmatched creator')
         kuenstler = self.kuenstlerD[kueId]
-        name = u'%s %s' %(kuenstler[u'KueVorNameS'], kuenstler[u'KueNameS'])
+        name = u'%s %s' % (kuenstler[u'KueVorNameS'], kuenstler[u'KueNameS'])
         if kueId in self.peopleLinkC.keys() and self.peopleLinkC[kueId]:
-            return u'[[%s|%s]]' %(self.peopleLinkC[kueId],name.strip())
+            return u'[[%s|%s]]' % (self.peopleLinkC[kueId],name.strip())
         bYear = kuenstler[u'KudJahrVonL']
         dYear = kuenstler[u'KudJahrBisL']
         ort   = kuenstler[u'KudOrtS']
         land  = kuenstler[u'KudLandS']
         yrke  = kuenstler[u'KueFunktionS']
         years = ''
-        if len(bYear) >0 or len(dYear)>0: years = u'%s-%s' %(bYear, dYear)
-        bracket =u'%s, %s' %(yrke, years)
-        if len(years) >0 or len(yrke)>0: bracket = u' (%s) ' %bracket.strip(', ')
-        place=u'%s%s' %(ort, land)
-        if len(ort) >0 and len(land)>0: place = u'%s, %s' %(ort, land)
-        out = u'%s%s%s' %(name.strip(), bracket, place.strip())
+        if len(bYear) >0 or len(dYear)>0: years = u'%s-%s' % (bYear, dYear)
+        bracket =u'%s, %s' % (yrke, years)
+        if len(years) >0 or len(yrke)>0: bracket = u' (%s) ' % bracket.strip(', ')
+        place=u'%s%s' % (ort, land)
+        if len(ort) >0 and len(land)>0: place = u'%s, %s' % (ort, land)
+        out = u'%s%s%s' % (name.strip(), bracket, place.strip())
         return out.strip()
     @staticmethod
     def makeTemplate(wikiname, origFile, photo_license, photo_id, source, orig_descr,
@@ -828,7 +829,7 @@ class MakeInfo:
     def depictedFormater(depicted, invNr=None):
         '''takes a list of people and returns one or more depicted people tempaltes'''
         ending = u'style=plain text'
-        if invNr: ending = u'%s|comment=%s' %(ending, invNr)
+        if invNr: ending = u'%s|comment=%s' % (ending, invNr)
         if len(depicted)<9:
             return u'{{depicted person|%s|%s}}\n' % ('|'.join(depicted), ending)
         else:
@@ -842,9 +843,9 @@ class MakeInfo:
                 i=i+1
                 text = text + u'%s|' % d
                 if i%9==0:
-                    text = text + u'%s}}\n' %ending
+                    text = text + u'%s}}\n' % ending
                     start=True
-            if not start: text = text + u'%s}}\n' %ending
+            if not start: text = text + u'%s}}\n' % ending
             return text
     @staticmethod
     def makeGallery(caption, lList, dDict, printed, addTo, col=u'filename', has_captions=False):
@@ -868,8 +869,7 @@ class MakeInfo:
         printed = printed+lList
         if len(lList) == 0: return addTo, printed
         # output
-        text = addTo + u'\n<!--%s-->\n' %caption
+        text = addTo + u'\n<!--%s-->\n' % caption
         for c in lList:
             text = text + u'[[Category:%s%s]]\n' % (pre, c)
         return text, printed
-#

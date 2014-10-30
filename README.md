@@ -4,13 +4,20 @@ The redux branch is an attempt to cleanup the scripts and include the original s
 
 Assorted scripts used for LSH batch upload (http://commons.wikimedia.org/wiki/COM:LSH)
 
+Included is PyCJWiki Version 1.31 (C) by [Smallman12q](https://en.wikipedia.org/wiki/User_talk:Smallman12q) GPL, see http://www.gnu.org/licenses/.
+
+## TODO
+Change over from PyCJWiki to WikiApi...
 
 Requires [WikiApi](https://github.com/lokal-profil/ODOK/blob/master/tools/WikiApi.py)
 
 WikiApi is based on PyCJWiki Version 1.31 (C) by [Smallman12q](https://en.wikipedia.org/wiki/User_talk:Smallman12q) GPL, see http://www.gnu.org/licenses/.
 
 ## Workflow
+
 All of these should be run from the main code folder.
+
+0. Copy config.py.sample to config.py and fill in your username and password
 0. Run `python py_listscraper.py old_connections`  # To make a copy of the latest Commons mappings
 1. Unpack the new csv files to the "original_csv" folder
 3. Update CSV_FILES in "py_prepCSVData.py" to the new file names
@@ -32,5 +39,4 @@ All of these should be run from the main code folder.
   * Check `¤imageMagick-errors.log` for errorreports
 15. Run `python py_prepUpload.py negativeCleanup ../bilder/m_a` etc. for each of the image sub.folders where 14. was run
   * Check `¤conversion-errors.log` for problematic conversions (fix manually)
-
 16. Run `python py_Uploader.py ../bilder/m_a` etc. to upload the files

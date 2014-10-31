@@ -6,6 +6,7 @@
 #
 import os
 import codecs
+import pipes
 from py_MakeInfo import MakeInfo
 
 # filename file
@@ -86,6 +87,7 @@ def moveHits(path):
     run from main dir
     path: path from running directory to directory with image file structure
     '''
+    # Find and move all relevant files
     tree, nameToPho = makeHitlist()
     cwd = os.getcwd()
     os.chdir(path)
@@ -115,11 +117,15 @@ def moveHits(path):
         f.write(u'%s\n' % '|'.join(col))
     f.close()
 
+    # And now delete all of the emptied directory
+    for subdir in subdirs:
+        removeEmptyDirectories(os.path.join(path, subdir))
+
 
 def makeAndRename(path):
     '''
     Create infofile and rename image file
-    path is the realtive path to the folder in which to process the files
+    path is the realtive path to the directory in which to process the files
     '''
     tree, nameToPho = makeHitlist()
     catTest(path)
@@ -134,7 +140,8 @@ def makeAndRename(path):
             flog.write(u'%s did not have a photoId\n' % filename_in)
             continue
         phoMull = nameToPho[filename_in[:-4]]['phoMull']
-        filename_out = u'%s.%s' % (nameToPho[filename_in[:-4]]['filename'].replace(u' ', u'_'), nameToPho[filename_in[:-4]]['ext'])
+        filename_out = u'%s.%s' % (nameToPho[filename_in[:-4]]['filename'].replace(u' ', u'_'),
+                                   nameToPho[filename_in[:-4]]['ext'])
         wName, out = maker.infoFromPhoto(phoMull, preview=False, testing=False)
         if out:
             # Make info file
@@ -143,7 +150,8 @@ def makeAndRename(path):
             f.write(out)
             f.close()
             # Move image file
-            os.rename(os.path.join(path, filename_in), os.path.join(path, filename_out))
+            os.rename(os.path.join(path, filename_in),
+                      os.path.join(path, filename_out))
             flog.write(u'%s outputed to %s\n' % (filename_in, filename_out))
         else:
             flog.write(u'%s failed to make infopage. See log\n' % filename_in)
@@ -154,7 +162,7 @@ def negatives(path):
     moves file to filename-negative.tif
     creates an inverted file at filename.tif
     creates a info file for negative and modifes info file for positive
-    path is the realtive path to the folder in which to process the files
+    path is the realtive path to the directory in which to process the files
     '''
     count = 0
     skipcount = 0
@@ -166,8 +174,8 @@ def negatives(path):
                 skipcount += 1
                 continue
             os.rename(os.path.join(path, filename), os.path.join(path, negative))
-            imageMagick = u'convert %s -negate -auto-gamma -level 10%%,90%%,1,0 %s' % (shellquote(os.path.join(path, negative)), shellquote(os.path.join(path, filename)))
-            imageMagick = u'%s 2>>%s' % (imageMagick, shellquote(os.path.join(path, u'¤imageMagick-errors.log')))  # pipe errors to file
+            imageMagick = u'convert %s -negate -auto-gamma -level 10%%,90%%,1,0 %s' % (pipes.quote(os.path.join(path, negative)), pipes.quote(os.path.join(path, filename)))
+            imageMagick = u'%s 2>>%s' % (imageMagick, pipes.quote(os.path.join(path, u'¤imageMagick-errors.log')))  # pipe errors to file
             os.system(imageMagick.encode(encoding='UTF-8'))
             # new info files
             infoFilename = u'%s.txt' % filename[:-4]
@@ -214,7 +222,7 @@ def negPosInfo(infoFile, filename):
 
 def catTest(path, nameToPho=None):
     '''
-    check the category statistics for the files in a given folder
+    check the category statistics for the files in a given directory
     '''
     if not nameToPho:
         (tree, nameToPho) = makeHitlist()
@@ -296,19 +304,38 @@ def negativeCleanup(path):
     f.close()
 
 
-def shellquote(s):
-    return "'" + s.replace("'", "'\\''") + "'"
+def removeEmptyDirectories(path):
+    '''
+    Remove any empty directories under a given directory
+    '''
+    if not os.path.isdir(path):
+        return
+
+    # remove empty sub-directory
+    files = os.listdir(path)
+    if len(files):
+        for f in files:
+            fullpath = os.path.join(path, f)
+            if os.path.isdir(fullpath):
+                removeEmptyDirectories(fullpath)
+
+    # delete directory if empty,
+    files = os.listdir(path)
+    if len(files) == 0:
+        os.rmdir(path)
+    else:
+        print 'Not removing non-empty directory: %s' % path
 
 
 if __name__ == '__main__':
     import sys
     usage = u'Usage:\tpython py_prepUpload.py action path\n' \
-        u'\taction: moveHits - moves the relevant files to base folders ' \
+        u'\taction: moveHits - moves the relevant files to base directories ' \
         u'and adds extention to filenames\n' \
         u'\t\tpath: relative pathname to main directory for images\n' \
         u'\taction: makeAndRename - make info files and rename\n' \
         u'\t\tpath: relative pathname to a directory containing images\n' \
-        u'\taction: negatives - create positives for the relevant folders\n' \
+        u'\taction: negatives - create positives for the relevant directories\n' \
         u'\t\tpath: relative pathname to a directory containing images\n' \
         u'\taction: negativeCleanup - spot any conversion problems from negatives\n' \
         u'\t\tpath: relative pathname to a directory containing images\n' \
@@ -319,15 +346,18 @@ if __name__ == '__main__':
         u'\tnegativeCleanup ../diskkopia/m_b'
     argv = sys.argv[1:]
     if len(argv) == 2:
-        argv[1] = unicode(argv[1])  # risky but unsure how else t
+        path = argv[1].decode(sys.getfilesystemencoding())  # str to unicode
+        if not os.path.isdir(path):
+            print u'The provided path was not a valid directory: %s' % path
+            exit()
         if argv[0] == 'moveHits':
-            moveHits(path=argv[1])
+            moveHits(path=path)
         elif argv[0] == 'makeAndRename':
-            makeAndRename(path=argv[1])
+            makeAndRename(path=path)
         elif argv[0] == 'negatives':
-            negatives(path=argv[1])
+            negatives(path=path)
         elif argv[0] == 'negativeCleanup':
-            negativeCleanup(path=argv[1])
+            negativeCleanup(path=path)
         else:
             print usage
     else:

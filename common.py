@@ -179,7 +179,7 @@ class Common:
                 connection = col[len(col)-1]
             if keepskip and connection == u'-':
                 dDict[col[0].strip()] = connection
-            elif not len(connection) == 0 and not connection==u'-':
+            elif not len(connection) == 0 and not connection == u'-':
                 connection = connection.replace(u'{{!}}', u'|')
                 if multi:
                     cList = []

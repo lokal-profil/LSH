@@ -291,6 +291,8 @@ if __name__ == '__main__':
     if len(argv) == 0:
         run()
     elif len(argv) == 2:
+        argv[0] = argv[0].decode(sys.getfilesystemencoding())  # str to unicode
+        argv[1] = argv[1].decode(sys.getfilesystemencoding())  # str to unicode
         run(in_path=argv[0], log_file=argv[1])
     else:
         print usage

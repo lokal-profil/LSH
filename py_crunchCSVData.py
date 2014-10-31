@@ -20,7 +20,8 @@
 # * py-realObjOnly.py
 #
 # TODO: Stick CSV_FILES in start of file (or somewhere equally easy)
-# TODO: Cut down log files to only ones worht reading
+# TODO: Cut down log files to only ones worth reading
+# TODO: Rewrite using dicts instead of long strings
 #
 '''what to run:
 crunchFiles()
@@ -1255,6 +1256,8 @@ if __name__ == '__main__':
     if len(argv) == 0:
         crunchFiles()
     elif len(argv) == 2:
+        argv[0] = argv[0].decode(sys.getfilesystemencoding())  # str to unicode
+        argv[1] = argv[1].decode(sys.getfilesystemencoding())  # str to unicode
         crunchFiles(in_path=argv[0], out_path=argv[1])
     else:
         print usage

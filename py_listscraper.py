@@ -18,6 +18,7 @@ from json import loads
 
 OUT_PATH = u'connections'
 
+
 def getPage(page, verbose=False):
     '''
     Queries the commons API to return the contents of a given page
@@ -179,6 +180,7 @@ if __name__ == '__main__':
     if len(argv) == 0:
         run()
     elif len(argv) == 1:
+        argv[0] = argv[0].decode(sys.getfilesystemencoding())  # str to unicode
         run(out_path=argv[0])
     else:
         print usage

@@ -1,4 +1,4 @@
 config.py
 *.log
 *.txt
-py-*.py
+*.csv

@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # -*- coding: UTF-8  -*-
 #
 # Uploading files
@@ -186,7 +187,11 @@ if __name__ == '__main__':
         u'images and descriptions.\n'
     argv = sys.argv[1:]
     if len(argv) == 1:
-        upFiles(argv[0])
+        path = argv[0].decode(sys.getfilesystemencoding())  # str to unicode
+        if not os.path.isdir(path):
+            print u'The provided path was not a valid directory: %s' % path
+            exit()
+        upFiles(path)
     else:
         print usage
 # EoF

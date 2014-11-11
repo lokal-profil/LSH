@@ -733,6 +733,8 @@ def writePlaces(filename, exhibitPlaces, landDict, ortDict, emptyPlaces):
     intro = u'<!--From: %s - col: ausOrt-->\n' % CSV_FILES[u'ausstellung'] \
         + u'<!--From: %s for OmuTypS = Tillverkningsland -->\n' % CSV_FILES[u'objMultiple'] \
         + u'<!--From: %s for OmuTypS = Tillverkningsort-->\n' % CSV_FILES[u'objMultiple'] \
+        + u'The preffered order of making connections are: Institution, page, category' \
+        + u'(where the category is prefixed by a ":").\n\n' \
         + u'Set commonsconnection of irrelevant places to "-"\n\n' \
         + u'===Place|Frequency|Commonsconnection===\n'
     # output

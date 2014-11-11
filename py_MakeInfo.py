@@ -125,6 +125,8 @@ class MakeInfo:
         self.peopleCatC = Common.makeConnections(u'%s/commons-People.csv' % folder, start=u'[[:Category:', end=u']]', verbose=verbose, keepskip=keepskip)
         self.materialC = Common.makeConnections(u'%s/commons-Materials.csv' % folder, multi=True, verbose=verbose, keepskip=keepskip)
         self.objCatC = Common.makeConnections(u'%s/commons-ObjKeywords.csv' % folder, start=u'[[:Category:', end=u']]', multi=True, verbose=verbose, keepskip=keepskip)
+        self.photographerCreatC = Common.makeConnections(u'%s/commons-Photographers.csv' % folder, useCol=2, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
+        self.photographerCatC = Common.makeConnections(u'%s/commons-Photographers.csv' % folder, start=u'[[:Category:', end=u']]', verbose=verbose, keepskip=keepskip)
         MakeInfo.makeRoles(self)
         MakeInfo.makeDimensions(self)
         MakeInfo.makeAbbrevLicense(self)
@@ -768,21 +770,30 @@ class MakeInfo:
         # bredd should be breath but doesn't seem to exist
         # kanske = [u'kaliber', u'antal', u'Omkrets]
     def makePhotographers(self):
-        # TODO: read from connections
-        self.photographers = {
-            u'Göran Schmidt': (u'[[Creator:Göran Schmidt|]]', u'Göran Schmidt'),
-            u'Samuel Uhrdin': (u'[[Creator:Samuel Uhrdin|]]', u'Samuel Uhrdin'),
-            u'Jens Mohr': (u'[[Creator:Jens Mohr|]]', u'Jens Mohr'),
-            u'Erik Lernestål': (u'[[Creator:Erik Lernestål|]]', u'Erik Lernestål'),
-            u'Matti Östling': (u'[[Creator:Matti Östling|]]', u'Matti Östling'),
-            u'Olav Nyhus': (u'[[Creator:Olav Nyhus|]]', u'Olav Nyhus'),
-            u'Per Åke Persson': (u'[[Creator:Per Åke Persson|]]', u'Per Åke Persson'),
-            u'Madeleine Söder': (u'[[Creator:Madeleine Söder|]]', u'Madeleine Söder'),
-            u'Nils Åzelius': (u'Nils Åzelius', None),
-            u'Torsten Lenk': (u'Torsten Lenk', None),
-            u'Georg Schmidt': (u'Georg Schmidt', None),
-            u'Anton Blomberg': (u'Anton Blomberg', None),
-            u'': (u'', None)}
+        # TODO: replace calls to self.photographers with calls to self.photographerC(re|)atC
+        # Looks weird because it was made to be backwards compatible
+        self.photographers = {u'': (u'', None)}
+        for k, v in self.photographerCatC.iteritems():
+            creator = self.photographerCreatC[k]
+            if creator is not None:
+                creator = u'[[%s|]]' % creator
+            else:
+                creator = k
+            self.photographers[k] = (creator, v)
+        # self.photographers = {
+        #    u'Göran Schmidt': (u'[[Creator:Göran Schmidt|]]', u'Göran Schmidt'),
+        #    u'Samuel Uhrdin': (u'[[Creator:Samuel Uhrdin|]]', u'Samuel Uhrdin'),
+        #    u'Jens Mohr': (u'[[Creator:Jens Mohr|]]', u'Jens Mohr'),
+        #    u'Erik Lernestål': (u'[[Creator:Erik Lernestål|]]', u'Erik Lernestål'),
+        #    u'Matti Östling': (u'[[Creator:Matti Östling|]]', u'Matti Östling'),
+        #    u'Olav Nyhus': (u'[[Creator:Olav Nyhus|]]', u'Olav Nyhus'),
+        #    u'Per Åke Persson': (u'[[Creator:Per Åke Persson|]]', u'Per Åke Persson'),
+        #    u'Madeleine Söder': (u'[[Creator:Madeleine Söder|]]', u'Madeleine Söder'),
+        #    u'Nils Åzelius': (u'Nils Åzelius', None),
+        #    u'Torsten Lenk': (u'Torsten Lenk', None),
+        #    u'Georg Schmidt': (u'Georg Schmidt', None),
+        #   u'Anton Blomberg': (u'Anton Blomberg', None),
+        #    u'': (u'', None)}
     # formating output
     def formatKuenstler(self, kueId, cat_meta, creative=False):
         if creative and kueId in self.peopleCreatC.keys() and self.peopleCreatC[kueId]:

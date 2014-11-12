@@ -197,7 +197,7 @@ class Common:
     @staticmethod
     def makeConnectionsSub(connection, addpipe, start, end):
         '''broken out part of makeConnections'''
-        if addpipe and connection.endswith(u']]') and u':' in connection:
+        if addpipe and connection.endswith(u']]') and u':' in connection and u'|' not in connection:
             connection = u'%s|]]' % connection[:-2]
         if start:
             if connection.startswith(start):

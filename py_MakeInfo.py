@@ -1,12 +1,10 @@
 #!/usr/bin/python
 # -*- coding: UTF-8  -*-
 #
-# Class contining instructions for making info templates
+# Class containing instructions for making info templates
 #
 # TODO:
-# integrate mechanism for updating commons connections
 # mechanism for getting pho_mull from orig filename(+path?)
-# makePhotographers should use connection file
 # data files should not be hardcoded
 #
 import codecs
@@ -131,7 +129,6 @@ class MakeInfo:
         MakeInfo.makeDimensions(self)
         MakeInfo.makeAbbrevLicense(self)
         MakeInfo.makeAbbrevSource(self)
-        MakeInfo.makePhotographers(self)
     #
     def infoFromPhoto(self, pho_mull, preview=True, testing=False):
         phoInfo = self.photoD[pho_mull]
@@ -157,7 +154,15 @@ class MakeInfo:
         source = self.source[phoInfo[u'PhoSwdS']]
         orig_descr = phoInfo[u'PhoBeschreibungM']
         photographer = u'%s %s' % (phoInfo[u'AdrVorNameS'], phoInfo[u'AdrNameS'])
-        photographer, cat_photographer = self.photographers[photographer.strip()]
+        photographer = photographer.strip()
+        # photographer, cat_photographer = self.photographers[photographer]
+        if len(photographer) == 0:
+            cat_photographer = None
+        else:
+            cat_photographer = self.photographerCatC[photographer]
+            creator = self.photographerCreatC[photographer]
+            if creator is not None:
+                photographer = u'[[%s|]]' % creator  # link photographer
         # multi-valued columns need to be tested first
         objIds = phoInfo[u'PhoObjId']
         if len(objIds) > 0:
@@ -275,8 +280,6 @@ class MakeInfo:
         # Categories need deduplidication
         categories = u''
         printedCats = []
-        if cat_photographer:
-            categories, printedCats = MakeInfo.makeCategory(u'Photographer category', [cat_photographer, ], printed=printedCats, addTo=categories)
         if cat_stich:
             categories, printedCats = MakeInfo.makeCategory(u'Photograph categories', cat_stich, printed=printedCats, addTo=categories)
         if objData[u'cat_event']:
@@ -289,6 +292,8 @@ class MakeInfo:
             categories, printedCats = MakeInfo.makeCategory(u'Object categories', objData[u'cat_obj'], printed=printedCats, addTo=categories)
         if len(printedCats) == 0:
             cat_meta.append(u'without any categories')
+        if cat_photographer:  # after "no category" since these are a type of meta categories
+            categories, printedCats = MakeInfo.makeCategory(u'Photographer category', [cat_photographer, ], printed=printedCats, addTo=categories)
         if len(cat_meta) > 0:
             cat_meta = list(set(cat_meta))
             categories, printedCats = MakeInfo.makeCategory(u'Maintanance categories', cat_meta, pre=u'Media contributed by LSH: ', printed=printedCats, addTo=categories)
@@ -769,31 +774,6 @@ class MakeInfo:
             u'Vidd': u'width'}
         # bredd should be breath but doesn't seem to exist
         # kanske = [u'kaliber', u'antal', u'Omkrets]
-    def makePhotographers(self):
-        # TODO: replace calls to self.photographers with calls to self.photographerC(re|)atC
-        # Looks weird because it was made to be backwards compatible
-        self.photographers = {u'': (u'', None)}
-        for k, v in self.photographerCatC.iteritems():
-            creator = self.photographerCreatC[k]
-            if creator is not None:
-                creator = u'[[%s|]]' % creator
-            else:
-                creator = k
-            self.photographers[k] = (creator, v)
-        # self.photographers = {
-        #    u'Göran Schmidt': (u'[[Creator:Göran Schmidt|]]', u'Göran Schmidt'),
-        #    u'Samuel Uhrdin': (u'[[Creator:Samuel Uhrdin|]]', u'Samuel Uhrdin'),
-        #    u'Jens Mohr': (u'[[Creator:Jens Mohr|]]', u'Jens Mohr'),
-        #    u'Erik Lernestål': (u'[[Creator:Erik Lernestål|]]', u'Erik Lernestål'),
-        #    u'Matti Östling': (u'[[Creator:Matti Östling|]]', u'Matti Östling'),
-        #    u'Olav Nyhus': (u'[[Creator:Olav Nyhus|]]', u'Olav Nyhus'),
-        #    u'Per Åke Persson': (u'[[Creator:Per Åke Persson|]]', u'Per Åke Persson'),
-        #    u'Madeleine Söder': (u'[[Creator:Madeleine Söder|]]', u'Madeleine Söder'),
-        #    u'Nils Åzelius': (u'Nils Åzelius', None),
-        #    u'Torsten Lenk': (u'Torsten Lenk', None),
-        #    u'Georg Schmidt': (u'Georg Schmidt', None),
-        #   u'Anton Blomberg': (u'Anton Blomberg', None),
-        #    u'': (u'', None)}
     # formating output
     def formatKuenstler(self, kueId, cat_meta, creative=False):
         if creative and kueId in self.peopleCreatC.keys() and self.peopleCreatC[kueId]:

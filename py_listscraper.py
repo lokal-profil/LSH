@@ -9,14 +9,14 @@
 # TODO:
 #   Rebuild using WikiApi
 #   Propper commenting
-#   Add filenames
-from common import Common as common
+from common import Common
 import codecs
 import urllib
 import urllib2
 from json import loads
 
 OUT_PATH = u'connections'
+DATA_PATH = u'data'
 
 
 def getPage(page, verbose=False):
@@ -53,11 +53,11 @@ def parseEntries(contents):
     header_t = u'{{user:Lokal Profil/LSH2'
     row_t = u'{{User:Lokal Profil/LSH3'
     while(True):
-        table, contents, lead_in = common.findUnit(contents, header_t, u'|}')
+        table, contents, lead_in = Common.findUnit(contents, header_t, u'|}')
         if not table:
             break
         while(True):
-            unit, table, dummy = common.findUnit(table, row_t, u'}}', brackets={u'{{': u'}}'})
+            unit, table, dummy = Common.findUnit(table, row_t, u'}}', brackets={u'{{': u'}}'})
             if not unit:
                 break
             params = {u'name': '',
@@ -70,7 +70,7 @@ def parseEntries(contents):
                       u'other': ''
                       }
             while(True):
-                part, unit, dummy = common.findUnit(unit, u'|', u'\n', brackets={u'[[': u']]', u'{{': u'}}'})
+                part, unit, dummy = Common.findUnit(unit, u'|', u'\n', brackets={u'[[': u']]', u'{{': u'}}'})
                 if not part:
                     break
                 if u'=' in part:
@@ -145,7 +145,36 @@ def rowFormat(u, page):
         return u'*%s|%s|%s|%s' % (u['name'], u['frequency'], u['creator'], u['category'])
 
 
-def run(out_path=OUT_PATH):
+def parseFilenameEntries(contents):
+    '''
+    Given the contents of the filenames wikipage this returns improved entries
+    input: wikicode
+    @ output: list of changed entries-dict items
+    '''
+    units = []
+    contents = contents.split(u'\n')
+    for line in contents:
+        if not line.startswith(u'| '):
+            continue
+        elif len(line.split(u'||')) != 3:
+            print u'Line starting right but with too few units: %s' % line
+            continue
+        else:
+            parts = line.split(u'||')
+            if len(parts[2].strip()) > 0:  # if filename was improved
+                phoId = parts[0][len(u'| '):].strip()
+                generated = parts[1].replace(u'<span style="color:red">', u'') \
+                                    .replace(u'</span>', u'') \
+                                    .strip()
+                improved = parts[2].strip()
+                if generated != improved:  # if actually changed
+                    units.append({u'phoId': phoId,
+                                  u'generated': generated,
+                                  u'improved': improved})
+    return units
+
+
+def run(out_path=OUT_PATH, data_path=DATA_PATH):
     import os
     # Define a list of pages and output files
     # where page has the format Commons:Batch uploading/LSH/*
@@ -171,17 +200,47 @@ def run(out_path=OUT_PATH):
         out.close()
         print u'Created %s/commons-%s.csv' % (out_path, v)
 
+    # need to do filenames differently
+    contents = getPage(u'Commons:Batch uploading/LSH/Filenames')
+    units = parseFilenameEntries(contents)  # identify changes
+    if len(units) > 0:
+        # load old filenames
+        oldfile = u'%s/filenames.csv' % data_path
+        oldFilenames = Common.file_to_dict(oldfile, idcol=0)
+        for unit in units:
+            if not unit[u'phoId'] in oldFilenames.keys():
+                print u'could not find id in old: %s, %s' % (unit[u'phoId'], unit[u'generated'])
+                exit(1)
+            oldDesc = oldFilenames[unit[u'phoId']][u'filename']
+            newDesc = oldDesc.replace(unit[u'generated'], unit[u'improved'])
+            if oldDesc == newDesc:  # this is most often caused by commons file not having been updated
+                print u'did you run the updater a second time without first updating the filenamestable on Commons?'
+                exit(1)
+            oldFilenames[unit[u'phoId']][u'filename'] = newDesc
+        # overwrite old filenames
+        out = codecs.open(oldfile, 'w', 'utf8')
+        out.write(u'PhoId|MulId|MulPfadS|MulDateiS|filename|ext\n')
+        for k, v in oldFilenames.iteritems():
+            out.write(u'%s|%s|%s|%s|%s|%s\n' % (v[u'PhoId'], v[u'MulId'],
+                      v[u'MulPfadS'], v[u'MulDateiS'], v[u'filename'],
+                      v[u'ext']))
+        out.close()
+        print u'Updated %s' % oldfile
+
 if __name__ == '__main__':
     import sys
-    usage = u'Usage:\tpython py_listscraper.py out_path\n' \
+    usage = u'Usage:\tpython py_listscraper.py out_path data_path\n' \
         + u'\tout_path (optional):the relative pathname to the target \n' \
-        + u'directory. Defaults to "%s"' % OUT_PATH
+        + u'directory. Defaults to "%s"' % OUT_PATH \
+        + u'\tdata_path (optional):the relative pathname to the data \n' \
+        + u'directory. Defaults to "%s"' % DATA_PATH
     argv = sys.argv[1:]
     if len(argv) == 0:
         run()
-    elif len(argv) == 1:
+    elif len(argv) == 2:
         argv[0] = argv[0].decode(sys.getfilesystemencoding())  # str to unicode
-        run(out_path=argv[0])
+        argv[1] = argv[1].decode(sys.getfilesystemencoding())  # str to unicode
+        run(out_path=argv[0], data_path=argv[1])
     else:
         print usage
 # EoF

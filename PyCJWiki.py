@@ -164,13 +164,13 @@ class Wiki(object):
 
     def setToken(self, token):
         print "Retrieving token: " + token
-        jsonr = self.httpPOST("tokens", [('type', str(token))])
-        if(jsonr['tokens']['edittoken'] == "+\\"):
+        jsonr = self.httpPOST("query", [('meta', 'tokens')])
+        if(jsonr['query']['tokens']['csrftoken'] == "+\\"):
             print "Edit token not set."
             self.printResponseBuffer()
             exit()
         else:
-            self.edittoken = str(jsonr['tokens']['edittoken'])
+            self.edittoken = str(jsonr['query']['tokens']['csrftoken'])
             print "Edit token retrieved: " + self.edittoken
 
     def setEditToken(self):

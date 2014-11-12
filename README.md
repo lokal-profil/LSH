@@ -30,8 +30,8 @@ All of these should be run from the main code folder.
 9. Upload the mapping tables to the right place
 10. Do the actual mappings...
 
-11. Run `python py_listscraper.py`  # to populate a new "connections" folder
-  * Check differences in filenames manually...
+11. Run `python py_listscraper.py`  # to populate a new "connections" folder and update filenames
+  * If filenames are updated then don't run again until Commons table has been updated.
 12. Run `python py_prepUpload.py moveHits ../bilder` where ../bilder is the relative path to the main image folder  # moves the relevant files to base folders and adds extention to filenames
 13. Run `python py_prepUpload.py makeAndRename ../bilder/m_a` etc. for each of the new image sub.folders  # creates info files and renames files
   * Check `¤generator.log` for possible problems
@@ -40,3 +40,4 @@ All of these should be run from the main code folder.
 15. Run `python py_prepUpload.py negativeCleanup ../bilder/m_a` etc. for each of the image sub.folders where 14. was run
   * Check `¤conversion-errors.log` for problematic conversions (fix manually)
 16. Run `python py_Uploader.py ../bilder/m_a` etc. to upload the files
+  * Check `¤uploader.log` for problematic uploads (fix manually, often by copying files back and trying again...)

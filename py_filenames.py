@@ -65,7 +65,7 @@ def makeFilenames(folder=CSV_FOLDER, mapping=MAPPING_FOLDER, filenameP=PHOTO_FIL
         museum = museumConv2(col[5])
         phoBes, log = phoBesConv(col[3])
         origPath = col[9]
-        origFName = col[10]
+        origFName = col[10].strip()
         # same_same = col[13]
         if len(phoBes) == 0:  # skip empty ones
             if len(col[2]) == 0:

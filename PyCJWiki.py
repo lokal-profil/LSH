@@ -59,13 +59,15 @@ class Wiki(object):
 
         #Response buffer
         self.responsebuffer= cStringIO.StringIO()
+        self.headerbuffer= cStringIO.StringIO()
         self.clearresponsebufferafterresponse = False #True will clear, and save memory, but less useful if error
 
         #Set up reusable curl connection
         self.sitecurl=pycurl.Curl()
         self.sitecurl.setopt(pycurl.WRITEFUNCTION, self.responsebuffer.write) #Writes to response buffer
+        self.sitecurl.setopt(pycurl.HEADERFUNCTION, self.headerbuffer.write) #Writes to response buffer
         self.sitecurl.setopt(pycurl.COOKIEFILE, "") #Use in-memory cookie
-        self.sitecurl.setopt(pycurl.USERAGENT, 'PyCJWiki/1.3 (' + useragentidentify.encode('utf-8') + ')')
+        self.sitecurl.setopt(pycurl.USERAGENT, 'LSHuploader/1.2 (' + useragentidentify.encode('utf-8') + ')')
         self.sitecurl.setopt(pycurl.POST, 1)
         self.sitecurl.setopt(pycurl.CONNECTTIMEOUT, 60)
         self.sitecurl.setopt(pycurl.TIMEOUT, 120)
@@ -96,17 +98,24 @@ class Wiki(object):
             self.sitecurl.perform()
         except pycurl.error, error:
             errno, errstr = error
-            print( 'An error occurred: ' + str(errno) + ':', errstr)
-            traceback.print_exc()
 
             #Response Timed Out, Retry up to 3 times
             if(errno == 28):
                 if(timeoutretry < 3):
                     time.sleep(2)
                     self.httpPOST(action,params,depth,timeoutretry=(timeoutretry+1))
+                else:
+                    print "timed out 3 times! Not retrying"
+            else:
+                print( "An error occurred: %d:" %errno, errstr)
+                traceback.print_exc()
 
         #print self.responsebuffer.getvalue()
-        json = ujson.loads(self.responsebuffer.getvalue())
+        try:
+            json = ujson.loads(self.responsebuffer.getvalue())
+        except ValueError:
+            print self.headerbuffer.getvalue()
+            exit(1)
         if "servedby" in json: #Some sort of error
             if "error" in json:
                 if "code" in json["error"]:
@@ -119,7 +128,7 @@ class Wiki(object):
 
         if self.clearresponsebufferafterresponse:
             self.responsebuffer.truncate(0)
-
+        self.headerbuffer.truncate(0)  # no need to keep more than the last
         return json
 
     def printResponseBuffer(self):

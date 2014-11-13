@@ -235,7 +235,7 @@ class MakeInfo:
             objData[u'multiple'] = True
             manyData = {}
             for o in objIds:
-                manyData[o] = MakeInfo.infoFromObject(self, o, {u'invNr': None, u'title': '', u'date': None, u'artist': None, u'cat_artist': None, u'manufacturer': None, u'depicted': None, u'cat_depicted': None})
+                manyData[o] = MakeInfo.infoFromObject(self, o, {u'invNr': None, u'title': '', u'date': None, u'artist': None, u'cat_artist': None, u'manufacturer': None, u'depicted': None, u'cat_depicted': None, u'death_year': None})
             objData[u'invNr'] = []; objData[u'date'] = []; objData[u'artist'] = []; objData[u'cat_artist'] = []; objData[u'manufacturer'] = []; objData[u'depicted'] = []; objData[u'cat_depicted'] = []
             for k, v in manyData.iteritems():
                 if len(v[u'title']) > 0:

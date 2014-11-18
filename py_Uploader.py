@@ -19,8 +19,8 @@ import config as config
 
 def setUp(password, user):
     # Provide url and identify (either talk-page url or email)
-    commons = Wiki("http://commons.wikimedia.org/w/api.php",
-                   "http://commons.wikimedia.org/wiki/User_talk:%s" % user)
+    commons = Wiki("https://commons.wikimedia.org/w/api.php",
+                   "https://commons.wikimedia.org/wiki/User_talk:%s" % user)
 
     # Login
     commons.login(user, password)

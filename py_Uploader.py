@@ -13,6 +13,7 @@ TODO: Change over from PyCJWiki to WikiApi
 '''
 import codecs
 import os
+import json
 from PyCJWiki import Wiki
 import config as config
 
@@ -41,16 +42,20 @@ def upFiles(path, password=config.password, user=config.username,
     flog = codecs.open(u'¤uploader.log', 'a', 'utf-8')
     # sys.stdout = open(os.path.join(os.getcwd(),u'¤uploader.log'), 'w')
 
-    # create targetdirectory if it doesn't exist
+    # create target directories if they don't exist
     if not os.path.isdir(target):
         os.mkdir(target)
-
+    if not os.path.isdir(u'%s_errors' % target):
+        os.mkdir(u'%s_errors' % target)
+    if not os.path.isdir(u'%s_warnings' % target):
+        os.mkdir(u'%s_warnings' % target)
+    
     files = os.listdir(u'.')
     for f in files:
         if f.endswith(u'.tif') or f.endswith(u'.jpg'):
             infoFile = u'%s.txt' % f[:-4]
             if not os.path.exists(infoFile):
-                flog.write(u'%s: Found tif without info' % f)
+                flog.write(u'%s: Found tif/jpg without info' % f)
                 continue
             infoIn = codecs.open(infoFile, 'r', 'utf-8')
             info = infoIn.read()
@@ -58,9 +63,17 @@ def upFiles(path, password=config.password, user=config.username,
             result = commons.chunkupload(f, f, info, info)
             flog.write(u'%s\n' % result.decode('utf8'))
             flog.flush()
-            # Move files
-            os.rename(f, os.path.join(target, f))
-            os.rename(infoFile, os.path.join(target, infoFile))
+            # parse results and move files
+            jresult = json.loads(result[result.find('{'):])
+            if 'error' in jresult.keys():
+                os.rename(f, os.path.join(u'%s_errors' % target, f))
+                os.rename(infoFile, os.path.join(u'%s_errors' % target, infoFile))
+            elif 'upload' in jresult.keys() and 'Warning' in jresult['upload'].keys():
+                os.rename(f, os.path.join(u'%s_warnings' % target, f))
+                os.rename(infoFile, os.path.join(u'%s_warnings' % target, infoFile))
+            else:
+                os.rename(f, os.path.join(target, f))
+                os.rename(infoFile, os.path.join(target, infoFile))
     commons.logout()
     os.chdir(cwd)  # so that same path structure can be used for next call
     flog.close()

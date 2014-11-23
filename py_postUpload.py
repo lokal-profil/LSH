@@ -1,23 +1,72 @@
 #!/usr/bin/python
 # -*- coding: utf-8  -*-
 #
-# Cleanup
-# TODO: Remove run method
-# Make findMissing ta parametern purge, om sant skriv inte ut utan purga var och en av de identifierade filerna
-# vänta mellan purges
+# Post upload library
+# TODO: Batch purges
 #
 import WikiApi as wikiApi
 import config as config
 import codecs
 
 # strings indicating a file belongs to the upload
-IDENTIFIERS = (u'Livrustkammaren', u'Skoklosters', u'Hallwylska')
+IDENTIFIERS = (u'Livrustkammaren', u'Skoklosters', u'Hallwylska', u'LSH')
+BROKEN_LINKS_FILE = u'BrokenFileLinks.csv'
+MISSING_FILES_FILE = u'AllMissingFiles.csv'
+FILENAME_FILE = u'data/filenames.csv'
+LSH_EXPORT_FILE = u'FileLinkExport.csv'
 
 
-def run(filename):
+def purgeBrokenLinks():
+    api = WikiApiHotfix.setUpApi(user=config.username, password=config.password, site=config.site)
+
+    # find which images point to (potentially) missing files
+    # Todo: Package them in batches of 10/25? before purging
+    pages = api.getCategoryMembers(categoryname=u'Category:Files with broken file links', cmnamespace=6)
+    count = 0
+    for page in pages:
+        if any(i in page for i in IDENTIFIERS):
+            count += 1
+            api.purgeLinks(page=page, forcelinkupdate=True)
+            if count % 250 == 0:
+                print count
+    print u'Found %d pages with broken links' % count
+
+
+def findMissingImages():
     '''
-    Vet inte om denna behövs. Möjligen kan den byggas om, med förklaring,
-    så att Broken... efter att "rätt namn har stoppats in" kan köras
+    Goes through any LSH images with broken file links to identify the
+    missing images
+    '''
+    api = WikiApiHotfix.setUpApi(user=config.username, password=config.password, site=config.site)
+    f = codecs.open(BROKEN_LINKS_FILE, 'w', 'utf8')
+
+    # find which images point to (potentially) missing files
+    pages = api.getCategoryMembers(categoryname=u'Category:Files with broken file links', cmnamespace=6)
+
+    # find which images are refered to
+    missing = []
+    count = 0
+    for page in pages:
+        if any(i in page for i in IDENTIFIERS):
+            count += 1
+            missing = missing + api.getMissingImages(page)
+    missing = list(set(missing))
+    print u'Found %d missing files in %d broken pages' % (len(missing), count)
+
+    for m in missing:
+        if any(i in m for i in IDENTIFIERS):
+            f.write(u'%s|\n' % m)
+        else:
+            print m
+    f.close()
+    print u'Go through %s and add any known renamed files after the pipe. ' \
+          u'Note that the renamed value should not include prefix or extention ' \
+          u'(i.e. be the same as in filenames file' % BROKEN_LINKS_FILE
+
+
+def fixRenamedFiles(filename=BROKEN_LINKS_FILE):
+    '''
+    Replaces any broken file links for files known to have been renamed
     '''
     f = codecs.open(filename, 'r', 'utf8')
     lines = f.read().split('\n')
@@ -26,8 +75,11 @@ def run(filename):
     for l in lines:
         if len(l) == 0:
             continue
-        oldName = u'%s.tif' % l[:-4]
-        changed.append({'new': l, 'old': oldName})
+        oldName, newName = l.split('|')
+        if len(newName.strip()) > 0:
+            # if a rename was specified
+            changed.append({'new': u'%s.%s' % (newName, oldName[-3:]),  # add file ending
+                            'old': oldName[len('File:'):]})  # strip namespace
 
     comApi = wikiApi.WikiApi.setUpApi(user=config.username, password=config.password, site=config.site)
 
@@ -47,47 +99,11 @@ def run(filename):
                     comApi.editText(name, contentsNew, u'Fixing broken filelinks from [[Commons:Batch_uploading/LSH|batch upload]]', minor=True, bot=True, nocreate=True, userassert=None)
 
 
-def purgeBrokenLinks():
-    api = WikiApiHotfix.setUpApi(user=config.username, password=config.password, site=config.site)
-
-    # find which images point to (potentially) missing files
-    pages = api.getCategoryMembers(categoryname=u'Category:Files with broken file links', cmnamespace=6)
-    count = 0
-    for page in pages:
-        if any(i in page for i in IDENTIFIERS):
-            count += 1
-            api.purgeImageLinks(page=page, forcelinkupdate=True)
-    print u'Found %d pages with broken links' % count
-
-
-def findMissingImages():
-    api = WikiApiHotfix.setUpApi(user=config.username, password=config.password, site=config.site)
-    f = codecs.open(u'BrokenFileLinks.csv', 'w', 'utf8')
-
-    # find which images point to (potentially) missing files
-    pages = api.getCategoryMembers(categoryname=u'Category:Files with broken file links', cmnamespace=6)
-
-    # find which images are refered to
-    missing = []
-    count = 0
-    for page in pages:
-        if any(i in page for i in IDENTIFIERS):
-            count += 1
-            missing = missing + api.getMissingImages(page)
-    missing = list(set(missing))
-    print u'Found %d missing files in %d broken pages' % (len(missing), count)
-
-    for m in missing:
-        if any(i in m for i in IDENTIFIERS):
-            f.write(u'%s\n' % m)
-        else:
-            print m
-    f.close()
-
-
-def findAllMissing(infile=u'data/filenames.csv'):
+def findAllMissing(infile=FILENAME_FILE):
     '''
-    Goes through the filenames file and checks each name for existence
+    Goes through the filenames file and checks each name for existence.
+    Missing files are outputed to MISSING_FILES_FILE
+    Existing files are outputed to LSH_EXPORT_FILE
     '''
     comApi = wikiApi.WikiApi.setUpApi(user=config.username, password=config.password, site=config.site)
 
@@ -95,8 +111,12 @@ def findAllMissing(infile=u'data/filenames.csv'):
     lines = f.read().split('\n')
     f.close()
 
-    f = codecs.open(u'AllMissingFiles.csv', 'w', 'utf8')
-    f.write(u'%s\n' % lines.pop(0))
+    fMissing = codecs.open(MISSING_FILES_FILE, 'w', 'utf8')
+    fMissing.write(u'%s\n' % lines.pop(0))
+
+    fFound = codecs.open(LSH_EXPORT_FILE, 'w', 'utf8')
+    fFound.write(u'PhoId|PhmInhalt01M / PhmInhalt01M\n')
+    prefix = u'https://commons.wikimedia.org/wiki/File:'
 
     files = {}
     for l in lines:
@@ -110,8 +130,12 @@ def findAllMissing(infile=u'data/filenames.csv'):
     fileInfos = comApi.getPageInfo(files.keys())
     for name, info in fileInfos.iteritems():
         if 'missing' in info.keys():
-            f.write(u'%s\n' % files[name])
-    f.close()
+            fMissing.write(u'%s\n' % files[name])
+        else:
+            phoId = files[name].split('|')[0]
+            fFound.write(u'%s|%s%s\n' % (phoId, prefix, name.replace(' ', '_')))
+    fMissing.close()
+    fFound.close()
 
 
 class WikiApiHotfix(wikiApi.WikiApi):
@@ -165,3 +189,32 @@ class WikiApiHotfix(wikiApi.WikiApi):
         if 'batchcomplete' not in jsonr.keys():
             print u'Some trouble occured while purging'
             print jsonr
+
+
+if __name__ == '__main__':
+    import sys
+    usage = u'Usage:\tpython py_postUpload.py action\n' \
+        u'\taction: purge - purges broken fileliks in LSH files and ' \
+        u'produces a file with remaining broken file links\n' \
+        u'\taction: rename - repairs broken file links for any files where ' \
+        u'a new name was added to broken file links\n' \
+        u'\taction: updateBroken - updates the brokenFileLinks file ' \
+        u'(overwriting any added renamings)\n' \
+        u'\taction: findMissing - checks all filenames for existance ' \
+        u'and produces a link table for LSH import'
+    argv = sys.argv[1:]
+    if len(argv) == 1:
+        if argv[0] == 'purge':
+            purgeBrokenLinks()
+            findMissingImages()
+        elif argv[0] == 'rename':
+            fixRenamedFiles()
+        elif argv[0] == 'updateBroken':
+            findMissingImages()
+        elif argv[0] == 'findMissing':
+            findAllMissing()
+        else:
+            print usage
+    else:
+        print usage
+# EoF

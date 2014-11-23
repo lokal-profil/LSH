@@ -42,4 +42,16 @@ All of these should be run from the main code folder.
 15. Run `python py_prepUpload.py negativeCleanup ../bilder/m_a` etc. for each of the image sub.folders where 14. was run
   * Check `¤conversion-errors.log` for problematic conversions (fix manually)
 16. Run `python py_Uploader.py ../bilder/m_a` etc. to upload the files
-  * Check `¤uploader.log` for problematic uploads (fix manually, often by copying files back and trying again...)
+  * Successful uploads end up in the `Uploaded` subdirectory
+  * Failed uploads in the `Uploaded_errors` subdirectory
+  * Uploads with warnings in the `Uploaded_warnings` subdirectory
+  * Details on problematic uploads can be found in `¤uploader.log` (fix manually, often by just trying again...)
+
+##Post upload
+1. Run `python py_postUpload purge` to purge LSH-files in [Category:Files with broken file links](https://commons.wikimedia.org/wiki/Category:Files_with_broken_file_links)
+2. Look at `BrokenFileLinks.csv` to identify any remaining files with broken file links. Add any known renames after the pipe (excluding prefix and file extention)
+3. Run `python py_postUpload rename` to repair file pages linking to renamed files
+4. Run `python py_postUpload updateBroken` to find any remaining files with broken links.
+  * These indicate missing files, these can some times be uploaded manually
+5. Run `python py_postUpload findMissing` to check filenames.csv for any files not present on Commons
+  * This also genereates an export file with photoid to url links for LSH

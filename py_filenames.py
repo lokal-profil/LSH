@@ -3,8 +3,6 @@
 # Generates filenames based on image and object descriptions
 # Note that file extentions are added separately
 #
-# TODO:
-# Import improve descriptions from wiki
 #
 import codecs
 from common import Common
@@ -42,10 +40,7 @@ def makeFilenames(folder=CSV_FOLDER, mapping=MAPPING_FOLDER, filenameP=PHOTO_FIL
 
     # write headers
     f.write(u'%s|%s|%s|%s|filename|ext\n' % (headerP[0], headerP[1], headerP[9], headerP[10]))
-    fbesk.write(u'Final filename becomes: <descr> - <museum> - <photoId>.<ext> \n\n')
-    fbesk.write(u'Attempts have been made to keep descriptions under %r characters with a hard limit at %r characters\n\n' % (GOODLENGTH, MAXLENGTH))
-    fbesk.write(u'You are free to add improved the descriptions below.\n')
-    fbesk.write(u'===phoId | description | new description===\n')
+    commonsOutput(fbesk, None, None, None, intro=True)
 
     skiplog = []
     noHopelog = []
@@ -84,16 +79,10 @@ def makeFilenames(folder=CSV_FOLDER, mapping=MAPPING_FOLDER, filenameP=PHOTO_FIL
                 continue  # haven't decided yet
         # if len(log) > 0:
         #    flog.write(u'%s\n' % log.strip('\t'))
-        if cOut % 250 == 0:
-            if cOut != 0:
-                fbesk.write(u'|}\n')
-            fbesk.write(u'\n')
-            fbesk.write(u'====%r-%r====\n' % (cOut, cOut+250))
-            fbesk.write(u'{| class="wikitable sortable"\n|-\n! PhoId !! generated <descr> !! improved <descr>\n')
-        cOut = cOut+1
-        fbesk.write(u'|-\n| %s || %s || \n' % (phoId, insufficient(phoBes)))
+        commonsOutput(fbesk, phoId, phoBes, cOut)
         newfName = u'%s - %s - %s' % (phoBes, museum, phoId)
         f.write(u'%s|%s|%s|%s|%s|\n' % (phoId, mullId, origPath, origFName, newfName))
+        cOut += 1
         uTester.append(newfName)
     print u'Skipped: %r files out of which %r may have hope.' % (dcounter+hcounter, dcounter)
     if len(uTester) != len(set(uTester)):
@@ -109,6 +98,33 @@ def makeFilenames(folder=CSV_FOLDER, mapping=MAPPING_FOLDER, filenameP=PHOTO_FIL
     fbesk.write(u'|}')
     fbesk.close()
     print u'Created %s, %s, %s' % (csvFile, mappingFile, logFile)
+
+
+def commonsOutput(fbesk, phoId, phoBes, cOut, intro=False):
+    '''
+    Given a filedescription this outputs it correctly in a Commons
+    export format
+    param fbesk: file to which to write
+    param phoId: the photo id
+    param phoBes: the description
+    param cOut: the counter
+    param intro: toggle to just output the intro
+    '''
+    if intro:
+        fbesk.write(u'Final filename becomes: <descr> - <museum> - <photoId>.<ext> \n\n')
+        fbesk.write(u'Attempts have been made to keep descriptions under %r characters with a hard limit at %r characters\n\n' % (GOODLENGTH, MAXLENGTH))
+        fbesk.write(u'You are free to improve the descriptions by adding an alternativ in the last column.\n')
+        fbesk.write(u'===phoId | description | new description===\n')
+    else:
+        # Add regular breaks
+        if cOut % 250 == 0:
+            if cOut != 0:
+                fbesk.write(u'|}\n')
+            fbesk.write(u'\n')
+            fbesk.write(u'====%r-%r====\n' % (cOut, cOut+250))
+            fbesk.write(u'{| class="wikitable sortable"\n|-\n! PhoId !! generated <descr> !! improved <descr>\n')
+        # Add row
+        fbesk.write(u'|-\n| %s || %s || \n' % (phoId, insufficient(phoBes)))
 
 
 def museumConv(text):
@@ -250,12 +266,16 @@ def cleanName(text):
     for b in easyBadStrings:
         text = text.replace(b, '').strip()
     # bad characters  - extend as more are identified
-    # Note that : is complicated as it has several different interpretaions. Currently just replacing possesive case
+    # Note that ":" is complicated as it has several different interpretaions.
+    # Currently first replacing possesive case and sentence break then
+    # dealing with stand alone :
     badChar = {u'\\': u'-', u'/': u'-', u'[': u'(', u']': u')', u'{': u'(',
                u'}': u')', u'|': u'-', u'#': u'-', u':s': u's', u'  ': u' ',
-               u'e´': u'é'}  # maybe also ? ' and &nbsp; character
+               u'e´': u'é', u': ': u', '}  # maybe also ? ' and &nbsp; character
     for k, v in badChar.iteritems():
         text = text.replace(k, v)
+    if u':' in text:
+        text = text.replace(u':', u'-')
     # replace double space by single space
     text = text.replace('  ', ' ')
     return text.strip()

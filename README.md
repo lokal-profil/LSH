@@ -48,10 +48,10 @@ All of these should be run from the main code folder.
   * Details on problematic uploads can be found in `¤uploader.log` (fix manually, often by just trying again...)
 
 ##Post upload
-1. Run `python py_postUpload purge` to purge LSH-files in [Category:Files with broken file links](https://commons.wikimedia.org/wiki/Category:Files_with_broken_file_links)
+1. Run `python py_postUpload.py purge` to purge LSH-files in [Category:Files with broken file links](https://commons.wikimedia.org/wiki/Category:Files_with_broken_file_links)
 2. Look at `BrokenFileLinks.csv` to identify any remaining files with broken file links. Add any known renames after the pipe (excluding prefix and file extention)
-3. Run `python py_postUpload rename` to repair file pages linking to renamed files
-4. Run `python py_postUpload updateBroken` to find any remaining files with broken links.
+3. Run `python py_postUpload.py rename` to repair file pages linking to renamed files
+4. Run `python py_postUpload.py updateBroken` to find any remaining files with broken links.
   * These indicate missing files, these can some times be uploaded manually
-5. Run `python py_postUpload findMissing` to check filenames.csv for any files not present on Commons
+5. Run `python py_postUpload.py findMissing` to check filenames.csv for any files not present on Commons
   * This also genereates an export file with photoid to url links for LSH

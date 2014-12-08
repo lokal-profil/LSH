@@ -3,13 +3,14 @@
 #
 # Tool for scraping existing wiki lists from commons and
 # storing these as correctly formated local files
-# How to use:
-#   just use "run()"
 #
 # TODO:
 #   Rebuild using WikiApi
-#   Propper commenting
+#   Proper commenting
+#
 from common import Common
+import py_filenames as Filenames  # reuse methods for cleaning and outputting
+# from py_filenames import cleanName  # removes dissalowed characters etc.
 import codecs
 import urllib
 import urllib2
@@ -17,11 +18,12 @@ from json import loads
 
 OUT_PATH = u'connections'
 DATA_PATH = u'data'
+MAPPING_FOLDER = u'mappings'
 
 
 def getPage(page, verbose=False):
     '''
-    Queries the commons API to return the contents of a given page
+    Queries the Commons API for the contents of a given page
     @ input: page to look at
     @ output: contents of page
     '''
@@ -130,19 +132,24 @@ def rowFormat(u, page):
             u[k] = txt[:-1]
     # now choose output format
     if page == 'People':
-        return u'*%s|%s|%s|%s|%s|%s' % (u['more'], u['frequency'], u['name'], u['link'], u['creator'], u['category'])
+        return u'*%s|%s|%s|%s|%s|%s' % (u['more'], u['frequency'],
+                                        u['name'], u['link'],
+                                        u['creator'], u['category'])
     elif page == 'Events':
-        return u'*%s|%s|%s|%s' % (u['name'], u['frequency'], u['link'], u['category'])
+        return u'*%s|%s|%s|%s' % (u['name'], u['frequency'],
+                                  u['link'], u['category'])
     elif page == 'ObjKeywords':
         return u'*%s|%s|%s' % (u['name'], u['frequency'], u['category'])
     elif page == 'Keywords':
-        return u'*%s|%s|%s|%s' % (u['name'], u['frequency'], u['more'], u['category'])
+        return u'*%s|%s|%s|%s' % (u['name'], u['frequency'],
+                                  u['more'], u['category'])
     elif page == 'Materials':
         return u'*%s|%s|%s' % (u['name'], u['frequency'], u['technique'])
     elif page == 'Places':
         return u'*%s|%s|%s' % (u['name'], u['frequency'], u['other'])
     elif page == 'Photographers':
-        return u'*%s|%s|%s|%s' % (u['name'], u['frequency'], u['creator'], u['category'])
+        return u'*%s|%s|%s|%s' % (u['name'], u['frequency'],
+                                  u['creator'], u['category'])
 
 
 def parseFilenameEntries(contents):
@@ -166,7 +173,7 @@ def parseFilenameEntries(contents):
                 generated = parts[1].replace(u'<span style="color:red">', u'') \
                                     .replace(u'</span>', u'') \
                                     .strip()
-                improved = parts[2].strip()
+                improved = Filenames.cleanName(parts[2].strip())
                 if generated != improved:  # if actually changed
                     units.append({u'phoId': phoId,
                                   u'generated': generated,
@@ -201,6 +208,7 @@ def run(out_path=OUT_PATH, data_path=DATA_PATH):
         print u'Created %s/commons-%s.csv' % (out_path, v)
 
     # need to do filenames differently
+    mappingFile = u'%s/Filenames.txt' % MAPPING_FOLDER
     contents = getPage(u'Commons:Batch uploading/LSH/Filenames')
     units = parseFilenameEntries(contents)  # identify changes
     if len(units) > 0:
@@ -212,20 +220,38 @@ def run(out_path=OUT_PATH, data_path=DATA_PATH):
                 print u'could not find id in old: %s, %s' % (unit[u'phoId'], unit[u'generated'])
                 exit(1)
             oldDesc = oldFilenames[unit[u'phoId']][u'filename']
-            newDesc = oldDesc.replace(unit[u'generated'], unit[u'improved'])
-            if oldDesc == newDesc:  # this is most often caused by commons file not having been updated
-                print u'did you run the updater a second time without first updating the filenamestable on Commons?'
+            # newDesc = oldDesc.replace(unit[u'generated'], unit[u'improved'])
+            # a safer implementation where new description is appended to
+            # old ending. I.e. "- Museum - idNo"
+            newDesc = u'%s %s' % (unit[u'improved'],
+                                  oldDesc[oldDesc.rfind('-', 0, oldDesc.rfind('-')):].strip())
+            if oldDesc == newDesc:
+                # indicator that commons file may not having been updated which
+                # may cause more complex problems which are hard to test for
+                print u'did you run the updater a second time without ' \
+                      u'first updating the filenames table on Commons?'
                 exit(1)
             oldFilenames[unit[u'phoId']][u'filename'] = newDesc
-        # overwrite old filenames
+        # overwrite old filenames and old mapping
+        # new filename.csv file w. header
         out = codecs.open(oldfile, 'w', 'utf8')
         out.write(u'PhoId|MulId|MulPfadS|MulDateiS|filename|ext\n')
+        # new Commons mapping file w. header
+        fbesk = codecs.open(mappingFile, 'w', 'utf-8')
+        Filenames.commonsOutput(fbesk, None, None, None, intro=True)
+        cOut = 0
         for k, v in oldFilenames.iteritems():
             out.write(u'%s|%s|%s|%s|%s|%s\n' % (v[u'PhoId'], v[u'MulId'],
                       v[u'MulPfadS'], v[u'MulDateiS'], v[u'filename'],
                       v[u'ext']))
+            Filenames.commonsOutput(fbesk,
+                                    v[u'PhoId'],
+                                    v[u'filename'][:v[u'filename'].rfind('-', 0, v[u'filename'].rfind('-'))].strip(),
+                                    cOut)
+            cOut += 1
         out.close()
-        print u'Updated %s' % oldfile
+        fbesk.close()
+        print u'Updated %s and produced a new mappingfile %s. Please upload the new one to Commons.' % (oldfile, mappingFile)
 
 if __name__ == '__main__':
     import sys

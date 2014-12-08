@@ -1,19 +1,23 @@
 LSH
 ===
-The redux branch is an attempt to cleanup the scripts and include the original steps needed to convert the original csv files to those required for the input
+Assorted scripts used for [LSH batch upload](http://commons.wikimedia.org/wiki/COM:LSH).
+The work originally done on the redux branch (now merged) was a first attempt to cleanup the scripts and
+include the original steps needed to convert the original csv files to those required for the input
 
-Assorted scripts used for [LSH batch upload](http://commons.wikimedia.org/wiki/COM:LSH)
+Apart from the exeptions mentioned below this was produced by [Lokal_Profil](https://github.com/lokal-profil).
 
 The SQL scripts were created by [Fredrik Andersson](http://lsh.se/sv/fredrik-andersson) at LSH.
 
-Included is PyCJWiki Version 1.31 (C) by [Smallman12q](https://en.wikipedia.org/wiki/User_talk:Smallman12q) GPL, see http://www.gnu.org/licenses/.
+Included is PyCJWiki Version 1.31 (C) by [Smallman12q](https://en.wikipedia.org/wiki/User_talk:Smallman12q) GPL,
+see http://www.gnu.org/licenses/.
 
 ## TODO
 Change over from PyCJWiki to WikiApi...
 
 Requires [WikiApi](https://github.com/lokal-profil/ODOK/blob/master/tools/WikiApi.py)
 
-WikiApi is based on PyCJWiki Version 1.31 (C) by [Smallman12q](https://en.wikipedia.org/wiki/User_talk:Smallman12q) GPL, see http://www.gnu.org/licenses/.
+WikiApi is based on PyCJWiki Version 1.31 (C) by [Smallman12q](https://en.wikipedia.org/wiki/User_talk:Smallman12q) GPL,
+see http://www.gnu.org/licenses/.
 
 ## Workflow
 

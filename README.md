@@ -34,11 +34,11 @@ All of these should be run from the main code folder.
 
 11. Run `python py_listscraper.py`  # to populate a new "connections" folder and update filenames
   * If filenames are updated then don't run again until Commons table has been updated.
-12. Run `python py_prepUpload.py moveHits ../bilder` where ../bilder is the relative path to the main image folder  # moves the relevant files to base folders and adds extention to filenames
+12. Run `python py_prepUpload.py moveHits ../bilder` where ../bilder is the relative path to the main image folder  # moves the relevant files to base folders and adds extension to filenames
 13. Run `python py_prepUpload.py makeAndRename ../bilder/m_a` etc. for each of the new image sub.folders  # creates info files and renames files
   * Check `¤generator.log` for possible problems
 14. Run `python py_prepUpload.py negatives ../bilder/m_a` etc. for each of the image sub.folders containing negatives  # creates a positive version and renames correctly
-  * Check `¤imageMagick-errors.log` for errorreports
+  * Check `¤imageMagick-errors.log` for error reports
 15. Run `python py_prepUpload.py negativeCleanup ../bilder/m_a` etc. for each of the image sub.folders where 14. was run
   * Check `¤conversion-errors.log` for problematic conversions (fix manually)
 16. Run `python py_Uploader.py ../bilder/m_a` etc. to upload the files
@@ -49,9 +49,9 @@ All of these should be run from the main code folder.
 
 ##Post upload
 1. Run `python py_postUpload.py purge` to purge LSH-files in [Category:Files with broken file links](https://commons.wikimedia.org/wiki/Category:Files_with_broken_file_links)
-2. Look at `BrokenFileLinks.csv` to identify any remaining files with broken file links. Add any known renames after the pipe (excluding prefix and file extention)
+2. Look at `BrokenFileLinks.csv` to identify any remaining files with broken file links. Add any known renames after the pipe (excluding prefix and file extension)
 3. Run `python py_postUpload.py rename` to repair file pages linking to renamed files
 4. Run `python py_postUpload.py updateBroken` to find any remaining files with broken links.
   * These indicate missing files, these can some times be uploaded manually
 5. Run `python py_postUpload.py findMissing` to check filenames.csv for any files not present on Commons
-  * This also genereates an export file with photoid to url links for LSH
+  * This also generates an export file with photoid to url links for LSH

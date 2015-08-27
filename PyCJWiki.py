@@ -27,6 +27,7 @@ import pycurl, ujson, cStringIO
 import time
 import mmap
 import traceback
+import sys
 
 class Wiki(object):
 
@@ -41,7 +42,7 @@ class Wiki(object):
 
     #useragenturl and contac in unicode
     #
-    def __init__(self, apiurl, useragentidentify):
+    def __init__(self, apiurl, useragentidentify, verbose=False):
         """
         :param apiurl: The url of the api.php such as https://commons.wikimedia.org/w/api.php
             Pass as str
@@ -56,6 +57,7 @@ class Wiki(object):
         self.userName = None
         self.tokens = []
         self.edittoken = None
+        self.verbose = verbose
 
         #Response buffer
         self.responsebuffer= cStringIO.StringIO()
@@ -129,6 +131,14 @@ class Wiki(object):
         if self.clearresponsebufferafterresponse:
             self.responsebuffer.truncate(0)
         self.headerbuffer.truncate(0)  # no need to keep more than the last
+
+        # check for warnings
+        if 'warnings' in json.keys():
+            for k, v in json['warnings'].iteritems():
+                print u'Warning for "%s":' % k
+                for kk, vv in json['warnings'][k].iteritems():
+                    print u'\t"%s": %s' % (kk, vv)
+
         return json
 
     def printResponseBuffer(self):
@@ -397,6 +407,7 @@ class Wiki(object):
             exit()
 
     def uploadignorewarnings(self,title,filekey,text,comment):
+        # deprecate in favor of param in upload & chunkedupload
         jsonr = self.httpPOST("upload", [('filename',  title.encode('utf-8')),
                                          ('filekey',filekey.encode('utf-8')),
                                          ('comment', comment.encode('utf-8')),
@@ -404,7 +415,9 @@ class Wiki(object):
                                          ('token', str(self.edittoken)),
                                          ('ignorewarnings','1')])
 
-    def upload(self,title,file,text,comment,overwritepageexists = False, uploadifduplicate = False):
+    def upload(self,title,file,text,comment,
+               overwritepageexists=False,
+               uploadifduplicate=False):
         """
         For uploading files
         :param title: File title to upload to without the "File:" in u
@@ -438,10 +451,12 @@ class Wiki(object):
 
     #http://www.mediawiki.org/wiki/API:Upload
     def chunkupload(self,title,file,text,comment,
-                    chunksize=5,chunkinmem=True, overwritepageexists = False,
-                    uploadifduplicate = False):
+                    chunksize=5, chunkinmem=True,
+                    overwritepageexists=False,
+                    uploadifduplicate=False,
+                    ignorewarnings=False):
         """
-        
+
         :param title:  File title to upload to without the "File:" in u
         :param file: The name of the file on the harddrive in str, may include relative/full path
         :param text: Text of article in u
@@ -450,18 +465,22 @@ class Wiki(object):
         :param chunkinmem: Whether to read full file to memory first, or read pieces off disc. True for full in mem
         :param overwritepageexists: Set to True to overwrite existing pages
         :param uploadifduplicate: Set to True to upload even if duplicate
+        :param ignorewarnings: Set to True to ignore all warnings (stash and upload) use with care
         :return:
         """
         txt = ''
         txt = txt+ "Chunk uploading to " + title.encode('utf-8','ignore')
-        filekey = self.stash(title,file,chunksize,chunkinmem)
-        
-        jsonr = self.httpPOST("upload", [('filename',  title.encode('utf-8')),
-                                         ('filekey', str(filekey)),
-                                         ('comment', comment.encode('utf-8')),
-                                         ('text',text.encode('utf-8')),
-                                         ('token', self.edittoken)])
-        
+        filekey = self.stash(title,file,chunksize,chunkinmem,ignorewarnings)
+
+        requestparams = [('filename',  title.encode('utf-8')),
+                         ('filekey', str(filekey)),
+                         ('comment', comment.encode('utf-8')),
+                         ('text',text.encode('utf-8')),
+                         ('token', self.edittoken)]
+        if ignorewarnings:
+             requestparams.append(('ignorewarnings','1'))
+        jsonr = self.httpPOST("upload", requestparams)
+
         if 'upload' in jsonr:
             if(jsonr['upload']['result'] == "Success"):
                 txt = txt+" "+ "Upload success"
@@ -471,13 +490,17 @@ class Wiki(object):
                         pass
                 elif 'page-exists' in jsonr['upload']['warnings']:
                     if overwritepageexists:
+                        # does not work since
+                        # uploadignorewarnings() doesn't deal with chunks
+                        # error first appears in stash()
                         self.uploadignorewarnings(title,jsonr['upload']['filekey'],text,comment)
-        
+
         txt = txt+" "+ self.responsebuffer.getvalue()
         return txt
 
     def stash(self,title, filename,
-              chunksize=5,chunkinmem=True):
+              chunksize=5, chunkinmem=True,
+              ignorewarnings=False):
         """
 
         :param title: The filename to stash it under in u
@@ -498,31 +521,45 @@ class Wiki(object):
             map=mmap.mmap(fileno = b.fileno(), length=0, access=mmap.ACCESS_READ)
             #Close later
 
-        jsonr = self.httpPOST("upload", [('stash','1'),
-                                         ('token', str(self.edittoken)),
-                                         ('filename', title.encode('utf-8')),
-                                         ('offset', str(map.tell())),
-                                         ('filesize', str(map.size())),
-                                         ('chunk"; filename="something', (pycurl.FORM_CONTENTTYPE, "application/octet-stream",
-                                                                          pycurl.FORM_CONTENTS, map.read(chunksize * 1048576)))])
+        requestparams = [('stash','1'),
+                         ('token', str(self.edittoken)),
+                         ('filename', title.encode('utf-8')),
+                         ('offset', str(map.tell())),
+                         ('filesize', str(map.size())),
+                         ('chunk"; filename="something', (pycurl.FORM_CONTENTTYPE, "application/octet-stream",
+                                                          pycurl.FORM_CONTENTS, map.read(chunksize * 1048576)))]
+        if ignorewarnings:
+             requestparams.append(('ignorewarnings','1'))
+        jsonr = self.httpPOST("upload", requestparams)
+
         if 'upload' in jsonr:
             uploadcounter=1
             try:
                 while(jsonr['upload']['result'] == "Continue"):
-                    jsonr = self.httpPOST("upload", [('stash','1'),
-                                                     ('token', str(self.edittoken)),
-                                                     ('filename', title.encode('utf-8')),
-                                                     ('offset', str(map.tell())),
-                                                     ('filesize', str(map.size())),
-                                                     ('filekey', str(jsonr['upload']['filekey'])),
-                                                     ('chunk"; filename="something', (pycurl.FORM_CONTENTTYPE, "application/octet-stream",
-                                                                                      pycurl.FORM_CONTENTS, map.read(chunksize * 1048576)))])
+                    if self.verbose:
+                        sys.stdout.write('.')
+                        sys.stdout.flush()
+
+                    requestparams = [('stash','1'),
+                                     ('token', str(self.edittoken)),
+                                     ('filename', title.encode('utf-8')),
+                                     ('offset', str(map.tell())),
+                                     ('filesize', str(map.size())),
+                                     ('filekey', str(jsonr['upload']['filekey'])),
+                                     ('chunk"; filename="something', (pycurl.FORM_CONTENTTYPE, "application/octet-stream",
+                                                                      pycurl.FORM_CONTENTS, map.read(chunksize * 1048576)))]
+                    if ignorewarnings:
+                         requestparams.append(('ignorewarnings','1'))
+                    jsonr = self.httpPOST("upload", requestparams)
+
                     #Bug 44923
                     if((uploadcounter == 1) and (map.tell() == map.size())):
                         if(jsonr['upload']['result'] == "Continue"):
                             jsonr['upload']['result'] = "Success"
                             break
                 if(jsonr['upload']['result'] == "Success"):
+                    if self.verbose:
+                        print ''  # new line
                     print 'Successfully stashed at: ' + jsonr['upload']['filekey']
                     return jsonr['upload']['filekey']
                 else:
@@ -540,7 +577,7 @@ class Wiki(object):
         return self._apiurl + "?action=" + action + "&format=json"
 
     def logout(self):
-        jsonr = self.httpPOST('logout',[('','')])
+        jsonr = self.httpPOST('logout', [('', '')])
 
     @property
     def apiurl(self):

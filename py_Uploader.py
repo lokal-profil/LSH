@@ -49,10 +49,10 @@ def upFiles(path, password=config.password, user=config.username,
         os.mkdir(u'%s_errors' % target)
     if not os.path.isdir(u'%s_warnings' % target):
         os.mkdir(u'%s_warnings' % target)
-    
+
     files = os.listdir(u'.')
     for f in files:
-        if f.endswith(u'.tif') or f.endswith(u'.jpg'):
+        if f.endswith((u'.tif', u'.jpg')):
             infoFile = u'%s.txt' % f[:-4]
             if not os.path.exists(infoFile):
                 flog.write(u'%s: Found tif/jpg without info' % f)
@@ -101,10 +101,10 @@ def updateInfoLocal(path, password=config.password, user=config.username,
 
     files = os.listdir(u'.')
     for f in files:
-        if f.endswith(u'.tif'):
+        if f.endswith((u'.tif', u'.jpg')):
             infoFile = u'%s.txt' % f[:-4]
             if not os.path.exists(infoFile):
-                flog.write(u'%s: Found tif without info' % f)
+                flog.write(u'%s: Found tif/jpg without info' % f)
                 continue
             infoIn = codecs.open(infoFile, 'r', 'utf-8')
             info = infoIn.read()
@@ -147,7 +147,7 @@ def updateInfoOnline(path, password=config.password, user=config.username,
 
     files = os.listdir(u'.')
     for f in files:
-        if f.endswith(u'.tif'):
+        if f.endswith((u'.tif', u'.jpg')):
             print u'Working on: %s...' % f
             infoFile = u'%s.txt' % f[:-4]
             # get current version

@@ -163,6 +163,7 @@ def negatives(path):
     creates an inverted file at filename.tif
     creates a info file for negative and modifes info file for positive
     path is the realtive path to the directory in which to process the files
+    only .tif are ever negatives
     '''
     count = 0
     skipcount = 0

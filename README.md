@@ -42,6 +42,7 @@ All of these should be run from the main code folder.
 13. Run `python py_prepUpload.py makeAndRename ../bilder/m_a` etc. for each of the new image sub.folders  # creates info files and renames files
   * Check `¤generator.log` for possible problems
 14. Run `python py_prepUpload.py negatives ../bilder/m_a` etc. for each of the image sub.folders containing negatives  # creates a positive version and renames correctly
+  * Series with negatives are A, B, D, E, O, G
   * Check `¤imageMagick-errors.log` for error reports
 15. Run `python py_prepUpload.py negativeCleanup ../bilder/m_a` etc. for each of the image sub.folders where 14. was run
   * Check `¤conversion-errors.log` for problematic conversions (fix manually)

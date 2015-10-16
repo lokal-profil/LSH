@@ -39,20 +39,25 @@ class Common:
         return url
 
     @staticmethod
-    def openFile(filename, delimiter='|'):
+    def openFile(filename, delimiter='|', codec='utf-8'):
         '''opens a given  pipe-separated csv file (utf-8) and returns the header row plus following lines)'''
-        lines = codecs.open(filename, 'r', 'utf-8').read().split('\n')
+        lines = codecs.open(filename, 'r', codec).read().split('\n')
         header = lines.pop(0).split(delimiter)
         return header, lines
 
     @staticmethod
-    def openFileAsDictList(filename, delimiter='|'):
+    def openFileAsDictList(filename, delimiter='|', codec='utf-8', headerCheck=None):
         '''
         opens a given pipe-separated csv file (utf-8)
         and returns a list of dicts, using header row for keys)
         '''
-        lines = codecs.open(filename, 'r', 'utf-8').read().split('\n')
+        lines = codecs.open(filename, 'r', codec).read().split('\n')
         header = lines.pop(0).split(delimiter)
+
+        # verify header works
+        if headerCheck is not None and headerCheck != header:
+            print 'Header not same as comparison string!'
+            exit()
 
         entryList = []
         for l in lines:
@@ -235,55 +240,59 @@ class Common:
                     return None
             return u'{{other date|-|%s|%s}}' % (combined[0], combined[1])
         # Non-risky continues
-        endings = {u'?': u'?',
-                   u'(?)': u'?',
-                   u'c': u'ca',
-                   u'ca': u'ca',
-                   u'cirka': u'ca',
-                   u'Cirka': u'ca',
-                   u'andra hälft': u'2half',
-                   u'första hälft': u'1half',
-                   u'början': u'early',
-                   u'slut': u'end',
-                   u'mitt': u'mid',
-                   u'första fjärdedel': u'1quarter',
-                   u'andra fjärdedel': u'2quarter',
-                   u'tredje fjärdedel': u'3quarter',
-                   u'fjärde fjärdedel': u'4quarter',
-                   u'sista fjärdedel': u'4quarter',
-                   u'Före': u'<',
-                   u'Efter': u'>',
-                   u'före': u'<',
-                   u'efter': u'>'}
-        starts = {u'tidigt': u'early',
-                  u'br av': u'early',
-                  u'tid ': u'early',
-                  u'sent': u'late',
-                  u'sl av': u'late',
-                  u'ca': u'ca',
-                  u'Våren': u'spring',
-                  u'Sommaren': u'summer',
-                  u'Hösten': u'fall',
-                  u'Vintern': u'winter',
-                  u'sekelskiftet': u'turn of the century'}
+        endings = {
+            u'?': u'?',
+            u'(?)': u'?',
+            u'c': u'ca',
+            u'ca': u'ca',
+            u'cirka': u'ca',
+            u'andra hälft': u'2half',
+            u'första hälft': u'1half',
+            u'början': u'early',
+            u'slut': u'end',
+            u'slutet': u'end',
+            u'mitt': u'mid',
+            u'första fjärdedel': u'1quarter',
+            u'andra fjärdedel': u'2quarter',
+            u'tredje fjärdedel': u'3quarter',
+            u'fjärde fjärdedel': u'4quarter',
+            u'sista fjärdedel': u'4quarter',
+            u'före': u'<',
+            u'efter': u'>',
+            u'-': u'>'}
+        starts = {
+            u'tidigt': u'early',
+            u'br av': u'early',
+            u'tid ': u'early',
+            u'sent': u'late',
+            u'sl av': u'late',
+            u'ca': u'ca',
+            u'våren': u'spring',
+            u'sommaren': u'summer',
+            u'hösten': u'fall',
+            u'vintern': u'winter',
+            u'sekelskiftet': u'turn of the century',
+            u'före': u'<',
+            u'efter': u'>',
+            u'-': u'<'}
         talEndings = [u'-talets', u'-tal', u'-talet', u' talets']
         modalityEndings = [u'troligen', u'sannolikt']
         for k, v in starts.iteritems():
-            if date.startswith(k):
+            if date.lower().startswith(k):
                 again = Common.stdDate(date[len(k):])
                 if again:
                     return u'{{other date|%s|%s}}' % (v, again)
                 else:
                     return None
         for k, v in endings.iteritems():
-            if date.endswith(k):
+            if date.lower().endswith(k):
                 again = Common.stdDate(date[:-len(k)])
                 if again:
                     return u'{{other date|%s|%s}}' % (v, again)
                 else:
                     return None
         for k in modalityEndings:
-            if date.endswith(k):
+            if date.lower().endswith(k):
                 date = date[:-len(k)].strip(u'.,  ')
                 again = Common.stdDate(date)
                 if again:
@@ -291,7 +300,7 @@ class Common:
                 else:
                     return None
         for k in talEndings:
-            if date.endswith(k):
+            if date.lower().endswith(k):
                 date = date[:-len(k)].strip(u'.  ')
                 if date[-2:] == u'00':
                     v = u'century'

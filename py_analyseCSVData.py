@@ -51,9 +51,9 @@ def run(in_path=CSV_DIR_CLEAN, log_file=LOG_FILE):
     A.makeAbbrevSource()
 
     # start analysis
-    analysePhoto(A, f, file_in=u'%s/%s.csv' % (in_path, 'photo'))
-    analyseMulti(f, file_in=u'%s/%s.csv' % (in_path, 'multimedia'))
-    analyseYear(f, file_in=u'%s/%s.csv' % (in_path, 'ausstellung'))
+    analysePhoto(A, f, file_in=os.path.join(in_path, u'%s.csv' % 'photo'))
+    analyseMulti(f, file_in=os.path.join(in_path, u'%s.csv' % 'multimedia'))
+    analyseYear(f, file_in=os.path.join(in_path, u'%s.csv' % 'ausstellung'))
 
     print u'Created %s' % log_file
 

@@ -202,18 +202,19 @@ def run(out_path=OUT_PATH, data_path=DATA_PATH):
         contents = getPage(u'Commons:Batch uploading/LSH/%s' % k)
         units = parseEntries(contents)
         output = formatOutput(units, k)
-        out = codecs.open(u'%s/commons-%s.csv' % (out_path, v), 'w', 'utf8')
+        outFile = os.path.join(out_path, u'commons-%s.csv' % v)
+        out = codecs.open(outFile, 'w', 'utf8')
         out.write(output)
         out.close()
-        print u'Created %s/commons-%s.csv' % (out_path, v)
+        print u'Created %s' % outFile
 
     # need to do filenames differently
-    mappingFile = u'%s/Filenames.txt' % MAPPING_FOLDER
+    mappingFile = os.path.join(MAPPING_FOLDER, u'Filenames.txt')
     contents = getPage(u'Commons:Batch uploading/LSH/Filenames')
     units = parseFilenameEntries(contents)  # identify changes
     if len(units) > 0:
         # load old filenames
-        oldfile = u'%s/filenames.csv' % data_path
+        oldfile = os.path.join(data_path, u'filenames.csv')
         oldFilenames = Common.file_to_dict(oldfile, idcol=0)
         for unit in units:
             if not unit[u'phoId'] in oldFilenames.keys():
@@ -256,9 +257,9 @@ def run(out_path=OUT_PATH, data_path=DATA_PATH):
 if __name__ == '__main__':
     import sys
     usage = u'Usage:\tpython py_listscraper.py out_path data_path\n' \
-        + u'\tout_path (optional):the relative pathname to the target \n' \
-        + u'directory. Defaults to "%s"' % OUT_PATH \
-        + u'\tdata_path (optional):the relative pathname to the data \n' \
+        + u'\tout_path (optional):the relative pathname to the target ' \
+        + u'directory. Defaults to "%s"\n' % OUT_PATH \
+        + u'\tdata_path (optional):the relative pathname to the data ' \
         + u'directory. Defaults to "%s"' % DATA_PATH
     argv = sys.argv[1:]
     if len(argv) == 0:

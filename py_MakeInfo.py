@@ -8,6 +8,7 @@
 # data files should not be hardcoded
 #
 import codecs
+import os
 from common import Common
 
 
@@ -56,7 +57,7 @@ class MakeInfo:
             wName, out = self.infoFromPhoto(pho_mull[0], preview=False, testing=False)
             if out:
                 bName = u'%s.txt' % wName[:-4].replace(u' ', u'_')
-                f = codecs.open(u'output/%s' % bName, 'w', 'utf-8')
+                f = codecs.open(os.path.join(u'output', bName), 'w', 'utf-8')
                 f.write(out)
                 f.close()
                 print u'%s outputed to %s' % (pho_mull[0], bName)
@@ -66,7 +67,7 @@ class MakeInfo:
     def catTest(self):
         self.readInLibraries()
         self.readConnections()
-        f = codecs.open(u'output/catStats.csv', 'w', 'utf-8')
+        f = codecs.open(os.path.join(u'output', u'catStats.csv'), 'w', 'utf-8')
         f.write(u'#RealCats/MetaCats|cat1;cat2...\n')
         count = 0
         for pho_mull in self.photoD.keys():
@@ -85,7 +86,7 @@ class MakeInfo:
         self.readInLibraries()
         self.readConnections()
         if not log:
-            log = codecs.open(u'output/catStats2.csv', 'w', 'utf-8')
+            log = codecs.open(os.path.join(u'output', u'catStats2.csv'), 'w', 'utf-8')
         log.write(u'#RealCats/MetaCats|cat1;cat2...\n')
         count = 0
         for pho_mull in pho_mull_list:
@@ -102,29 +103,29 @@ class MakeInfo:
 
     def readInLibraries(self, verbose=False, careful=False):
         '''reads the given files into dictionaries'''
-        self.photoD = Common.file_to_dict(u'data/photo_multimedia_etc.csv', idcol=[0, 1], verbose=verbose, careful=careful)
-        self.stichD = Common.file_to_dict(u'data/stichwort_trim.csv', verbose=verbose, careful=careful)
-        self.massD = Common.file_to_dict(u'data/objMass_trim.csv', verbose=verbose, careful=careful)
-        self.multiD = Common.file_to_dict(u'data/objMultiple_trim.csv', verbose=verbose, careful=careful)
-        self.objD = Common.file_to_dict(u'data/objDaten_etc.csv', verbose=verbose, careful=careful)
-        self.aussD = Common.file_to_dict(u'data/ausstellung_trim.csv', verbose=verbose, careful=careful)
-        self.ereignisD = Common.file_to_dict(u'data/ereignis_trim.csv', verbose=verbose, careful=careful)
-        self.kuenstlerD = Common.file_to_dict(u'data/kuenstler_trim.csv', verbose=verbose, careful=careful)
-        self.wikinameD = Common.file_to_dict(u'data/filenames.csv', idcol=[0, 1], verbose=verbose, careful=careful)
+        self.photoD = Common.file_to_dict(os.path.join(u'data', u'photo_multimedia_etc.csv'), idcol=[0, 1], verbose=verbose, careful=careful)
+        self.stichD = Common.file_to_dict(os.path.join(u'data', u'stichwort_trim.csv'), verbose=verbose, careful=careful)
+        self.massD = Common.file_to_dict(os.path.join(u'data', u'objMass_trim.csv'), verbose=verbose, careful=careful)
+        self.multiD = Common.file_to_dict(os.path.join(u'data', u'objMultiple_trim.csv'), verbose=verbose, careful=careful)
+        self.objD = Common.file_to_dict(os.path.join(u'data', u'objDaten_etc.csv'), verbose=verbose, careful=careful)
+        self.aussD = Common.file_to_dict(os.path.join(u'data', u'ausstellung_trim.csv'), verbose=verbose, careful=careful)
+        self.ereignisD = Common.file_to_dict(os.path.join(u'data', u'ereignis_trim.csv'), verbose=verbose, careful=careful)
+        self.kuenstlerD = Common.file_to_dict(os.path.join(u'data', u'kuenstler_trim.csv'), verbose=verbose, careful=careful)
+        self.wikinameD = Common.file_to_dict(os.path.join(u'data', u'filenames.csv'), idcol=[0, 1], verbose=verbose, careful=careful)
     #
     def readConnections(self, verbose=False, keepskip=False, folder=u'connections'):
         '''reads the commons connections files into dictionaries'''
-        self.stichC = Common.makeConnections(u'%s/commons-Keywords.csv' % folder, start=u'[[:Category:', end=u']]', multi=True, verbose=verbose, keepskip=keepskip)
-        self.placesC = Common.makeConnections(u'%s/commons-Places.csv' % folder, addpipe=True, verbose=verbose, keepskip=keepskip)
-        self.ereignisC = Common.makeConnections(u'%s/commons-Events.csv' % folder, start=u'[[:Category:', end=u']]', multi=True, verbose=verbose, keepskip=keepskip)
-        self.ereignisLinkC = Common.makeConnections(u'%s/commons-Events.csv' % folder, useCol=2, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
-        self.peopleLinkC = Common.makeConnections(u'%s/commons-People.csv' % folder, useCol=3, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
-        self.peopleCreatC = Common.makeConnections(u'%s/commons-People.csv' % folder, useCol=4, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
-        self.peopleCatC = Common.makeConnections(u'%s/commons-People.csv' % folder, start=u'[[:Category:', end=u']]', verbose=verbose, keepskip=keepskip)
-        self.materialC = Common.makeConnections(u'%s/commons-Materials.csv' % folder, multi=True, verbose=verbose, keepskip=keepskip)
-        self.objCatC = Common.makeConnections(u'%s/commons-ObjKeywords.csv' % folder, start=u'[[:Category:', end=u']]', multi=True, verbose=verbose, keepskip=keepskip)
-        self.photographerCreatC = Common.makeConnections(u'%s/commons-Photographers.csv' % folder, useCol=2, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
-        self.photographerCatC = Common.makeConnections(u'%s/commons-Photographers.csv' % folder, start=u'[[:Category:', end=u']]', verbose=verbose, keepskip=keepskip)
+        self.stichC = Common.makeConnections(os.path.join(folder, u'commons-Keywords.csv'), start=u'[[:Category:', end=u']]', multi=True, verbose=verbose, keepskip=keepskip)
+        self.placesC = Common.makeConnections(os.path.join(folder, u'commons-Places.csv'), addpipe=True, verbose=verbose, keepskip=keepskip)
+        self.ereignisC = Common.makeConnections(os.path.join(folder, u'commons-Events.csv'), start=u'[[:Category:', end=u']]', multi=True, verbose=verbose, keepskip=keepskip)
+        self.ereignisLinkC = Common.makeConnections(os.path.join(folder, u'commons-Events.csv'), useCol=2, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
+        self.peopleLinkC = Common.makeConnections(os.path.join(folder, u'commons-People.csv'), useCol=3, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
+        self.peopleCreatC = Common.makeConnections(os.path.join(folder, u'commons-People.csv'), useCol=4, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
+        self.peopleCatC = Common.makeConnections(os.path.join(folder, u'commons-People.csv'), start=u'[[:Category:', end=u']]', verbose=verbose, keepskip=keepskip)
+        self.materialC = Common.makeConnections(os.path.join(folder, u'commons-Materials.csv'), multi=True, verbose=verbose, keepskip=keepskip)
+        self.objCatC = Common.makeConnections(os.path.join(folder, u'commons-ObjKeywords.csv'), start=u'[[:Category:', end=u']]', multi=True, verbose=verbose, keepskip=keepskip)
+        self.photographerCreatC = Common.makeConnections(os.path.join(folder, u'commons-Photographers.csv'), useCol=2, start=u'[[', end=u']]', verbose=verbose, keepskip=keepskip)
+        self.photographerCatC = Common.makeConnections(os.path.join(folder, u'commons-Photographers.csv'), start=u'[[:Category:', end=u']]', verbose=verbose, keepskip=keepskip)
         MakeInfo.makeRoles(self)
         MakeInfo.makeDimensions(self)
         MakeInfo.makeAbbrevLicense(self)

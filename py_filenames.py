@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # -*- coding: UTF-8  -*-
 #
 # Generates filenames based on image and object descriptions
@@ -24,13 +25,13 @@ def makeFilenames(folder=CSV_FOLDER, mapping=MAPPING_FOLDER, filenameP=PHOTO_FIL
     Generating filenames from photo and object descriptions
     '''
     # input files
-    headerP, linesP = Common.openFile(u'%s/%s' % (folder, filenameP))
-    oDict = Common.file_to_dict(u'%s/%s' % (folder, filenameO))
+    headerP, linesP = Common.openFile(os.path.join(folder, filenameP))
+    oDict = Common.file_to_dict(os.path.join(folder, filenameO))
 
     # output files
-    csvFile = u'%s/filenames.csv' % folder
-    mappingFile = u'%s/Filenames.txt' % mapping
-    logFile = u'%s/%s/filenames.log' % (folder, LOG_SUBFOLDER)
+    csvFile = os.path.join(folder, u'filenames.csv')
+    mappingFile = os.path.join(mapping, u'Filenames.txt')
+    logFile = os.path.join(folder, LOG_SUBFOLDER, u'filenames.log')
     # create target if it doesn't exist
     if not os.path.isdir(mapping):
         os.mkdir(mapping)

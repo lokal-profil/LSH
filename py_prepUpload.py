@@ -10,7 +10,7 @@ import pipes
 from py_MakeInfo import MakeInfo
 
 # filename file
-FILENAMES = u'data/filenames.csv'
+FILENAMES = os.path.join(u'data', u'filenames.csv')
 
 
 def findFiles(path=u'.', filetypes=[u'.tif', u'.jpg']):
@@ -46,13 +46,14 @@ def moveFiles(target, tree, nameToPho, path=u'.', filetypes=[u'.tif', u'.jpg']):
     files = findFiles(path, filetypes)
     counter = 0
     for filename in files:
-        plain_name = filename.split('/')[-1]
-        filepath = filename[:-len(plain_name)].strip(u'./')
-        if filepath in tree.keys() and plain_name[:-4] in tree[filepath]:
+        filepath, plain_name = os.path.split(filename)
+        fileKey, ext = os.path.splitext(plain_name)  # filename, .ext
+        filepath = filepath.lstrip(u'./')
+        if filepath in tree.keys() and fileKey in tree[filepath]:
             os.rename(filename, os.path.join(target, plain_name))
             counter += 1
             # record the actual file extention
-            nameToPho[plain_name[:-4]]['ext'] = plain_name[-3:]
+            nameToPho[fileKey]['ext'] = ext[1:]
     return (counter, len(files))
 
 

@@ -82,14 +82,14 @@ def run(in_path=IN_PATH, out_path=OUT_PATH):
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
     # several dicts per file
-    writePlaces(u'%s/Places.txt' % out_path, exhibitPlaces, landDict, ortDict, emptyPlaces)  # Places
-    writeObjKeywords(u'%s/ObjKeywords.txt' % out_path, ord1Dict, ord2Dict, gruppDict, emptyObjCats)  # ObjKeywords
+    writePlaces(os.path.join(out_path, u'Places.txt'), exhibitPlaces, landDict, ortDict, emptyPlaces)  # Places
+    writeObjKeywords(os.path.join(out_path, u'ObjKeywords.txt'), ord1Dict, ord2Dict, gruppDict, emptyObjCats)  # ObjKeywords
     # one dict per file
-    writeMaterials(u'%s/Materials.txt' % out_path, techDict)  # Materials
-    writeKeywords(u'%s/Keywords.txt' % out_path, keywords)  # Keywords
-    writeEvents(u'%s/Events.txt' % out_path, events)  # Events
-    writePeople(u'%s/People.txt' % out_path, people)  # People
-    writePhotographers(u'%s/Photographers.txt' % out_path, photographers)  # Photographers
+    writeMaterials(os.path.join(out_path, u'Materials.txt'), techDict)  # Materials
+    writeKeywords(os.path.join(out_path, u'Keywords.txt'), keywords)  # Keywords
+    writeEvents(os.path.join(out_path, u'Events.txt'), events)  # Events
+    writePeople(os.path.join(out_path, u'People.txt'), people)  # People
+    writePhotographers(os.path.join(out_path, u'Photographers.txt'), photographers)  # Photographers
 
 
 def makePlaceAndMaterial(A, oDict):

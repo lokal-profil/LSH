@@ -61,8 +61,8 @@ def fixFiles(in_path=CSV_DIR_ORIG, out_path=CSV_DIR_CLEAN, encoding='utf-16'):
 
     # convert the files and output a clean copy
     for k, v in csvFiles.iteritems():
-        file_out = u'%s/%s.csv' % (out_path, k)
-        file_in = u'%s/%s' % (in_path, v)
+        file_out = os.path.join(out_path, u'%s.csv' % k)
+        file_in = os.path.join(in_path, v)
         fixLinebreak(file_in, file_out, encoding)
     print u"Done!"
 

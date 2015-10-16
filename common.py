@@ -124,10 +124,8 @@ class Common:
         header, lines = Common.openFile(filename)
         dDict = {}
         unique = True
-        first = True
         for l in lines:
-            if first:
-                first = False
+            if len(l) == 0:
                 continue
             col = l.split('|')
             # id can either be one column or a combination of several
@@ -165,7 +163,7 @@ class Common:
            keepskip: Also returns "-" instead of skipping these. Default = False
         '''
         dDict = {}
-        header, lines = Common.openFile(filename)
+        lines = codecs.open(filename, 'r', 'utf-8').read().split('\n')
         c = 0
         for l in lines:
             if l.startswith(u'===') or len(l) == 0:

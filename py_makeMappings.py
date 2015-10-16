@@ -16,19 +16,18 @@
 # If PhoSystematikS is introduced in photo then search thorugh comments
 # to see where editing is needed
 #
-# TODO: Once MakeInfo uses Photographers from connections the source and
-#       The parameters used here will have to be updated
-#
 from py_MakeInfo import MakeInfo
-from py_prepCSVData import CSV_FILES  # these are mentioned in output
+from py_prepCSVData import CSV_CONFIG  # needed to load CSV_FILES
 import codecs
 import os
+import json
 
 # roller som inte tas med i People
 ROLE_BLACKLIST = [u'Säljare', u'Auktion', u'Förmedlare', u'Givare',
                   u'Återförsäljare', u'Konservator']
 IN_PATH = u'old_connections'
 OUT_PATH = u'mappings'
+CSV_FILES = None
 
 
 def run(in_path=IN_PATH, out_path=OUT_PATH):
@@ -36,6 +35,12 @@ def run(in_path=IN_PATH, out_path=OUT_PATH):
     A = MakeInfo()
     A.readInLibraries()
     A.readConnections(keepskip=True, folder=in_path)
+
+    # read csv files from config
+    f = codecs.open(CSV_CONFIG, 'r', 'utf-8')
+    global CSV_FILES
+    CSV_FILES = json.load(f)
+    f.close()
 
     # Create a dict of depicted ObjId with frequency as value
     # Would have to concider PhoSystematikS if present
@@ -69,7 +74,7 @@ def run(in_path=IN_PATH, out_path=OUT_PATH):
     ord2Dict = simpleCombine(A.objCatC, ord2Dict)
     gruppDict = simpleCombine(A.objCatC, gruppDict)
     keywords = combineKeywords(A.stichC, keywords)
-    photographers = combinePhotographers(A.photographers, photographers)  # TODO:Change once externalised
+    photographers = combinePhotographers(A.photographerCreatC, A.photographerCatC, photographers)
     events = combineEvents(A.ereignisC, A.ereignisLinkC, events)
     people = combinePeople(A.peopleLinkC, A.peopleCreatC, A.peopleCatC, people)
 
@@ -228,42 +233,47 @@ def makePhotographers(A):
     for k, v in A.photoD.iteritems():
         art = u'%s %s' % (v[u'AdrVorNameS'], v[u'AdrNameS'])
         if art in photographers.keys():
-            photographers[art] += 1
+            photographers[art]['freq'] += 1
         elif art.strip() != u'':
-            photographers[art] = 1
+            photographers[art] = {'freq': 1}
     return photographers
 
 
-def combinePhotographers(oldDict, newDict):
+def combinePhotographers(oldCreat, oldCat, newDict):
     '''
     Enrich mapping by previously done mapping
-    newDict has freq parameter
-    oldDict has name: (creator, category)
-    TODO: check that this still works once Photographers are externalised
+    newDict has freq
+    oldDict is split into
+    oldCat a category
+    oldCreat a creator template
     '''
-    comboDict = {}
-    # add made mappings to new frequencies
     for k, v in newDict.iteritems():
-        comboDict[k] = {u'freq': v, u'creator': u'', u'cat': u''}
-        if k in oldDict.keys():
-            creator, category = oldDict[k]
-            if creator is not None and creator.startswith('[['):
-                comboDict[k][u'creator'] = creator[len(u'[[Creator:'):-3]
-            if category is not None:
-                comboDict[k][u'cat'] = category
-            del oldDict[k]
+        newDict[k].update({u'cat': u'', u'creator': u''})
+        if k in oldCreat.keys():  # assume key list is same in both
+            if oldCreat[k] is not None:
+                if oldCreat[k].startswith(u'Creator:'):
+                    oldCreat[k] = oldCreat[k][len(u'Creator:'):]
+                newDict[k][u'creator'] = oldCreat[k]
+            if oldCat[k] is not None:
+                newDict[k][u'cat'] = oldCat[k]
+            del oldCreat[k]
+
     # add any previous mapping
-    for k, v in oldDict.iteritems():
-        creator, category = oldDict[k]
-        if (creator is not None and creator.startswith('[[')) or (category is not None):
-            if creator is None or not creator.startswith('[['):
+    for k, v in oldCreat.iteritems():
+        cat = oldCat[k]
+        creator = oldCreat[k]
+        if (cat is not None) or (creator is not None):
+            if cat is None:
+                cat = u''
+            if creator is None:
                 creator = u''
-            else:
-                creator = creator[len(u'[[Creator:'):-3]
-            if category is None:
-                category = u''
-            comboDict[k] = {u'freq': 0, u'creator': creator, u'cat': category}
-    return comboDict
+            elif creator.startswith(u'Creator:'):
+                creator = creator[len(u'Creator:'):]
+            newDict[k] = {u'freq': 0,
+                          u'cat': cat,
+                          u'creator': creator
+                          }
+    return newDict
 
 
 def writePhotographers(filename, dDict):
@@ -604,6 +614,8 @@ def combinePeople(oldLink, oldCreat, oldCat, newDict):
             if oldLink[k] is not None:
                 newDict[k][u'link'] = oldLink[k]
             if oldCreat[k] is not None:
+                if oldCreat[k].startswith(u'Creator:'):
+                    oldCreat[k] = oldCreat[k][len(u'Creator:'):]
                 newDict[k][u'creator'] = oldCreat[k]
             if oldCat[k] is not None:
                 newDict[k][u'cat'] = oldCat[k]
@@ -621,6 +633,8 @@ def combinePeople(oldLink, oldCreat, oldCat, newDict):
                 link = u''
             if creator is None:
                 creator = u''
+            elif creator.startswith(u'Creator:'):
+                creator = creator[len(u'Creator:'):]
             newDict[k] = {u'freq': 0,
                           u'descr': u'',
                           u'cat': cat,

@@ -9,9 +9,6 @@
 # * Original csv must be UTF encoded with "|" as cell separator and no
 #   field separator
 #
-# TODO:
-#   Set up CSV_FILES so that version no/data can more easily be updated/read
-#
 # Includes the following old files:
 # * FixFile.py
 # * FixFile-fullObjDaten.py (partially)
@@ -22,24 +19,12 @@ fixFiles() - converts orignal csv to cleaned up csv, run from main folder
 '''
 import codecs
 import os
+import json
 import re  # only needed for hackfix
 
 CSV_DIR_ORIG = u'original_csv'
 CSV_DIR_CLEAN = u'clean_csv'
-
-CSV_FILES = {  # all of these must be present
-    'ausstellung': u'Ausstellung 2.0.csv',
-    'kuenstler': u'kuenstler 2.0.csv',
-    'objDaten': u'ObjDaten 2.0 - alla objId 2014-10-23.csv',
-    'objMass': u'ObjMass 2.0.csv',
-    'photo': u'photo 2.0.csv',
-    'stichwort': u'Photo_stichwort 2.0.csv',
-    'ereignis': u'Ereignis 2.0.csv',
-    'multimedia': u'multimedia 2.0.csv',
-    'objDatenSam': u'ObjDaten - samhФrande nr 2.0.csv',
-    'objMultiple': u'ObjMultiple 2.0.csv',
-    'photoObjDaten': u'Photo - ObjDaten 2.0.csv'
-}
+CSV_CONFIG = u'csv_config.json'
 
 
 def fixFiles(in_path=CSV_DIR_ORIG, out_path=CSV_DIR_CLEAN, encoding='utf-16'):
@@ -60,7 +45,13 @@ def fixFiles(in_path=CSV_DIR_ORIG, out_path=CSV_DIR_CLEAN, encoding='utf-16'):
     # check that path is a directory and all files are present
     if not os.path.isdir(in_path):
         print u"Given path \"%s\" is not a directory" % in_path
-    for k, v in CSV_FILES.iteritems():
+
+    # read csv files from config
+    f = codecs.open(CSV_CONFIG, 'r', 'utf-8')
+    csvFiles = json.load(f)
+    f.close()
+
+    for k, v in csvFiles.iteritems():
         if v not in os.listdir(in_path):
             print u"Required file \"%s\" is not present in " \
                   u"\"%s\"" % (v, in_path)
@@ -69,7 +60,7 @@ def fixFiles(in_path=CSV_DIR_ORIG, out_path=CSV_DIR_CLEAN, encoding='utf-16'):
         os.mkdir(out_path)
 
     # convert the files and output a clean copy
-    for k, v in CSV_FILES.iteritems():
+    for k, v in csvFiles.iteritems():
         file_out = u'%s/%s.csv' % (out_path, k)
         file_in = u'%s/%s' % (in_path, v)
         fixLinebreak(file_in, file_out, encoding)

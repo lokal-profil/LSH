@@ -21,28 +21,29 @@ see http://www.gnu.org/licenses/.
 
 ## Workflow
 
-All of these should be run from the main code folder.
+All of these should be run from the main code folder. Note that the first 11 steps can be done without the actual image files.
 
 0. Copy config.py.sample to config.py and fill in your username and password
-0. Run `python py_listscraper.py old_connections`  # To make a copy of the latest Commons mappings
+0. Run `python py_listscraper.py old_connections data`, to make a copy of the latest Commons mappings
 1. Unpack the new csv files to the "original_csv" folder
-3. Update CSV_FILES in "py_prepCSVData.py" to the new file names
-4. Run `python py_prepCSVData.py`  # to populate a new "clean_csv" folder
-5. Run `python py_analyseCSVData.py` and fix any errors, repeat until no actionable errors  # creates analysis-logg
-6. Run `python py_crunchCSVData.py`  # to populate a new "data" folder
+3. Update `csv_config.json` to the new file names
+4. Run `python py_prepCSVData.py`, to populate a new "clean_csv" folder
+5. Run `python py_analyseCSVData.py` and fix any errors, repeat until no actionable errors
+  * creates analysis-logg
+6. Run `python py_crunchCSVData.py`, to populate a new "data" folder
   * Note that this takes some time and that there are two prompts at the start
-7. Run `python py_filenames.py`  # to generate the filenames
-8. Run `python py_makeMappings.py`  # to create mappingtables for Commons
+7. Run `python py_filenames.py`, to generate the filenames
+8. Run `python py_makeMappings.py`, to create mapping tables for Commons
 9. Upload the mapping tables to the right place
 10. Do the actual mappings...
 
-11. Run `python py_listscraper.py`  # to populate a new "connections" folder and update filenames
+11. Run `python py_listscraper.py`, to populate a new "connections" folder and update filenames
   * If filenames are updated then don't run again until Commons table has been updated.
-12. Run `python py_prepUpload.py moveHits ../bilder` where ../bilder is the relative path to the main image folder  # moves the relevant files to base folders and adds extension to filenames
-13. Run `python py_prepUpload.py makeAndRename ../bilder/m_a` etc. for each of the new image sub.folders  # creates info files and renames files
+12. Run `python py_prepUpload.py moveHits ../bilder` where ../bilder is the relative path to the main image folder. Moves the relevant files to base folders and adds extension to filenames
+13. Run `python py_prepUpload.py makeAndRename ../bilder/m_a` etc. for each of the new image sub.folders. Creates info files and renames files
   * Check `¤generator.log` for possible problems
-14. Run `python py_prepUpload.py negatives ../bilder/m_a` etc. for each of the image sub.folders containing negatives  # creates a positive version and renames correctly
-  * Series with negatives are A, B, D, E, O, G
+14. Run `python py_prepUpload.py negatives ../bilder/m_a` etc. for each of the image sub.folders containing negatives. Creates a positive version and renames correctly
+  * Series with negatives are A, B, D, E, G, O
   * Check `¤imageMagick-errors.log` for error reports
 15. Run `python py_prepUpload.py negativeCleanup ../bilder/m_a` etc. for each of the image sub.folders where 14. was run
   * Check `¤conversion-errors.log` for problematic conversions (fix manually)

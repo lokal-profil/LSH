@@ -39,34 +39,28 @@ class Common:
         return url
 
     @staticmethod
-    def openFile(filename):
-        '''opens a given file (utf-8) and returns the header row plus following lines)'''
-        fin = codecs.open(filename, 'r', 'utf-8')
-        txt = fin.read()
-        fin.close()
-        lines = txt.split('\n')
-        header = lines[0].split('|')
-        lines.pop()
+    def openFile(filename, delimiter='|'):
+        '''opens a given  pipe-separated csv file (utf-8) and returns the header row plus following lines)'''
+        lines = codecs.open(filename, 'r', 'utf-8').read().split('\n')
+        header = lines.pop(0).split(delimiter)
         return header, lines
 
     @staticmethod
-    def openFileAsDictList(filename):
+    def openFileAsDictList(filename, delimiter='|'):
         '''
         opens a given pipe-separated csv file (utf-8)
         and returns a list of dicts, using header row for keys)
         '''
-        fin = codecs.open(filename, 'r', 'utf-8')
-        lines = fin.read().split('\n')
-        fin.close()
-        header = lines.pop(0).split('|')
+        lines = codecs.open(filename, 'r', 'utf-8').read().split('\n')
+        header = lines.pop(0).split(delimiter)
 
         entryList = []
         for l in lines:
             if len(l) == 0:
                 continue
             entry = {}
-            parts = l.split('|')
-            for i in range(0, len(header)):
+            parts = l.split(delimiter)
+            for i in range(len(header)):
                 entry[header[i]] = parts[i]
             entryList.append(entry)
         return entryList

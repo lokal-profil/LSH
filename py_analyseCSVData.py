@@ -58,7 +58,7 @@ def run(in_path=CSV_DIR_CLEAN, log_file=LOG_FILE):
     print u'Created %s' % log_file
 
 
-def analyseYear(f, file_in=u'Ausstellung_1.1.csv'):
+def analyseYear(f, file_in):
     '''
     Exhibitanalyser:
     verifies that the year can be interpreted
@@ -75,10 +75,8 @@ def analyseYear(f, file_in=u'Ausstellung_1.1.csv'):
     # AusDatumBisD
     # AobObjId
     # AufAufgabeS
-    first = True
     for l in lines:
-        if first:
-            first = False
+        if len(l) == 0:
             continue
         col = l.split('|')
         if col[2].strip() == '':  # ignore exhibits wihtout names
@@ -133,7 +131,7 @@ def analyseYear(f, file_in=u'Ausstellung_1.1.csv'):
 # done
 
 
-def analysePhoto(A, f, file_in=u'photo_1.2.csv'):
+def analysePhoto(A, f, file_in):
     '''
     Verifies that all licenses and sources can be parsed correctly and
     that there are no duplicates
@@ -155,10 +153,8 @@ def analysePhoto(A, f, file_in=u'photo_1.2.csv'):
     # AdrNameS
     # PhoSystematikS
     f.write(u'<!--From: %s -->\n' % file_in)
-    first = True
     for l in lines:
-        if first:
-            first = False
+        if len(l) == 0:
             continue
         col = l.split('|')
         lic = col[3]  # PhoAufnahmeortS
@@ -201,7 +197,7 @@ def analysePhoto(A, f, file_in=u'photo_1.2.csv'):
 # done
 
 
-def analyseMulti(f, file_in=u'multimedia_1.2.csv'):
+def analyseMulti(f, file_in):
     '''
     Identifies dupes
     identifies images with filetype in the filename
@@ -222,10 +218,8 @@ def analyseMulti(f, file_in=u'multimedia_1.2.csv'):
     # MulDateiS
     # MulExtentS
     f.write(u'\n\n<!--From: %s -->\n' % file_in)
-    first = True
     for l in lines:
-        if first:
-            first = False
+        if len(l) == 0:
             continue
         col = l.split('|')
         idd = col[1]  # MulPhoId

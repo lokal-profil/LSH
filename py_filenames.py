@@ -49,10 +49,8 @@ def makeFilenames(folder=CSV_FOLDER, mapping=MAPPING_FOLDER, filenameP=PHOTO_FIL
     hcounter = 0  # number of files skipped where nothing can be done
     cOut = 0  # number of outputs
     uTester = []  # to test uniquenes of filenames
-    first = True
     for l in linesP:
-        if first:
-            first = False
+        if len(l) == 0:
             continue
         col = l.split('|')
         phoId = col[0]

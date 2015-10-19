@@ -522,6 +522,8 @@ def samesame(photo_multimedia_ObjIds_stichID):
     Add two columns to photo:
     * same photoId-diff file
     * same obj diff photoID
+
+    Note: samePhoId no longer needed (but make sure it is not expected later)
     '''
     linesP = photo_multimedia_ObjIds_stichID.split('\n')
     headerP = linesP.pop(0).split('|')

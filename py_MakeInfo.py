@@ -171,7 +171,7 @@ class MakeInfo:
         stichIds = phoInfo[u'PstId']
         if len(stichIds) > 0:
             stichIds = stichIds.split(';')
-        # same_photo= phoInfo[u'same_PhoId']
+        # same_photo= phoInfo[u'same_PhoId']  # This is no longer needed since duplicate PhoId are dissalowed by makePhoto_multi in crunch. If readded then also amend around line 264
         # if len(same_photo) > 0: same_photo = same_photo.split(';')
         same_object = phoInfo[u'same_object']
         if len(same_object) > 0:
@@ -957,6 +957,7 @@ class MakeInfo:
             return text
     @staticmethod
     def makeGallery(caption, lList, dDict, printed, addTo, col1=u'filename', col2=u'ext', has_captions=False):
+        # would need an addition if searching in any previous files as well
         # check for duplicates and escape if all were dupes
         lList = list(set(lList))  # remove internal duplicates
         for p in printed:

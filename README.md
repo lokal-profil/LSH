@@ -29,9 +29,10 @@ All of these should be run from the main code folder. Note that the first 11 ste
 3. Update `csv_config.json` to the new file names
 4. Run `python py_prepCSVData.py`, to populate a new "clean_csv" folder
 5. Run `python py_analyseCSVData.py` and fix any errors, repeat until no actionable errors
-  * creates analysis-logg
+  * creates `csv_analys.log`
 6. Run `python py_crunchCSVData.py`, to populate a new "data" folder
   * Note that this takes some time and that there are two prompts at the start
+  * individual log files are found in `data/logs`
 7. Run `python py_filenames.py`, to generate the filenames
 8. Run `python py_makeMappings.py`, to create mapping tables for Commons
 9. Upload the mapping tables to the right place

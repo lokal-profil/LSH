@@ -6,38 +6,9 @@
 #
 import codecs
 import operator  # needed by sortedDict
-import urllib2  # needed by urldecodeUTF8
-import re  # neeeded by external2internalLink
 
 
 class Common:
-    @staticmethod
-    def urldecodeUTF8(url):
-        '''
-        Given a utf8 unicode urlencoded url this returns the correct,
-        utf8 encoded, unquoted url. E.g:
-        u'http://Prinsessan_Eug%C3%A9nie_av_Sverige_och_Norge'
-        becomes
-        u'http://Prinsessan_Eug\xe9nie_av_Sverige_och_Norge'
-        TODO: Put in standard common.py
-        '''
-        return urllib2.unquote(url.encode('ascii')).decode('utf8')
-
-    @staticmethod
-    def external2internalLink(url):
-        '''
-        Given an external link to wikipedia this returns a wikified
-        interwikilink. E.g.
-        https://sv.wikipedia.org/wiki/Helan_går
-        becomes
-        [[:sv:Helan går]]
-        '''
-        pattern = r'http(s)?://([^\.]*).wikipedia.org/wiki/([^$]*)'
-        url2 = re.sub(pattern, r'[[:\2:\3]]', url)
-        if url2 != url:  # if successfully matched
-            url = url2.replace('_', ' ')
-        return url
-
     @staticmethod
     def openFile(filename, delimiter='|', codec='utf-8'):
         '''opens a given  pipe-separated csv file (utf-8) and returns the header row plus following lines)'''

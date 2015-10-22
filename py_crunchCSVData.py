@@ -6,11 +6,7 @@
 # what is needed
 #
 # @ToDo: Stick CSV_FILES in start of file (or somewhere equally easy)
-# @ToDo: Cut down log files to only ones worth reading
 # @ToDo: after redux, store processed output as .json instead
-# @note: redux takes longer and uses more memory,
-#        but is easier to understand and maintain
-# @ToDo: Consider adding more output. Even printing dots can be useful
 #
 import codecs
 import os
@@ -71,13 +67,11 @@ def run(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
     # Adds the Ausstellung_id field to ObjDaten and
     # trims Ausstellung to unique ids
     ausstellungFile = os.path.join(in_path, u'ausstellung.csv')
-    logFile = os.path.join(log_path, u'ausstellung.log')
-    ausstellung = ausstellung_objDaten(ausstellungFile, objDaten, logFile)
+    ausstellung = ausstellung_objDaten(ausstellungFile, objDaten)
 
     # Adds ObjDaten-samhörande field to ObjDaten
     objDatenSamFile = os.path.join(in_path, u'objDatenSam.csv')
-    logFile = os.path.join(log_path, u'objDatenSam.log')
-    objDaten_sam(objDatenSamFile, objDaten, logFile)
+    objDaten_sam(objDatenSamFile, objDaten)
 
     # Adds the Eregnis field to ObjDaten and
     # trims Eregnis to unique ids
@@ -95,9 +89,7 @@ def run(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
     # then trimms objMul and objMass
     objMassFile = os.path.join(in_path, u'objMass.csv')
     objMultipleFile = os.path.join(in_path, u'objMultiple.csv')
-    logFile = os.path.join(log_path, u'mulMass.log')
-    objMass, objMultiple = mulMass_add(objMassFile, objMultipleFile,
-                                       objDaten, logFile)
+    objMass, objMultiple = mulMass_add(objMassFile, objMultipleFile, objDaten)
 
     # output all the above
     # @toDO: simplify names (once downstream is checked)
@@ -157,7 +149,7 @@ def makePhoto_multi(photoFile, multiFile, logFile, tmpFile):
     :return: dict
     """
     # setup
-    flog = codecs.open(logFile, 'w', 'utf-8')  # logfile for any unmerged rows
+    flog = codecs.open(logFile, 'w', 'utf-8')  # logfile
     print u"Combining photo and multimedia file for unique files..."
     pathToTrim = u'R:\web\hires\\'
     tmpHeader = 'PhoId|MulId|PhoObjId|PhoBeschreibungM|PhoAufnahmeortS|' \
@@ -165,7 +157,6 @@ def makePhoto_multi(photoFile, multiFile, logFile, tmpFile):
                 'MulDateiS|MulExtentS'
 
     # handle multimedia
-    # @todo change key to MulPhoId then mulPhoIdList = multi.keys()
     multiHeader = 'MulId|MulPhoId|MulPfadS|MulDateiS|MulExtentS'
     multi = helpers.csvFileToDict(multiFile, 'MulId', multiHeader)
 
@@ -183,7 +174,7 @@ def makePhoto_multi(photoFile, multiFile, logFile, tmpFile):
     print u'\tmultimedia: %d' % len(multi)
 
     # handle photo
-    # @toDO add duplicate check to cleanup
+    # @toDO add duplicate check to cleanup script
     photoHeader = 'PhoId|PhoObjId|PhoBeschreibungM|PhoAufnahmeortS|PhoSwdS|' \
                   'MulId|AdrVorNameS|AdrNameS|PhoSystematikS'
     photo = helpers.csvFileToDict(photoFile, 'PhoId', photoHeader)
@@ -237,7 +228,7 @@ def photo_ObjDaten(photo_multi, photoObjDatenFile, objDatenFile, logFile):
     :return: dict (and updates photo_multi)
     """
     # setup
-    flog = codecs.open(logFile, 'w', 'utf-8')  # logfile for any unmerged rows
+    flog = codecs.open(logFile, 'w', 'utf-8')  # logfile
     print u"Combining all ObjId into the photo file..."
 
     # handle objDaten
@@ -413,7 +404,6 @@ def samesame(photo_multi):
     @toDo (after redux)
         * samePhoId no longer needed (but need to make sure it is not
           expected later since removing changes order)
-        * phoId:MullId can probably be replaced by just phoId per above
         * base on photo_all + photo_multi to get connections to old
     Adds two fields to the photo_multi dict
     * same_PhoId: same phoId different file
@@ -426,7 +416,7 @@ def samesame(photo_multi):
     for k, v in photo_multi.iteritems():
         phoId = v['PhoId']
         mullId = v['MulId']
-        phoMullId = '%s:%s' % (phoId, mullId)  # see @toDo
+        phoMullId = '%s:%s' % (phoId, mullId)
         objIds = v['PhoObjId']
         for objId in objIds:
             if objId not in objIdConnection.keys():
@@ -439,7 +429,6 @@ def samesame(photo_multi):
     for k, v in objIdConnection.items():
         if len(v) < 2:
             del objIdConnection[k]
-    # @toDo: change to something sensible
     print u'\tfound %d objects in multiple photos' % len(objIdConnection)
 
     # invert objIdConnection to get per phoId connection
@@ -464,12 +453,10 @@ def samesame(photo_multi):
             ll.remove(phoMullId)  # remove self
             v['same_object'] = ll
 
-    # @toDo: do we need to care about any that are left?, if so use pop above?
-
     print u"...done"
 
 
-def ausstellung_objDaten(austellungFile, objDaten, logFile):
+def ausstellung_objDaten(austellungFile, objDaten):
     """
     Given the austellung data file and the objDaten data add a austellung id
     field to objDaten.
@@ -479,7 +466,6 @@ def ausstellung_objDaten(austellungFile, objDaten, logFile):
     * dropping AobId
     :param austellungFile: path to austellung data file
     :param objDaten: objDaten dict
-    :param logFile: path to logfile
     :return: dict (and updates objDaten)
     """
     # often requires manual fixing prior to crunch
@@ -488,7 +474,6 @@ def ausstellung_objDaten(austellungFile, objDaten, logFile):
     raw_input(u"...by pressing enter when done")
 
     # setup
-    flog = codecs.open(logFile, 'w', 'utf-8')  # logfile for any unmerged rows
     dummyTitles = (
         u'reparation', u'utställning', u'lån för undersökning',
         u'OBS! Testpost för admin - utställning, export wikimedia commons',
@@ -554,13 +539,6 @@ def ausstellung_objDaten(austellungFile, objDaten, logFile):
         if objId in objIdConnection.keys():
             v['ausId'] = objIdConnection.pop(objId)
 
-    # make sure nothing is left
-    if len(objIdConnection) > 0:
-        flog.write(u'* left in objIdConnection\n')
-        for k, v in objIdConnection.iteritems():
-            flog.write(u'%s|%s\n' % (k, ';'.join(v)))
-
-    flog.close()
     print u"...done"
     return austellung
 
@@ -570,7 +548,7 @@ def stdAustellungYear(year, yfrom, ytil):
     Given the three year fields in austellung this returns a standardised
     year in either YYYY or YYYY-YYYY format.
     Assumes all errors part from y1 and y7 (in py-Ausstellung) have been fixed
-    @toDO: redo, but in collaboration with bether analysis
+    @toDO: redo, but in collaboration with better analysis
     :param year: AusJahrS value
     :param yfrom: AusDatumVonD value
     :param ytil: AusDatumBisD value
@@ -610,7 +588,7 @@ def stdAustellungYear(year, yfrom, ytil):
         return year
 
 
-def objDaten_sam(objDatenSamFile, objDaten, logFile):
+def objDaten_sam(objDatenSamFile, objDaten):
     """
     Adds objDatenSam field to ObjDaten
     * adding a std_year field
@@ -618,11 +596,9 @@ def objDaten_sam(objDatenSamFile, objDaten, logFile):
     * dropping AobId
     :param objDatenSamFile: path to ObjDaten-samhörande data file
     :param objDaten: objDaten dict
-    :param logFile: path to logfile
     :return: None (but updates objDaten)
     """
     # setup
-    flog = codecs.open(logFile, 'w', 'utf-8')  # logfile for any unmerged rows
     print u"Adding ObjDaten-samhörande to ObjDaten"
 
     # handle objDatenSam
@@ -670,13 +646,6 @@ def objDaten_sam(objDatenSamFile, objDaten, logFile):
         if objId in objIdConnection.keys():
             v['related'] = objIdConnection.pop(objId)
 
-    # make sure nothing is left
-    if len(objIdConnection) > 0:
-        flog.write(u'* left in objIdConnection\n')
-        for k, v in objIdConnection.iteritems():
-            flog.write(u'%s|%s\n' % (k, ';'.join(v)))
-
-    flog.close()
     print u"...done"
 
 
@@ -693,7 +662,7 @@ def ereignis_objDaten(ereignisFile, objDaten, logFile):
     :return: dict (and updates objDaten)
     """
     # setup
-    flog = codecs.open(logFile, 'w', 'utf-8')  # logfile for any unmerged rows
+    flog = codecs.open(logFile, 'w', 'utf-8')  # logfile
     print u"Trimming eregnis and adding eregnis to ObjDaten..."
 
     # handle eregnis
@@ -734,7 +703,7 @@ def ereignis_objDaten(ereignisFile, objDaten, logFile):
         # convert external links to internal
         if 'wikipedia' in url:
             url = helpers.external2internalLink(url)
-        else:
+        elif len(url) > 0:
             flog.write(u'weird url: %s\n' % url)
         v['ErgArtS'] = url
 
@@ -756,12 +725,6 @@ def ereignis_objDaten(ereignisFile, objDaten, logFile):
         if objId in objIdConnection.keys():
             v['ergId'] = objIdConnection.pop(objId)
 
-    # make sure nothing is left
-    if len(objIdConnection) > 0:
-        flog.write(u'* left in objIdConnection\n')
-        for k, v in objIdConnection.iteritems():
-            flog.write(u'%s|%s\n' % (k, ';'.join(v)))
-
     flog.close()
     print u"...done"
     return ereignis
@@ -782,7 +745,7 @@ def kuenstler_objDaten(kuenstlerFile, objDaten, logFile):
     :return: dict (and updates objDaten)
     """
     # setup
-    flog = codecs.open(logFile, 'w', 'utf-8')  # logfile for any unmerged rows
+    flog = codecs.open(logFile, 'w', 'utf-8')  # logfile
     print u"Crunching kuenstler..."
     dummyNames = (u'ingen uppgift', )
     badRoles = (u'Leverantör', u'Auktion', u'Förmedlare', u'Givare',
@@ -877,12 +840,6 @@ def kuenstler_objDaten(kuenstlerFile, objDaten, logFile):
         for field in droppedFields:
             del v[field]
 
-    # make sure nothing is left in objIdConnection
-    if len(objIdConnection) > 0:
-        flog.write(u'* left in objIdConnection\n')
-        for k, v in objIdConnection.iteritems():
-            flog.write(u'%s|%s\n' % (k, ';'.join(v)))
-
     flog.close()
     print u"...done"
     return kuenstler
@@ -936,7 +893,7 @@ def extractKuenstlerYear(name, bYear, dYear):
     return name, bYear, dYear, log
 
 
-def mulMass_add(objMassFile, objMultipleFile, objDaten, logFile):
+def mulMass_add(objMassFile, objMultipleFile, objDaten):
     """
     Given the objMass and the objMultiple data file and the objDaten data
     add an objMass and an objMultiple field to objDaten.
@@ -945,11 +902,9 @@ def mulMass_add(objMassFile, objMultipleFile, objDaten, logFile):
     :param objMassFile: path to objMass data file
     :param objMultipleFile: path to objMultiple data file
     :param objDaten: objDaten dict
-    :param logFile: path to logfile
     :return: dict, dict (and updates objDaten)
     """
     # setup
-    flog = codecs.open(logFile, 'w', 'utf-8')  # logfile for any unmerged rows
     print u"Putting objMultiple and objMass into objDaten..."
 
     # handle objMass
@@ -1009,17 +964,6 @@ def mulMass_add(objMassFile, objMultipleFile, objDaten, logFile):
         if objId in objIdMultipleConnection.keys():
             v['mulId'] = list(objIdMultipleConnection.pop(objId))
 
-    # make sure nothing is left
-    if len(objIdMassConnection) > 0:
-        flog.write(u'* left in objIdMassConnection\n')
-        for k, v in objIdMassConnection.iteritems():
-            flog.write(u'%s|%s\n' % (k, ';'.join(v)))
-    if len(objIdMultipleConnection) > 0:
-        flog.write(u'* left in objIdMultipleConnection\n')
-        for k, v in objIdMultipleConnection.iteritems():
-            flog.write(u'%s|%s\n' % (k, ';'.join(v)))
-
-    flog.close()
     print u"...done"
     return objMass, objMultiple
 

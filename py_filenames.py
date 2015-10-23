@@ -301,7 +301,7 @@ def insufficient(text):
     '''
     colours text red if it matches the requirment for insufficient info
     '''
-    badStrings = [u'Detalj', u'Helbild', u'Målning', u'Reprofoto']
+    badStrings = [u'Detalj', u'Helbild', u'Målning', u'Reprofoto', u'Ritning']
     if text in badStrings:
         return u'<span style="color:red">%s</span>' % text
     else:

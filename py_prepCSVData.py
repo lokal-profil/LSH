@@ -28,15 +28,16 @@ CSV_CONFIG = u'csv_config.json'
 
 
 def fixFiles(in_path=CSV_DIR_ORIG, out_path=CSV_DIR_CLEAN, encoding='utf-16'):
-    '''
+    """
     Checks that the required files are present, converts them from utf-16,
     replaces \r\n linbreaks, replaces in-cell linebreaks with <!>,
     removes BOM and outputs as UTF-8 encoded with \n linebreaks and
     |-cell separation
-    param: (optional) in_path - the folder containing the original csv files
-    param: (optional) out_path - the folder to which cleand csv are written
-    param: (optional) encoding - encoding of the original files
-    '''
+    :param in_path: the folder containing the original csv files (optional)
+    :param out_path: the folder to which cleand csv are written (optional)
+    :param encoding: encoding of the original files (optional)
+    :returns: None
+    """
     # convert to unicode if not the case
     if type(in_path) == str:
         in_path = unicode(in_path)
@@ -69,12 +70,15 @@ def fixFiles(in_path=CSV_DIR_ORIG, out_path=CSV_DIR_CLEAN, encoding='utf-16'):
 
 # ideally this is removable by correcting the source
 def hackfix(txt, file_out):
-    '''
+    """
     runs a few hackish fixes to correct problems discovered
     in the original csv files
     ObjMultiple:
     1) Remove any S:\[...].jpg
-    '''
+    :param txt: text to process
+    :param file_out: (output) name of file being processed
+    :returns: str
+    """
     txt_orig = txt
     if file_out.endswith(u'objMultiple.csv'):
         txt = re.sub(r'S:\\[^.]*.(jpg|JPG)', u'', txt)
@@ -84,15 +88,15 @@ def hackfix(txt, file_out):
 
 
 def fixLinebreak(file_in, file_out, encoding):
-    '''
+    """
     Given a filename this loads the required file and:
     replaces \r\n linbreaks with \n;
     replaces in-cell linebreaks with <!>
-    param: file_in - filename to load (including path)
-    param: file_out - filename to write to (including path)
-    param: encoding - encoding to load the file with
-    returns: the loaded treated text
-    '''
+    :param file_in: filename to load (including path)
+    :param file_out: filename to write to (including path)
+    :param encoding: encoding to load the file with
+    :returns: str - the loaded treated text
+    """
     # load, convert and parse file
     fin = codecs.open(file_in, 'r', encoding)
     txt = fin.read()

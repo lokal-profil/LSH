@@ -197,7 +197,7 @@ def urldecodeUTF8(url):
     return urllib2.unquote(url.encode('ascii')).decode('utf8')
 
 
-def external2internalLink(url):
+def external2internalLink(url, project='wikipedia'):
     """
     Given an external link to wikipedia this returns a wikified
     interwikilink. E.g.
@@ -207,7 +207,7 @@ def external2internalLink(url):
     :param url: url to decode
     :return: str
     """
-    pattern = r'http(s)?://([^\.]*).wikipedia.org/wiki/([^$]*)'
+    pattern = r'http(s)?://([^\.]*).%s.org/wiki/([^$]*)' % project
     url2 = re.sub(pattern, r'[[:\2:\3]]', url)
     if url2 != url:  # if successfully matched
         url = url2.replace('_', ' ')

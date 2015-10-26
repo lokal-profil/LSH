@@ -28,6 +28,7 @@ from py_MakeInfo import MakeInfo  # To get access to handled variables
 import codecs
 import os
 from common import Common
+import helpers
 
 CSV_DIR_CLEAN = u'clean_csv'
 LOG_FILE = u'¤csv_analys.log'
@@ -54,6 +55,7 @@ def run(in_path=CSV_DIR_CLEAN, log_file=LOG_FILE):
     analysePhoto(A, f, file_in=os.path.join(in_path, u'%s.csv' % 'photo'))
     analyseMulti(f, file_in=os.path.join(in_path, u'%s.csv' % 'multimedia'))
     analyseYear(f, file_in=os.path.join(in_path, u'%s.csv' % 'ausstellung'))
+    analysePhotoAll(f, file_in=os.path.join(in_path, u'%s.csv' % 'photoAll'))
 
     print u'Created %s' % log_file
 
@@ -62,6 +64,7 @@ def analyseYear(f, file_in):
     '''
     Exhibitanalyser:
     verifies that the year can be interpreted
+    @todo: become stricter. Disallow space as year separator
     '''
     header, lines = Common.openFile(file_in)
     data = []
@@ -272,6 +275,49 @@ def analyseMulti(f, file_in):
     if len(bad) == 0 and len(mm) == 0:
         f.write(u'there are no problems with multimedia file =)')
 # done
+
+
+def analysePhotoAll(f, file_in):
+    """
+    Check that all PhoSystematikS are commonsfiles and each is unique
+    """
+    header, lines = Common.openFile(file_in)
+    badUrls = []
+    dupes = []
+    sources = {}
+
+    for l in lines:
+        if len(l) == 0:
+            continue
+        col = l.split('|')
+        source = col[8].strip()  # PhoSystematikS
+        phoId = col[0]  # PhoId
+        mulId = col[5]  # MulId
+        phoMul = u'%s:%s' % (phoId, mulId)
+        if len(source) > 0:
+            if '%' in source:
+                source = helpers.urldecodeUTF8(source)
+            internal = helpers.external2internalLink(source,
+                                                     project='wikimedia')
+            if not internal.startswith('[[:commons:File:'):
+                badUrls.append((phoMul, source))
+            else:
+                internal = internal[len('[[:commons:File:'):-len(']]')]
+                if internal in sources.keys():
+                    dupes.append((phoMul, sources[internal],
+                                  internal.replace(' ', '_')))
+                sources[internal] = phoMul
+
+    f.write(u'\n\n<!--From: %s -->\n' % file_in)
+    if len(badUrls) > 0:
+        f.write(u'===BadUrls===\n')
+        for b in badUrls:
+            f.write(u'%s: %s\n' % b)
+    if len(dupes) > 0:
+        f.write(u'===DuplicateUrls===\n')
+        f.write(u'phoId:mulId|phoId:mulId|Filename\n')
+        for b in dupes:
+            f.write(u'%s|%s|%s\n' % b)
 
 
 if __name__ == '__main__':

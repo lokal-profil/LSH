@@ -3,9 +3,9 @@
 #
 # Class containing instructions for making info templates
 #
-# TODO:
-# mechanism for getting pho_mull from orig filename(+path?)
+# @ToDo:
 # data files should not be hardcoded
+# Make many small functions instead of the current behemoths
 #
 import codecs
 import os
@@ -82,11 +82,11 @@ class MakeInfo:
             self.skiplist.append(pho_mull)
         f.close()
 
-    def catTestBatch(self, pho_mull_list, log=None):
-        self.readInLibraries()
-        self.readConnections()
+    def catTestBatch(self, pho_mull_list, data_dir, connections_dir, outputPath=u'output', log=None):
+        self.readInLibraries(folder=data_dir)
+        self.readConnections(folder=connections_dir)
         if not log:
-            log = codecs.open(os.path.join(u'output', u'catStats2.csv'), 'w', 'utf-8')
+            log = codecs.open(os.path.join(outputPath, u'catStats2.csv'), 'w', 'utf-8')
         log.write(u'#RealCats/MetaCats|cat1;cat2...\n')
         count = 0
         for pho_mull in pho_mull_list:
@@ -101,17 +101,18 @@ class MakeInfo:
             self.skiplist.append(pho_mull)
     # End of test suite
 
-    def readInLibraries(self, verbose=False, careful=False):
+    def readInLibraries(self, verbose=False, careful=False, folder=u'data'):
         '''reads the given files into dictionaries'''
-        self.photoD = Common.file_to_dict(os.path.join(u'data', u'photo_multimedia_etc.csv'), idcol=[0, 1], verbose=verbose, careful=careful)
-        self.stichD = Common.file_to_dict(os.path.join(u'data', u'stichwort_trim.csv'), verbose=verbose, careful=careful)
-        self.massD = Common.file_to_dict(os.path.join(u'data', u'objMass_trim.csv'), verbose=verbose, careful=careful)
-        self.multiD = Common.file_to_dict(os.path.join(u'data', u'objMultiple_trim.csv'), verbose=verbose, careful=careful)
-        self.objD = Common.file_to_dict(os.path.join(u'data', u'objDaten_etc.csv'), verbose=verbose, careful=careful)
-        self.aussD = Common.file_to_dict(os.path.join(u'data', u'ausstellung_trim.csv'), verbose=verbose, careful=careful)
-        self.ereignisD = Common.file_to_dict(os.path.join(u'data', u'ereignis_trim.csv'), verbose=verbose, careful=careful)
-        self.kuenstlerD = Common.file_to_dict(os.path.join(u'data', u'kuenstler_trim.csv'), verbose=verbose, careful=careful)
-        self.wikinameD = Common.file_to_dict(os.path.join(u'data', u'filenames.csv'), idcol=[0, 1], verbose=verbose, careful=careful)
+        self.photoD = Common.file_to_dict(os.path.join(folder, u'photo_multimedia_etc.csv'), idcol=[0, 1], verbose=verbose, careful=careful)
+        self.stichD = Common.file_to_dict(os.path.join(folder, u'stichwort_trim.csv'), verbose=verbose, careful=careful)
+        self.massD = Common.file_to_dict(os.path.join(folder, u'objMass_trim.csv'), verbose=verbose, careful=careful)
+        self.multiD = Common.file_to_dict(os.path.join(folder, u'objMultiple_trim.csv'), verbose=verbose, careful=careful)
+        self.objD = Common.file_to_dict(os.path.join(folder, u'objDaten_etc.csv'), verbose=verbose, careful=careful)
+        self.aussD = Common.file_to_dict(os.path.join(folder, u'ausstellung_trim.csv'), verbose=verbose, careful=careful)
+        self.ereignisD = Common.file_to_dict(os.path.join(folder, u'ereignis_trim.csv'), verbose=verbose, careful=careful)
+        self.kuenstlerD = Common.file_to_dict(os.path.join(folder, u'kuenstler_trim.csv'), verbose=verbose, careful=careful)
+        self.wikinameD = Common.file_to_dict(os.path.join(folder, u'filenames.csv'), idcol=[0, 1], verbose=verbose, careful=careful)
+        self.photoAllD = Common.file_to_dict(os.path.join(folder, u'photoAll.csv'), idcol=[0, 5], verbose=verbose, careful=careful)
     #
     def readConnections(self, verbose=False, keepskip=False, folder=u'connections'):
         '''reads the commons connections files into dictionaries'''
@@ -171,8 +172,6 @@ class MakeInfo:
         stichIds = phoInfo[u'PstId']
         if len(stichIds) > 0:
             stichIds = stichIds.split(';')
-        # same_photo= phoInfo[u'same_PhoId']  # This is no longer needed since duplicate PhoId are dissalowed by makePhoto_multi in crunch. If readded then also amend around line 264
-        # if len(same_photo) > 0: same_photo = same_photo.split(';')
         same_object = phoInfo[u'same_object']
         if len(same_object) > 0:
             same_object = same_object.split(';')
@@ -262,21 +261,39 @@ class MakeInfo:
         see_also = u''
         printedPics = []
         if len(same_object) > 0:
-            killist = []  # there is a chance that one of these is one of the filenameless files
-            for so in same_object:  # there is a chance that this is one of the filenameless files
-                if so not in self.wikinameD.keys():
-                    killist.append(so)
-            for so in killist:
-                same_object.remove(so)
-            see_also, printedPics = MakeInfo.makeGallery(u'Different images of same object', same_object, self.wikinameD, printed=printedPics, addTo=see_also)
+            galleryTitle = u'Different images of same object'
+            filenames = []
+            for so in same_object:
+                if so in self.photoAllD.keys():
+                    fName = self.photoAllD[so]['PhoSystematikS']
+                    filenames.append(fName)
+                elif so in self.wikinameD.keys():
+                    fName = u'%s.%s' % (self.wikinameD[so]['filename'],
+                                        self.wikinameD[so]['ext'])
+                    filenames.append(fName)
+            see_also, printedPics = MakeInfo.makeGallery(galleryTitle,
+                                                         filenames,
+                                                         printedPics,
+                                                         see_also)
         if objData[u'related']:
-            killist = []
-            for ro in objData[u'related']:
-                if ro not in self.wikinameD.keys():
-                    killist.append(ro)
-            for ro in killist:
-                objData[u'related'].remove(ro)
-            see_also, printedPics = MakeInfo.makeGallery(u'Related objects', objData[u'related'], self.wikinameD, has_captions=True, printed=printedPics, addTo=see_also)
+            galleryTitle = u'Related objects'
+            filenames = []
+            captions = {}
+            for ro, caption in objData[u'related']:
+                if ro in self.photoAllD.keys():
+                    fName = self.photoAllD[ro]['PhoSystematikS']
+                    filenames.append(fName)
+                    captions[fName] = caption
+                elif ro in self.wikinameD.keys():
+                    fName = u'%s.%s' % (self.wikinameD[ro]['filename'],
+                                        self.wikinameD[ro]['ext'])
+                    filenames.append(fName)
+                    captions[fName] = caption
+            see_also, printedPics = MakeInfo.makeGallery(galleryTitle,
+                                                         filenames,
+                                                         printedPics,
+                                                         see_also,
+                                                         captions=captions)
 
         # Categories need deduplidication
         categories = u''
@@ -505,25 +522,29 @@ class MakeInfo:
             relDict = {}
             for r in related:
                 if r not in self.objD.keys():
-                    continue  # skip items without uploaded images
+                    continue  # skip items without images in this batch or previously batches
                 rInvNr  = self.objD[r][u'ObjInventarNrS']
                 rSource = self.source[self.objD[r][u'AufAufgabeS']]
                 if len(rInvNr) == 0:
                     rInvNr = self.objD[r][u'ObjTitelWeitereM']
                 rInvNr = u'%s %s' % (rSource, rInvNr)
-                relDict[r] = ['', rInvNr]
+                relDict[r] = ([], rInvNr)
             if len(relDict) > 0:
-                # file assoicated filenames (only use those with an unique objId)
+                # add assoicated filenames from current batch
                 for r_pho_mull, rPhoto in self.photoD.iteritems():
-                    rObjId = rPhoto[u'PhoObjId']
+                    rObjId = rPhoto[u'PhoObjId']  # only use those with an unique objId, so no need to split
                     if rObjId in relDict.keys():
-                        if r_pho_mull not in self.wikinameD.keys():
-                            continue
-                        relDict[rObjId] = [r_pho_mull, relDict[rObjId][1]]
+                        relDict[rObjId][0].append(r_pho_mull)
+                # add assoicated filenames from previous uploads
+                for r_pho_mull, rPhoto in self.photoAllD.iteritems():
+                    rObjId = rPhoto[u'PhoObjId']  # only use those with an unique objId, so no need to split
+                    if rObjId in relDict.keys():
+                        relDict[rObjId][0].append(r_pho_mull)
                 for r, v in relDict.iteritems():
                     if len(v[0]) == 0:
                         continue
-                    relList.append(v)
+                    for pho_mull in v[0]:
+                        relList.append((pho_mull, v[1]))
                 if len(relList) > 0:
                     data[u'related'] = relList
 
@@ -955,26 +976,40 @@ class MakeInfo:
             if not start:
                 text += u'%s}}\n' % ending
             return text
+
     @staticmethod
-    def makeGallery(caption, lList, dDict, printed, addTo, col1=u'filename', col2=u'ext', has_captions=False):
-        # would need an addition if searching in any previous files as well
-        # check for duplicates and escape if all were dupes
-        lList = list(set(lList))  # remove internal duplicates
+    def makeGallery(galleryTitle, filenames, printed, addTo, captions=None):
+        """
+        Given a list of objects add the corresponding images to a gallery
+        Also adds printed images to the list of previously printed images
+        :param galleryTitle: Gallery title
+        :param filenames: list of (Commons) filenames
+        :param printed: list previously printed images
+        :param addTo: text to add the output to
+        :param captions: a {filename: caption} dict. Defaults to None
+        :returns: str, list
+        """
+        # check for duplicates
+        filenames = list(set(filenames))  # remove internal duplicates
         for p in printed:
-            if p in lList:
-                lList.remove(p)
-        printed = printed+lList
-        if len(lList) == 0:
+            if p in filenames:
+                filenames.remove(p)
+        printed += filenames
+
+        # escape if all were dupes
+        if len(filenames) == 0:
             return addTo, printed
+
         # output
-        text = addTo + u'\n<gallery caption="%s">\n' % caption
-        for s in lList:
-            if has_captions:
-                text += u'File:%s.%s|%s\n' % (dDict[s[0]][col1], dDict[s][col2], s[1])
+        text = addTo + u'\n<gallery caption="%s">\n' % galleryTitle
+        for filename in filenames:
+            if captions is not None:
+                text += u'File:%s|%s\n' % (filename, captions[filename])
             else:
-                text += u'File:%s.%s\n' % (dDict[s][col1], dDict[s][col2])
+                text += u'File:%s\n' % (filename)
         text += u'</gallery>'
         return text, printed
+
     @staticmethod
     def makeCategory(caption, lList, printed, addTo, pre=u''):
         # check for duplicates and escape if all were dupes

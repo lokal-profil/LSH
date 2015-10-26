@@ -13,9 +13,6 @@
 # * py-Ausstellung.py (partially)
 # * py-Ereignis.py
 #
-# If PhoSystematikS is introduced in photo then search thorugh comments
-# to see where editing is needed
-#
 from py_MakeInfo import MakeInfo
 from py_prepCSVData import CSV_CONFIG  # needed to load CSV_FILES
 import codecs
@@ -43,7 +40,8 @@ def run(in_path=IN_PATH, out_path=OUT_PATH):
     f.close()
 
     # Create a dict of depicted ObjId with frequency as value
-    # Would have to concider PhoSystematikS if present
+    # This gets around the issue that objDaten (A.objD) also contains
+    # objects used in photoAll
     oDict = {}
     for k, v in A.photoD.iteritems():
         objIds = v[u'PhoObjId']
@@ -316,8 +314,7 @@ def makeKeywords(A):
     '''
     # Create a dict of depicted StichId with frequency as value
     # Working from the trimmed file means each phoId has already been
-    # verified to exist. If PhoSystematikS is present then building trim
-    # would have to concider this.
+    # verified to exist.
     keywords = {}
     phoIds = []  # to make sure all phoIds really are present
     for k, v in A.stichD.iteritems():

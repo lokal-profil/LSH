@@ -44,14 +44,19 @@ def run(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
     tmpFile = os.path.join(out_path, u'tmp.csv')
     photo_multi = makePhoto_multi(photoFile, multiFile, logFile, tmpFile)
 
-    # combine photo and Photo-ObjDaten
+    # load photoAll and drop any entries without a commons connection
+    photoAllFile = os.path.join(in_path, u'photoAll.csv')
+    logFile = os.path.join(log_path, u'photoAll.log')
+    photoAll = makePhotoAll(photoAllFile, photo_multi, logFile)
+
+    # combine photo and Photo-ObjDaten (and photoAll)
     # populates the objId field in photo_multi with ALL of the RELEVANT
     # ObjIds and
     # removes unused Objects from objDaten to make it smaller
     photoObjDatenFile = os.path.join(in_path, u'photoObjDaten.csv')
     objDatenFile = os.path.join(in_path, u'objDaten.csv')
     logFile = os.path.join(log_path, u'photo_objDaten.log')
-    objDaten = photo_ObjDaten(photo_multi, photoObjDatenFile,
+    objDaten = photo_ObjDaten(photo_multi, photoAll, photoObjDatenFile,
                               objDatenFile, logFile)
 
     # Adds the stichwort id field to photo and
@@ -62,7 +67,7 @@ def run(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
     # Add two fields to photo_multi:
     # * same photoId-different file
     # * same objId-different photoID
-    samesame(photo_multi)
+    samesame(photo_multi, photoAll)
 
     # Adds the Ausstellung_id field to ObjDaten and
     # trims Ausstellung to unique ids
@@ -101,7 +106,8 @@ def run(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
         u'objDaten_etc': objDaten,
         u'ausstellung_trim': ausstellung,
         u'ereignis_trim': ereignis,
-        u'kuenstler_trim': kuenstler
+        u'kuenstler_trim': kuenstler,
+        u'photoAll': photoAll
     }
     # @toDO: Not needed once downstream reads json
     out_headers = {
@@ -130,7 +136,10 @@ def run(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
             'ErgId|ErgKurztitelS|ErgArtS|EroObjId',
         u'kuenstler_trim':
             'KueId|KueVorNameS|KueNameS|KudDatierungS|KudJahrVonL|KudJahrBisL|'
-            'KudOrtS|KudLandS|KueFunktionS|ObjId'
+            'KudOrtS|KudLandS|KueFunktionS|ObjId',
+        u'photoAll':
+            'PhoId|PhoObjId|PhoBeschreibungM|PhoAufnahmeortS|PhoSwdS|'
+            'MulId|AdrVorNameS|AdrNameS|PhoSystematikS'
     }
     for k, v in out_csv.iteritems():
         outFile = os.path.join(out_path, u'%s.csv' % k)
@@ -161,7 +170,7 @@ def makePhoto_multi(photoFile, multiFile, logFile, tmpFile):
     multi = helpers.csvFileToDict(multiFile, 'MulId', multiHeader)
 
     # check that filename is unique
-    flog.write('*Same files used by different PhoId, format is PhoId/MulId\n')
+    flog.write('* Same files used by different PhoId, format is PhoId/MulId\n')
     namelist = []
     mulPhoIdList = []
     for k, v in multi.iteritems():
@@ -215,13 +224,75 @@ def makePhoto_multi(photoFile, multiFile, logFile, tmpFile):
     return combined
 
 
-def photo_ObjDaten(photo_multi, photoObjDatenFile, objDatenFile, logFile):
+def makePhotoAll(photoAllFile, photo_multi, logFile):
+    """
+    @toDO: if dupes are found then prompt manual cleanup then re-run
+           makePhotoAll(), That way crash isn't complete.
+    Given the photoAll data file read it and drop any entries without a
+    commons connection. Also Simplify the data
+    :param photoAllFile: path to photoAll data file
+    :param photo_multi: photo_multi dict
+    :param logFile: path to logfile
+    :return: dict
+    """
+    # often requires manual fixing prior to crunch
+    print u"Confirm that any issues mentioned in the photoAll analysis " \
+          u"log have been corrected and the updated photoAll file saved..."
+    raw_input(u"...by pressing enter when done")
+
+    # setup
+    flog = codecs.open(logFile, 'w', 'utf-8')  # logfile
+    print u"Loading photoAll..."
+    photoAllHeader = 'PhoId|PhoObjId|PhoBeschreibungM|PhoAufnahmeortS|PhoSwdS|' \
+                     'MulId|AdrVorNameS|AdrNameS|PhoSystematikS'
+    photoAll = helpers.csvFileToDict(photoAllFile, 'PhoId', photoAllHeader)
+    originalSize = len(photoAll)
+
+    for k, v in photoAll.items():
+        link = v['PhoSystematikS']
+
+        # drop any entries without files
+        if len(link) == 0:
+            del photoAll[k]
+            continue
+
+        # simplify link
+        if '%' in link:
+            link = helpers.urldecodeUTF8(link)
+        link = helpers.external2internalLink(link, project='wikimedia')
+        link = link[len('[[:commons:File:'):-len(']]')]
+        v['PhoSystematikS'] = link
+    print 'PhotoAll reduced from %d to %d entries' % (originalSize,
+                                                      len(photoAll))
+
+    # check that none of PhoId from photo_multi occur in photo
+    dupes = []
+    for phoId in photo_multi.keys():
+        phoMul = u'%s:%s' % (phoId, photo_multi[phoId]['MulId'])
+        if phoMul in photoAll.keys():
+            dupes.append(phoMul)
+    if len(dupes) > 0:
+        print u'Found duplicates between photoAll and photo_multi. ' \
+              u'This will most likely mess things up. Check the log at ' \
+              u'%s for details.' % logFile
+        flog.write(u'* duplicates found in photo and photo_all\n'
+                   u'phoId:MulId|commonsFile')
+        for d in dupes:
+            flog.write('%s|%s' % (d, photoAll[d]['PhoSystematikS']))
+
+    flog.close()
+    return photoAll
+
+
+def photo_ObjDaten(photo_multi, photoAll, photoObjDatenFile,
+                   objDatenFile, logFile):
     """
     Given the photo_multi data and the phoObjDaten + objDaten data files
     any additional relevant ObjIds are added to the PhoObjId field of the
     photo_multi dict, this field is also converted to a list.
     Also returns objDaten for later use
     :param photo_multi: photo_multi dict
+    :param photoAll: photoAll dict
     :param photoObjDatenFile: path to phoObjDaten data file
     :param objDatenFile: path to objDaten data file
     :param logFile: path to logfile
@@ -279,33 +350,36 @@ def photo_ObjDaten(photo_multi, photoObjDatenFile, objDatenFile, logFile):
     print '\tFound %d connected photos in %d photoObjDaten entries' % \
           (len(photoObjConnections), len(photoObjDaten))
 
-    # add to photo_multi
+    # add to photo_multi and photoAll
+    photoDicts = (photo_multi, photoAll)
     allBadObjId = []
-    for phoId, v in photo_multi.iteritems():
-        objIds = []
-        if phoId not in photoObjConnections.keys():
-            if len(v['PhoObjId']) > 0:
-                objIds.append(v['PhoObjId'])
-        else:
-            # combine relevant objIds
-            objIds = photoObjConnections.pop(phoId)  # new connections
-            if len(v['PhoObjId']) > 0:
-                objIds.append(v['PhoObjId'])  # old connection
-            objIds = list(set(objIds))  # remove dupes
+    for pDict in photoDicts:
+        for k, v in pDict.iteritems():
+            phoId = v['PhoId']
+            objIds = []
+            if phoId not in photoObjConnections.keys():
+                if len(v['PhoObjId']) > 0:
+                    objIds.append(v['PhoObjId'])
+            else:
+                # combine relevant objIds
+                objIds = photoObjConnections.pop(phoId)  # new connections
+                if len(v['PhoObjId']) > 0:
+                    objIds.append(v['PhoObjId'])  # old connection
+                objIds = list(set(objIds))  # remove dupes
 
-        # check that all of these actually exists (old realObjOnly())
-        # and remove otherwise
-        badObjId = []
-        for objId in objIds:
-            if objId not in objDaten.keys():
-                badObjId.append(objId)
-        if len(badObjId) > 0:
-            allBadObjId += badObjId
-            for badId in badObjId:
-                objIds.remove(badId)
+            # check that all of these actually exists (old realObjOnly())
+            # and remove otherwise
+            badObjId = []
+            for objId in objIds:
+                if objId not in objDaten.keys():
+                    badObjId.append(objId)
+            if len(badObjId) > 0:
+                allBadObjId += badObjId
+                for badId in badObjId:
+                    objIds.remove(badId)
 
-        # set new value
-        v['PhoObjId'] = objIds
+            # set new value
+            v['PhoObjId'] = objIds
 
     # log any skipped ObjInvNr
     if len(skipped) != 0:
@@ -324,7 +398,7 @@ def photo_ObjDaten(photo_multi, photoObjDatenFile, objDatenFile, logFile):
         flog.write(u'%s\n' % ', '.join(allBadObjId))
 
     # trim objDaten
-    trimObjDaten(objDaten, photo_multi)
+    trimObjDaten(objDaten, photo_multi, photoAll)
 
     # confirm and return
     print u"...done"
@@ -332,19 +406,22 @@ def photo_ObjDaten(photo_multi, photoObjDatenFile, objDatenFile, logFile):
     return objDaten
 
 
-def trimObjDaten(objDaten, photo_multi):
+def trimObjDaten(objDaten, photo_multi, photoAll):
     """
     Removes any unused objects in objDaten, because it is huge!
     :param objDaten: objDaten dict
     :param photo_multi: photo_multi dict
+    :param photoAll: photoAll dict
     :return: None
     """
     print u"\tTrimming objDaten..."
     originalSize = len(objDaten)
 
-    # collect all objIds not mentioned in photo_multi
+    # collect all objIds not mentioned in photo_multi or photoAll
     unusedObjIds = set(objDaten.keys())
     for k, v in photo_multi.iteritems():
+        unusedObjIds = unusedObjIds - set(v['PhoObjId'])
+    for k, v in photoAll.iteritems():
         unusedObjIds = unusedObjIds - set(v['PhoObjId'])
 
     # remove any which should be trimmed
@@ -399,7 +476,7 @@ def stichworth_photo(stichwortFile, photo_multi):
     return stichwort
 
 
-def samesame(photo_multi):
+def samesame(photo_multi, photoAll):
     """
     @toDo (after redux)
         * samePhoId no longer needed (but need to make sure it is not
@@ -409,10 +486,13 @@ def samesame(photo_multi):
     * same_PhoId: same phoId different file
     * same_object: same objId different phoId
     :param photo_multi: photo_multi dict
+    :param photoAll: photoAll dict
     :return: None (but updates photo_multi)
     """
     print u"Samesame()"
+    # load all objId connections from photo_multi
     objIdConnection = {}
+    print u'\tloading objects from photo_multi...'
     for k, v in photo_multi.iteritems():
         phoId = v['PhoId']
         mullId = v['MulId']
@@ -423,9 +503,18 @@ def samesame(photo_multi):
                 objIdConnection[objId] = []
             objIdConnection[objId].append((phoId, phoMullId))
 
+    # load only objId connections from photoAll where object in photo_multi
+    print u'\tloading objects from photoAll...'
+    for k, v in photoAll.iteritems():
+        phoId = v['PhoId']
+        mullId = v['MulId']
+        phoMullId = '%s:%s' % (phoId, mullId)
+        objIds = v['PhoObjId']
+        for objId in objIds:
+            if objId in objIdConnection.keys():
+                objIdConnection[objId].append((phoId, phoMullId))
+
     # remove any with only one associated phoId
-    # this way ( i.e. .items() allows deletions to be made directly and
-    # is safe (per https://stackoverflow.com/questions/5384914)
     for k, v in objIdConnection.items():
         if len(v) < 2:
             del objIdConnection[k]

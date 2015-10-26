@@ -6,8 +6,8 @@
 #
 #
 import codecs
-from common import Common
 import os
+import helpers
 
 # limitations on namelength
 # shorten if longer GOODLENGTH cut if longer than MAXLENGTH
@@ -20,140 +20,135 @@ LOG_SUBFOLDER = u'logs'
 MAPPING_FOLDER = u'mappings'
 
 
-def makeFilenames(folder=CSV_FOLDER, mapping=MAPPING_FOLDER, filenameP=PHOTO_FILE, filenameO=OBJDATEN_FILE):
-    '''
-    Generating filenames from photo and object descriptions
-    '''
-    # input files
-    headerP, linesP = Common.openFile(os.path.join(folder, filenameP))
-    oDict = Common.file_to_dict(os.path.join(folder, filenameO))
+def run(folder=CSV_FOLDER, mapping=MAPPING_FOLDER, filenameP=PHOTO_FILE,
+        filenameO=OBJDATEN_FILE):
+    """
+    Generates filenames from photo and object descriptions
+    :param folder: the folder containing csv files
+    :param mapping: the folder containing mapping files
+    :param filenameP: the photo data csv file
+    :param filenameO: the objDaten csv file
+    :returns: None
+    """
+    # create target folders if they don't exist
+    targetFolders = (mapping, os.path.join(folder, LOG_SUBFOLDER))
+    for t in targetFolders:
+        if not os.path.isdir(t):
+            os.mkdir(t)
 
-    # output files
-    csvFile = os.path.join(folder, u'filenames.csv')
-    mappingFile = os.path.join(mapping, u'Filenames.txt')
+    # make descriptions
+    photoFile = os.path.join(folder, filenameP)
+    objDatenFile = os.path.join(folder, filenameO)
     logFile = os.path.join(folder, LOG_SUBFOLDER, u'filenames.log')
-    # create target if it doesn't exist
-    if not os.path.isdir(mapping):
-        os.mkdir(mapping)
-    f = codecs.open(csvFile, 'w', 'utf-8')  # new csv file
-    fbesk = codecs.open(mappingFile, 'w', 'utf-8')  # new csv file for Commons
-    flog = codecs.open(logFile, 'w', 'utf-8')  # logfile (for any unmerged rows)
+    descriptions, photo = makeDescriptions(photoFile, objDatenFile, logFile)
 
-    # write headers
-    f.write(u'%s|%s|%s|%s|filename|ext\n' % (headerP[0], headerP[1], headerP[9], headerP[10]))
-    commonsOutput(fbesk, None, None, None, intro=True)
+    # output Commons
+    mappingFile = os.path.join(mapping, u'Filenames.txt')
+    commonsOutput(descriptions, mappingFile)
 
-    skiplog = []
-    noHopelog = []
-    dcounter = 0  # number of files skipped where something could be done
-    hcounter = 0  # number of files skipped where nothing can be done
-    cOut = 0  # number of outputs
-    uTester = []  # to test uniquenes of filenames
-    for l in linesP:
-        if len(l) == 0:
-            continue
-        col = l.split('|')
-        phoId = col[0]
-        mullId = col[1]
-        objIds = col[2].split(';')
-        museum = museumConv2(col[5])
-        phoBes, log = phoBesConv(col[3])
-        origPath = col[9]
-        origFName = col[10].strip()
-        # same_same = col[13]
-        if len(phoBes) == 0:  # skip empty ones
-            if len(col[2]) == 0:
-                noHopelog.append('No-objects-No-photoDescr|%s|%s' % (phoId, mullId))
-                hcounter = hcounter+1
-                continue  # nothing to do
-            elif len(objIds) == 1:
-                phoBes = getDescFromObj(oDict[objIds[0]])
-                if len(phoBes) == 0:  # might still be empty
-                    skiplog.append('No-objectDescr-No-photoDescr|%s|%s' % (phoId, mullId))
-                    dcounter = dcounter+1
-                    continue
+    # make Filenames
+    filenamesFile = os.path.join(folder, u'filenames.csv')
+    makeFilenames(descriptions, photo, filenamesFile)
+
+
+def makeDescriptions(photoFile, objDatenFile, logFile):
+    """
+    Given the photo and objDaten data this uses the two generate descriptions.
+    Also returns photo for later use
+    :param photoFile: path to photo data file
+    :param multiFile: path to multimedia data file
+    :param logFile: path to logfile
+    :return: dict, dict
+    """
+    # setup
+    flog = codecs.open(logFile, 'w', 'utf-8')  # logfile
+
+    # load input files
+    photoHeader = 'PhoId|MulId|PhoObjId|PhoBeschreibungM|PhoAufnahmeortS|' \
+                  'PhoSwdS|AdrVorNameS|AdrNameS|PhoSystematikS|MulPfadS|' \
+                  'MulDateiS|MulExtentS|PstId|same_PhoId|same_object'
+    photo = helpers.csvFileToDict(photoFile, 'PhoId', photoHeader,
+                                  lists=('PhoObjId', ))
+
+    objDatenHeader = 'ObjId|ObjKueId|AufId|AufAufgabeS|ObjTitelOriginalS|' \
+                     'ObjTitelWeitereM|ObjInventarNrS|ObjInventarNrSortiertS|' \
+                     'ObjReferenzNrS|ObjDatierungS|ObjJahrVonL|ObjJahrBisL|' \
+                     'ObjSystematikS|ObjFeld01M|ObjFeld02M|ObjFeld03M|ObjFeld06M|' \
+                     'ObjReserve01M|ausId|related|ergId|role:roleCmt:kueId|' \
+                     'mulId|massId'
+    objDaten = helpers.csvFileToDict(objDatenFile, 'ObjId', objDatenHeader)
+
+    # start process
+    skipLog = []  # no photoDescr, no objectDescr
+    manyLog = []  # no photoDescr, many objects
+    noHopeLog = []  # no photoDescr, no objects
+    descriptions = {}
+    uniques = set([])  # unique filenames
+    for k, v in photo.iteritems():
+        phoId = v['PhoId']
+        objIds = v['PhoObjId']
+        museum = v['PhoSwdS']
+        if len(museum) == 0:
+            museum = u'LSH'
+        phoBes = getDescFromPhoBes(v['PhoBeschreibungM'])
+
+        if len(phoBes) == 0:  # try to get description from object
+            if len(objIds) == 1 and len(objIds[0]) > 0:
+                # exactly one object
+                phoBes = getDescFromObj(objDaten[objIds[0]])
+                if len(phoBes) == 0:
+                    # failed to make a description from the object
+                    skipLog.append(phoId)
+            elif len(objIds) > 1:
+                # multiple objects
+                manyLog.append(phoId)
             else:
-                skiplog.append('Many-objects-No-photoDescr|%s|%s' % (phoId, mullId))
-                dcounter = dcounter+1
-                continue  # haven't decided yet
-        # if len(log) > 0:
-        #    flog.write(u'%s\n' % log.strip('\t'))
-        commonsOutput(fbesk, phoId, phoBes, cOut)
-        newfName = u'%s - %s - %s' % (phoBes, museum, phoId)
-        f.write(u'%s|%s|%s|%s|%s|\n' % (phoId, mullId, origPath, origFName, newfName))
-        cOut += 1
-        uTester.append(newfName)
-    print u'Skipped: %r files out of which %r may have hope.' % (dcounter+hcounter, dcounter)
-    if len(uTester) != len(set(uTester)):
-        print u'Filenames are not unique!!!!: %r were duplicate' % (len(uTester) - len(set(uTester)))
-    flog.write(u'----Skipped (hopeless)----\n')
-    for l in noHopelog:
-        flog.write(u'%s\n' % l)
-    flog.write(u'----Skipped (some hope?)----\n')
-    for l in skiplog:
-        flog.write(u'%s\n' % l)
+                # no objects
+                noHopeLog.append(phoId)
+
+        if len(phoBes) > 0:
+            filename = u'%s - %s - %s' % (phoBes, museum, phoId)
+            descriptions[phoId] = {'descr': phoBes,
+                                   'filename': filename}
+            uniques.add(filename)
+
+    # check uniqueness
+    if len(uniques) != len(descriptions):
+        print u'Descriptions are not unique!!!!: %d were duplicate' % \
+              (len(uniques) - len(descriptions))
+
+    # output logs
+    if len(skipLog) > 0:
+        flog.write('* No-objectDescr and No-photoDescr (phoIds)\n')
+        flog.write('%s\n' % '\n'.join(skipLog))
+    if len(manyLog) > 0:
+        flog.write('* Many objects and No-photoDescr (phoIds)\n')
+        flog.write('%s\n' % '\n'.join(manyLog))
+    if len(noHopeLog) > 0:
+        flog.write('* No-objects and No-photoDescr (phoIds)\n')
+        flog.write('%s\n' % '\n'.join(noHopeLog))
+
+    # wrap up
+    print u'Processed %d images out of which %d has some type of problem. ' \
+          u'See log (%s) for more info.' % \
+          (len(photo), len(photo) - len(descriptions), logFile)
     flog.close()
-    f.close()
-    fbesk.write(u'|}')
-    fbesk.close()
-    print u'Created %s, %s, %s' % (csvFile, mappingFile, logFile)
+    return descriptions, photo
 
 
-def commonsOutput(fbesk, phoId, phoBes, cOut, intro=False):
-    '''
-    Given a filedescription this outputs it correctly in a Commons
-    export format
-    param fbesk: file to which to write
-    param phoId: the photo id
-    param phoBes: the description
-    param cOut: the counter
-    param intro: toggle to just output the intro
-    '''
-    if intro:
-        fbesk.write(u'Final filename becomes: <descr> - <museum> - <photoId>.<ext> \n\n')
-        fbesk.write(u'Attempts have been made to keep descriptions under %r characters with a hard limit at %r characters\n\n' % (GOODLENGTH, MAXLENGTH))
-        fbesk.write(u'You are free to improve the descriptions by adding an alternativ in the last column.\n')
-        fbesk.write(u'===phoId | description | new description===\n')
-    else:
-        # Add regular breaks
-        if cOut % 250 == 0:
-            if cOut != 0:
-                fbesk.write(u'|}\n')
-            fbesk.write(u'\n')
-            fbesk.write(u'====%r-%r====\n' % (cOut, cOut+250))
-            fbesk.write(u'{| class="wikitable sortable"\n|-\n! PhoId !! generated <descr> !! improved <descr>\n')
-        # Add row
-        fbesk.write(u'|-\n| %s || %s || \n' % (phoId, insufficient(phoBes)))
-
-
-def museumConv(text):
-    '''converts plaintext museumname to std. abbrevition'''
-    if text == u'Hallwylska museet':
-        return u'HWY'
-    elif text == u'Livrustkammaren':
-        return u'LRK'
-    elif text == u'Skoklosters slott':
-        return u'SKO'
-    else:
-        return u'LSH'
-
-
-def museumConv2(text):
-    '''converts plaintext museumname to std. abbrevition'''
-    if text == u'':
-        return u'LSH'
-    else:
-        return text
-
-
-def phoBesConv(text):
-    '''strips out inv. numbers etc'''
-    # strings preceding inventory no's
-    badStrings = [u'LRK.', u'LRK ', u'LRk ', u'HWY ', u'Hwy S', u'ENR ',
+def getDescFromPhoBes(text):
+    """
+    Given a text filter and chop it to get a suitable description
+    :param text:
+    :return: str
+    """
+    # setup
+    badStrings = (u'LRK.', u'LRK ', u'LRk ', u'HWY ', u'Hwy S', u'ENR ',
                   u'Enr ', u'enr ', u'inv. nr. ', u'SKO ', u'LXIV:',
-                  u'unr ', u'XLII:', u'XXX']
-    badchar = u'-., '  # kanske även "
-    log = ''
+                  u'unr ', u'XLII:', u'XXX')
+    badchar = u'-., '
+
+    # remove any badstrings/ids
     runAgain = True
     while(runAgain):
         runAgain = False
@@ -161,54 +156,58 @@ def phoBesConv(text):
             if b in text:
                 runAgain = True
                 pos = text.find(b)
-                # find end - must be a better way
-                sep = ','
-                pos2 = text.find(',', pos+len(b))
-                posOch = text.find('och', pos+len(b))
-                posAmp = text.find('&', pos+len(b))
-                posStop = text.find('. ', pos+len(b))
-                if posOch > 0 and (posOch < pos2 or pos2 < 0):
-                    sep = ' och'
-                    pos2 = posOch
-                if posAmp > 0 and (posAmp < pos2 or pos2 < 0):
-                    sep = ' &'
-                    pos2 = posAmp
-                if posStop > 0 and (posStop < pos2 or pos2 < 0):
-                    sep = '.'
-                    pos2 = posStop
-                # end of ugly
+
+                # find where to stop chopping
+                separators = (',', ' och', ' &', '. ')
+                sep = None
+                pos2 = -1
+                for separator in separators:
+                    posEnd = text.find(separator, pos+len(b))
+                    if posEnd > 0 and (posEnd < pos2 or pos2 < 0):
+                        sep = separator.rstrip()
+                        pos2 = posEnd
+
+                # chop
                 if pos2 > 0:
                     # See if there is a list of ids
                     while(True):
-                        pos3 = text.find(',', pos2+len(sep))
+                        pos3 = text.find(',', pos2 + len(sep))
                         if pos3 > 0:
-                            bit = text[pos2+len(sep):pos3]
+                            bit = text[pos2 + len(sep):pos3]
                             if len(bit.strip('0123456789-,. ')) == 0:
-                                pos2 = pos3+1-len(sep)
+                                pos2 = pos3 + len(',') - len(sep)
                                 continue
                         else:
-                            bit = text[pos2+len(sep):]
+                            bit = text[pos2 + len(sep):]
                             if len(bit.strip('0123456789-,. ')) == 0:
-                                pos2 = pos2+len(bit)
+                                pos2 = pos2 + len(bit)
                         break
-                    log = u'%s%s\t' % (log, text[pos:pos2])
-                    text = u'%s%s %s' % (text[:pos].strip(badchar), sep, text[pos2+len(sep):].strip(badchar))
+                    text = u'%s%s %s' % (text[:pos].strip(badchar),
+                                         sep,
+                                         text[pos2 + len(sep):].strip(badchar))
                 else:
-                    log = u'%s%s\t' % (log, text[pos:])
                     text = text[:pos]
+
+    # cleanup text
     text = text.strip(badchar)
-    if len(text) == 0:
-        return '', log
-    elif len(text.strip('0123456789,.- ')) == 0:  # if only numbers (left)
-        log = u'%s%s\t' % (log, text)
-        return '', log
+    text = cleanName(text)
+    text = cleanString(text)
+    if len(text.strip('0123456789,.- ')) == 0:
+        # if no relevant info left
+        text = ''
     else:
-        text = cleanName(text)
-        return touchup(shortenNames(text)), log
+        text = shortenString(text)
+        text = touchup(text)
+
+    return text
 
 
 def getDescFromObj(obj):
-    '''finds a suitable description based on obj'''
+    """
+    Constructs a suitable description based on an entry in ObjDaten
+    :param obj: the objDaten item
+    :returns: str
+    """
     badStrings = [u'<!>', u'(?)', u'Biografi och genealogi', u'Geografi',
                   u'Konst- och kulturhistoria', u'Samhälls- & rättsvetenskap',
                   u'Genrebild', u'Historiebild', u'Djurbild', u'Landskapsbild']
@@ -221,22 +220,20 @@ def getDescFromObj(obj):
 
     # remove badStrings from both
     for b in badStrings:
-        if b in orig:
-            pos = orig.find(b)
-            orig = orig[:pos]+orig[pos+len(b):]
-        if b in kort:
-            pos = kort.find(b)
-            kort = kort[:pos]+kort[pos+len(b):]
+        orig = orig.replace(b, '')
+        kort = kort.replace(b, '')
+
     # strip badchar
     orig = orig.strip(badchar)
     kort = kort.strip(badchar)
+
     # if only numbers (left)
     if len(orig.strip('0123456789,.- ')) == 0:
         orig = ''
     if len(kort.strip('0123456789,.- ')) == 0:
         kort = ''
 
-    # decision time
+    # decision time, pick longer or rely on collection
     descr = ''
     if orig.lower() in kort.lower():
         descr = kort
@@ -246,31 +243,50 @@ def getDescFromObj(obj):
         descr = ''
     else:
         samling = obj[u'AufAufgabeS']
-        if samling in [u'Livrustkammaren', u'Skoklosters slott']:
+        if samling in (u'Livrustkammaren', u'Skoklosters slott'):
             descr = kort
-        elif samling in [u'Hallwylska museet']:
+        elif samling in (u'Hallwylska museet'):
             descr = '%s: %s' % (orig, kort)
         else:  # u'LRK dubletter', u'Skoklosters slotts boksamling'
             descr = orig
+
+    # polish
     descr = cleanName(descr)
-    return touchup(shortenNames(descr))
+    descr = cleanString(descr)
+    descr = shortenString(descr)
+    descr = touchup(descr)
+    return descr
 
 
 def cleanName(text):
-    '''removes forbidden characters and unwanted strings'''
+    """
+    Removes unwanted strings from a text string
+    :param text: text to test
+    :returns: str
+    """
     # simple strings to remove
-    easyBadStrings = [u'Fler inventarienr.', u'Fler inventarienr',
+    easyBadStrings = (u'Fler inventarienr.', u'Fler inventarienr',
                       u'Flera inventarienr.', u'Flera inventarienr',
-                      u'Fler inventareinr', u'(?)']
+                      u'Fler inventareinr', u'(?)')
     for b in easyBadStrings:
         text = text.replace(b, '').strip()
+    return text
+
+
+def cleanString(text):
+    """
+    Removes characters which are forbidden/undesired in filenames from string
+    :param text: the text to test
+    :returns: str
+    """
     # bad characters  - extend as more are identified
     # Note that ":" is complicated as it has several different interpretaions.
     # Currently first replacing possesive case and sentence break then
     # dealing with stand alone :
+    # maybe also ? ' and &nbsp; symbol
     badChar = {u'\\': u'-', u'/': u'-', u'[': u'(', u']': u')', u'{': u'(',
                u'}': u')', u'|': u'-', u'#': u'-', u':s': u's', u'  ': u' ',
-               u'e´': u'é', u': ': u', '}  # maybe also ? ' and &nbsp; character
+               u'e´': u'é', u': ': u', ', u' ': u' '}
     for k, v in badChar.iteritems():
         text = text.replace(k, v)
     if u':' in text:
@@ -280,39 +296,13 @@ def cleanName(text):
     return text.strip()
 
 
-def touchup(text):
-    '''
-    final tweaks to description
-    '''
-    # If string starts and ends with bracket or quotes then remove
-    brackets = {u'(': ')', u'[': ']', u'{': '}', u'"': '"'}
-    for k, v in brackets.iteritems():
-        if text.startswith(k) and text.endswith(v):
-            if text[:-1].count(k) == 1:
-                # so as to not remove unmatching brackets.
-                # slice in check is due to quote-bracket
-                text = text[1:-1]
-    # Make sure first character is upper case
-    text = text[:1].upper()+text[1:]
-    return text.strip(' .,;')
-
-
-def insufficient(text):
-    '''
-    colours text red if it matches the requirment for insufficient info
-    '''
-    badStrings = [u'Detalj', u'Helbild', u'Målning', u'Reprofoto', u'Ritning']
-    if text in badStrings:
-        return u'<span style="color:red">%s</span>' % text
-    else:
-        return text
-
-
-def shortenNames(text):
-    '''
-    if a string is larger than MAXLENGTH then this tries to
+def shortenString(text):
+    """
+    If a string is larger than GOODLENGTH then this tries to
     find a sensibel shortening
-    '''
+    :param text: text to test
+    :returns: str
+    """
     badchar = u'-., '  # kanske även "
     if u'<!>' in text:
         text = text[:text.find(u'<!>')]
@@ -324,7 +314,7 @@ def shortenNames(text):
     if text.endswith(')'):
         pos = text.rfind('(')
         if pos > 0:
-            return shortenNames(text[:pos].strip(badchar))
+            return shortenString(text[:pos].strip(badchar))
     # split string at certain character
     pos = text.rfind('.')
     if pos < 0:
@@ -338,14 +328,118 @@ def shortenNames(text):
                     if len(text) > MAXLENGTH:
                         text = u'%s...' % text[:MAXLENGTH-3]
                     return text
-    return shortenNames(text[:pos].strip(badchar))
+    return shortenString(text[:pos].strip(badchar))
+
+
+def touchup(text):
+    """
+    Tweaks a string by removing surrounding bracket or quotes as well as
+    some trailing punctuation
+    :param text: text to test
+    :returns: str
+    """
+    # If string starts and ends with bracket or quotes then remove
+    brackets = {u'(': ')', u'[': ']', u'{': '}', u'"': '"'}
+    for k, v in brackets.iteritems():
+        if text.startswith(k) and text.endswith(v):
+            if text[:-1].count(k) == 1:
+                # so as to not remove unmatching brackets.
+                # slice in check is due to quote-bracket
+                text = text[1:-1]
+
+    # Make sure first character is upper case
+    text = text[:1].upper() + text[1:]
+    return text.strip(' .,;')
+
+
+def commonsOutput(descriptions, mappingFile):
+    """
+    Given filedescriptions this outputs it correctly in a Commons export format
+    :param descriptions: dict of descriptions with phoId as key
+    :param mappingFile: the target file for output
+    :return: None
+    """
+    # setup
+    fOut = codecs.open(mappingFile, 'w', 'utf-8')
+    chunkSize = 250
+    chunkStart = u"====%d-%d====\n" \
+                 u"{| class=\"wikitable sortable\"\n|-\n! PhoId !! generated " \
+                 u"<descr> !! improved <descr>\n"
+    rowFormat = u"|-\n| %s || %s || \n"
+
+    # write intro
+    fOut.write(
+        u'Final filename becomes: <descr> - <museum> - <photoId>.<ext>\n\n'
+        u'Attempts have been made to keep descriptions under %d characters '
+        u'with a hard limit at %d characters\n\n'
+        u'You are free to improve the descriptions by adding an alternativ '
+        u'in the last column.\n'
+        u'===phoId | description | new description===\n\n'
+        u'%s' % (GOODLENGTH, MAXLENGTH, chunkStart % (0, chunkSize)))
+
+    counter = 0
+    for phoId, v in descriptions.iteritems():
+        # Add regular breaks
+        counter += 1
+        if counter % chunkSize == 0:
+            fOut.write(u'|}\n\n' + chunkStart % (counter, counter+chunkSize))
+
+        # write row
+        fOut.write(rowFormat % (phoId, insufficient(v['descr'])))
+
+    # # write outro
+    fOut.write(u'|}')
+    fOut.close()
+    print u'Created %s' % mappingFile
+
+
+def insufficient(text):
+    """
+    Checks if a string is in blacklist, if so wrap in span setting text
+    colour to red, otherwise return unchanged.
+    :param text: test string
+    :return: str
+    """
+    badStrings = [u'Detalj', u'Helbild', u'Målning', u'Reprofoto', u'Ritning']
+    if text in badStrings:
+        text = u'<span style="color:red">%s</span>' % text
+    return text
+
+
+def makeFilenames(descriptions, photo, filenamesFile):
+    """
+    Given filedescriptions this outputs it correctly as csv for later import
+    :param descriptions: dict of descriptions with phoId as key
+    :param photo: the photo data
+    :param filenamesFile: the target file for output
+    :return: None
+    """
+    # setup
+    filenamesHeader = 'PhoId|MulId|MulPfadS|MulDateiS|filename|ext'
+
+    # make a dict to be able to reuse helpers.dictToCsvFile()
+    filenames = {}
+    for phoId, v in descriptions.iteritems():
+        filenames[phoId] = {
+            'PhoId': phoId,
+            'MulId': photo[phoId]['MulId'],
+            'MulPfadS': photo[phoId]['MulPfadS'],
+            'MulDateiS': photo[phoId]['MulDateiS'],
+            'filename': v['filename'],
+            'ext': ''
+        }
+
+    # output
+    helpers.dictToCsvFile(filenamesFile, filenames, filenamesHeader)
+    print u'Created %s' % (filenamesFile)
+
 
 if __name__ == '__main__':
     import sys
     usage = u'Usage:\tpython py_filenames.py\n'
     argv = sys.argv[1:]
     if len(argv) == 0:
-        makeFilenames()
+        run()
     else:
         print usage
 # EoF

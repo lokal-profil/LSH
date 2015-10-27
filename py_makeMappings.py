@@ -14,6 +14,7 @@
 # * py-Ereignis.py
 #
 from py_MakeInfo import MakeInfo
+from helpers import output
 from py_prepCSVData import CSV_CONFIG  # needed to load CSV_FILES
 import codecs
 import os
@@ -22,15 +23,16 @@ import json
 # roller som inte tas med i People
 ROLE_BLACKLIST = [u'Säljare', u'Auktion', u'Förmedlare', u'Givare',
                   u'Återförsäljare', u'Konservator']
+DATA_PATH = u'data'
 IN_PATH = u'old_connections'
 OUT_PATH = u'mappings'
 CSV_FILES = None
 
 
-def run(in_path=IN_PATH, out_path=OUT_PATH):
+def run(in_path=IN_PATH, out_path=OUT_PATH, data_path=DATA_PATH):
     # Load all relevant files
     A = MakeInfo()
-    A.readInLibraries()
+    A.readInLibraries(folder=data_path)
     A.readConnections(keepskip=True, folder=in_path)
 
     # read csv files from config
@@ -168,7 +170,7 @@ def writeMaterials(filename, dDict):
         f.write(row % (key, val[u'freq'], '/'.join(val[u'connect'])))
     f.write(footer)
     f.close()
-    print u'Created %s' % filename
+    output(u'Created %s' % filename)
 
 
 def makeObjKeywords(A, oDict):
@@ -304,7 +306,7 @@ def writePhotographers(filename, dDict):
         f.write(row % (key, val[u'freq'], val[u'creator'], val[u'cat']))
     f.write(footer)
     f.close()
-    print u'Created %s' % filename
+    output(u'Created %s' % filename)
 
 
 def makeKeywords(A):
@@ -336,7 +338,7 @@ def makeKeywords(A):
         if k in phoIds:
             phoIds.remove(k)
     if len(phoIds) != 0:
-        print u'Stichwort_trim still contains unused phoIds'
+        output(u'Stichwort_trim still contains unused phoIds')
     return keywords
 
 
@@ -393,7 +395,7 @@ def writeKeywords(filename, dDict):
         f.write(row % (key, '/'.join(val[u'descr']), val[u'freq'], '/'.join(val[u'cat'])))
     f.write(footer)
     f.close()
-    print u'Created %s' % filename
+    output(u'Created %s' % filename)
 
 
 def makeExhibitPlaces(A, oDict):
@@ -458,7 +460,7 @@ def makeEvents(A, oDict):
         if title in events.keys():
             events[title][u'freq'] += v
             if link != events[title][u'link']:
-                print u'Found two events with title but different links %s' % k
+                output(u'Found two events with title but different links %s' % k)
         else:
             events[title] = {u'link': link, u'freq': v}
     return events
@@ -484,7 +486,7 @@ def combineEvents(oldCatDict, oldLinkDict, newDict):
                 if oldlink != newlink:
                     # check if the same, otherwise use old
                     if len(newlink) != 0:
-                        print u'Eregnis: replaced %s by %s' % (newlink, oldlink)
+                        output(u'Eregnis: replaced %s by %s' % (newlink, oldlink))
                     newlink = oldlink
                 newDict[k][u'link'] = newlink  # reformated and possibly replaced
             del oldCatDict[k]  # no need to delete oldLinkDict if we iterate over cat
@@ -541,7 +543,7 @@ def writeEvents(filename, dDict):
         f.write(row % (key, val[u'freq'], val[u'link'], '/'.join(val[u'cat'])))
     f.write(footer)
     f.close()
-    print u'Created %s' % filename
+    output(u'Created %s' % filename)
 
 
 def makePeople(A, oDict):
@@ -678,7 +680,7 @@ def writePeople(filename, dDict):
         f.write(row % (val[u'descr'], key, val[u'freq'], val[u'link'], val[u'creator'], val[u'cat']))
     f.write(footer)
     f.close()
-    print u'Created %s' % filename
+    output(u'Created %s' % filename)
 
 
 def writeObjKeywords(filename, ord1Dict, ord2Dict, gruppDict, emptyObjCats):
@@ -725,7 +727,7 @@ def writeObjKeywords(filename, ord1Dict, ord2Dict, gruppDict, emptyObjCats):
         f.write(row % (key, val[u'freq'], '/'.join(val[u'connect'])))
     f.write(footer)
     f.close()
-    print u'Created %s' % filename
+    output(u'Created %s' % filename)
 
 
 def writePlaces(filename, exhibitPlaces, landDict, ortDict, emptyPlaces):
@@ -772,7 +774,7 @@ def writePlaces(filename, exhibitPlaces, landDict, ortDict, emptyPlaces):
         f.write(row % (key, val[u'freq'], val[u'connect']))
     f.write(footer)
     f.close()
-    print u'Created %s' % filename
+    output(u'Created %s' % filename)
 
 
 def simpleCombine(oldDict, newDict, addEmpty=False):

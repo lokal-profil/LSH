@@ -12,6 +12,7 @@ import codecs
 import os
 import helpers
 from helpers import MyError
+from helpers import output
 
 CSV_DIR_CLEAN = u'clean_csv'
 CSV_DIR_CRUNCH = u'data'
@@ -144,8 +145,8 @@ def run(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
     for k, v in out_csv.iteritems():
         outFile = os.path.join(out_path, u'%s.csv' % k)
         helpers.dictToCsvFile(outFile, v, out_headers[k])
-        print u'\tOutputted %s' % outFile
-    print u'Done!'
+        output(u'\tOutputted %s' % outFile)
+    output(u'Done!')
 
 
 def makePhoto_multi(photoFile, multiFile, logFile, tmpFile):
@@ -159,7 +160,7 @@ def makePhoto_multi(photoFile, multiFile, logFile, tmpFile):
     """
     # setup
     flog = codecs.open(logFile, 'w', 'utf-8')  # logfile
-    print u"Combining photo and multimedia file for unique files..."
+    output(u"Combining photo and multimedia file for unique files...")
     pathToTrim = u'R:\web\hires\\'
     tmpHeader = 'PhoId|MulId|PhoObjId|PhoBeschreibungM|PhoAufnahmeortS|' \
                 'PhoSwdS|AdrVorNameS|AdrNameS|PhoSystematikS|MulPfadS|' \
@@ -180,14 +181,14 @@ def makePhoto_multi(photoFile, multiFile, logFile, tmpFile):
         else:
             mulPhoIdList.append(v['MulPhoId'])
             namelist.append(name)
-    print u'\tmultimedia: %d' % len(multi)
+    output(u'\tmultimedia: %d' % len(multi))
 
     # handle photo
     # @toDO add duplicate check to cleanup script
     photoHeader = 'PhoId|PhoObjId|PhoBeschreibungM|PhoAufnahmeortS|PhoSwdS|' \
                   'MulId|AdrVorNameS|AdrNameS|PhoSystematikS'
     photo = helpers.csvFileToDict(photoFile, 'PhoId', photoHeader)
-    print u'\tphoto: %d' % len(photo)
+    output(u'\tphoto: %d' % len(photo))
 
     # combine
     combined = {}
@@ -214,10 +215,10 @@ def makePhoto_multi(photoFile, multiFile, logFile, tmpFile):
     for k, v in photo.iteritems():
         flog.write(u'%s\n' % v)
     flog.close()
-    print u"...done"
+    output(u"...done")
 
     # check if anything needs to be manually handled
-    print u"Read the log (%s)" % logFile
+    output(u"Read the log (%s)" % logFile)
     combined = helpers.promptManualUpdate(combined, tmpFile,
                                           tmpHeader, 'PhoId')
 
@@ -236,16 +237,18 @@ def makePhotoAll(photoAllFile, photo_multi, logFile):
     :return: dict
     """
     # often requires manual fixing prior to crunch
-    print u"Confirm that any issues mentioned in the photoAll analysis " \
-          u"log have been corrected and the updated photoAll file saved..."
-    raw_input(u"...by pressing enter when done")
+    helpers.verboseInput(u"Confirm that any issues mentioned in the photoAll "
+                         u"analysis log have been corrected and the updated "
+                         u"photoAll file saved...\n"
+                         u"...by pressing enter when done")
 
     # setup
     flog = codecs.open(logFile, 'w', 'utf-8')  # logfile
-    print u"Loading photoAll..."
+    output(u"Loading photoAll...")
     photoAllHeader = 'PhoId|PhoObjId|PhoBeschreibungM|PhoAufnahmeortS|PhoSwdS|' \
                      'MulId|AdrVorNameS|AdrNameS|PhoSystematikS'
-    photoAll = helpers.csvFileToDict(photoAllFile, 'PhoId', photoAllHeader)
+    photoAll = helpers.csvFileToDict(photoAllFile, ('PhoId', 'MulId'),
+                                     photoAllHeader)
     originalSize = len(photoAll)
 
     for k, v in photoAll.items():
@@ -262,8 +265,8 @@ def makePhotoAll(photoAllFile, photo_multi, logFile):
         link = helpers.external2internalLink(link, project='wikimedia')
         link = link[len('[[:commons:File:'):-len(']]')]
         v['PhoSystematikS'] = link
-    print 'PhotoAll reduced from %d to %d entries' % (originalSize,
-                                                      len(photoAll))
+    output('PhotoAll reduced from %d to %d entries' % (originalSize,
+                                                       len(photoAll)))
 
     # check that none of PhoId from photo_multi occur in photo
     dupes = []
@@ -272,9 +275,9 @@ def makePhotoAll(photoAllFile, photo_multi, logFile):
         if phoMul in photoAll.keys():
             dupes.append(phoMul)
     if len(dupes) > 0:
-        print u'Found duplicates between photoAll and photo_multi. ' \
-              u'This will most likely mess things up. Check the log at ' \
-              u'%s for details.' % logFile
+        output(u'Found duplicates between photoAll and photo_multi. '
+               u'This will most likely mess things up. Check the log at '
+               u'%s for details.' % logFile)
         flog.write(u'* duplicates found in photo and photo_all\n'
                    u'phoId:MulId|commonsFile')
         for d in dupes:
@@ -300,10 +303,10 @@ def photo_ObjDaten(photo_multi, photoAll, photoObjDatenFile,
     """
     # setup
     flog = codecs.open(logFile, 'w', 'utf-8')  # logfile
-    print u"Combining all ObjId into the photo file..."
+    output(u"Combining all ObjId into the photo file...")
 
     # handle objDaten
-    print u'\treading in objDaten.. (takes a while)'
+    output(u'\treading in objDaten.. (takes a while)')
     objDatenHeader = 'ObjId|ObjKueId|AufId|AufAufgabeS|ObjTitelOriginalS|' \
                      'ObjTitelWeitereM|ObjInventarNrS|ObjInventarNrSortiertS|' \
                      'ObjReferenzNrS|ObjDatierungS|ObjJahrVonL|ObjJahrBisL|' \
@@ -313,7 +316,7 @@ def photo_ObjDaten(photo_multi, photoAll, photoObjDatenFile,
 
     # match each objInvNr to several objId
     objInvNr2ObjId = {}  # old oDict
-    print u'\tfinding objInvNr connections...'
+    output(u'\tfinding objInvNr connections...')
     for k, v in objDaten.iteritems():
         objId = v['ObjId']
         objInvNr = v['ObjInventarNrS']
@@ -322,8 +325,8 @@ def photo_ObjDaten(photo_multi, photoAll, photoObjDatenFile,
         if objInvNr not in objInvNr2ObjId.keys():
             objInvNr2ObjId[objInvNr] = []
         objInvNr2ObjId[objInvNr].append(objId)
-    print '\tFound %d objInvNr connections in %d objects' % \
-          (len(objInvNr2ObjId), len(objDaten))
+    output('\tFound %d objInvNr connections in %d objects' %
+           (len(objInvNr2ObjId), len(objDaten)))
 
     # handle photoObjDaten
     photoObjDatenHeader = 'PhmId|AufId|AufAufgabeS|MulId|PhoId|ObjInvNrS'
@@ -333,7 +336,7 @@ def photo_ObjDaten(photo_multi, photoAll, photoObjDatenFile,
                                           keep=('PhoId', 'ObjInvNrS'))
 
     # match each phoId to several objId via the ObjInvNr
-    print u'\tfinding photo-object connections...'
+    output(u'\tfinding photo-object connections...')
     photoObjConnections = {}
     skipped = []  # ObjInvNr not in ObjDaten
     for k, v in photoObjDaten.iteritems():
@@ -347,8 +350,8 @@ def photo_ObjDaten(photo_multi, photoAll, photoObjDatenFile,
         if phoId not in photoObjConnections.keys():
             photoObjConnections[phoId] = []
         photoObjConnections[phoId] += objInvNr2ObjId[objInvNr]
-    print '\tFound %d connected photos in %d photoObjDaten entries' % \
-          (len(photoObjConnections), len(photoObjDaten))
+    output('\tFound %d connected photos in %d photoObjDaten entries' %
+           (len(photoObjConnections), len(photoObjDaten)))
 
     # add to photo_multi and photoAll
     photoDicts = (photo_multi, photoAll)
@@ -384,15 +387,15 @@ def photo_ObjDaten(photo_multi, photoAll, photoObjDatenFile,
     # log any skipped ObjInvNr
     if len(skipped) != 0:
         skipped = list(set(skipped))  # remove dupes
-        print u"\tthere were %d skipped ObjInvNr, see log (%s)" % \
-            (len(skipped), logFile)
+        output(u"\tthere were %d skipped ObjInvNr, see log (%s)" %
+               (len(skipped), logFile))
         flog.write(u'*Unknown objInvs, i.e. ObjInvNrS in photoObjDaten '
                    u'without a match in ObjDaten\n')
         flog.write(u'%s\n' % ', '.join(skipped))
 
     # log any bad objId
     if len(allBadObjId) != 0:
-        print '\tI found some bad objIds. Check the %s' % logFile
+        output('\tI found some bad objIds. Check the %s' % logFile)
         allBadObjId = list(set(allBadObjId))  # remove dupes
         flog.write(u'* objIds in photo but not in objDaten\n')
         flog.write(u'%s\n' % ', '.join(allBadObjId))
@@ -401,7 +404,7 @@ def photo_ObjDaten(photo_multi, photoAll, photoObjDatenFile,
     trimObjDaten(objDaten, photo_multi, photoAll)
 
     # confirm and return
-    print u"...done"
+    output(u"...done")
     flog.close()
     return objDaten
 
@@ -414,7 +417,7 @@ def trimObjDaten(objDaten, photo_multi, photoAll):
     :param photoAll: photoAll dict
     :return: None
     """
-    print u"\tTrimming objDaten..."
+    output(u"\tTrimming objDaten...")
     originalSize = len(objDaten)
 
     # collect all objIds not mentioned in photo_multi or photoAll
@@ -428,7 +431,7 @@ def trimObjDaten(objDaten, photo_multi, photoAll):
     for objId in unusedObjIds:
         del objDaten[objId]
 
-    print '\tobjDaten reduced from: %d to %d' % (originalSize, len(objDaten))
+    output('\tobjDaten reduced from: %d to %d' % (originalSize, len(objDaten)))
 
 
 def stichworth_photo(stichwortFile, photo_multi):
@@ -441,10 +444,10 @@ def stichworth_photo(stichwortFile, photo_multi):
     :return: dict (and updates photo_multi)
     """
     # setup
-    print u"Adding stichworth to photo"
+    output(u"Adding stichworth to photo")
 
     # handle stichwort
-    print u'\treading in stichwort...'
+    output(u'\treading in stichwort...')
     stichwortHeader = 'PstId|PhoId|StiBezeichnungS|StiSynonymS'
     stichwort = helpers.csvFileToDict(stichwortFile, 'PstId', stichwortHeader)
     originalSize = len(stichwort)
@@ -461,8 +464,8 @@ def stichworth_photo(stichwortFile, photo_multi):
             photoStichConnection[phoId].add(pstId)
         else:
             del stichwort[k]
-    print '\tstichwort trimmed from %d to %d, found %d phoId' % \
-          (originalSize, len(stichwort), len(photoStichConnection))
+    output('\tstichwort trimmed from %d to %d, found %d phoId' %
+           (originalSize, len(stichwort), len(photoStichConnection)))
 
     # add stichId to photo_multi
     for k, v in photo_multi.iteritems():
@@ -472,7 +475,7 @@ def stichworth_photo(stichwortFile, photo_multi):
             v['PstId'] = list(photoStichConnection.pop(phoId))
 
     # confirm and return
-    print u"...done"
+    output(u"...done")
     return stichwort
 
 
@@ -489,10 +492,10 @@ def samesame(photo_multi, photoAll):
     :param photoAll: photoAll dict
     :return: None (but updates photo_multi)
     """
-    print u"Samesame()"
+    output(u"Samesame()")
     # load all objId connections from photo_multi
     objIdConnection = {}
-    print u'\tloading objects from photo_multi...'
+    output(u'\tloading objects from photo_multi...')
     for k, v in photo_multi.iteritems():
         phoId = v['PhoId']
         mullId = v['MulId']
@@ -504,7 +507,7 @@ def samesame(photo_multi, photoAll):
             objIdConnection[objId].append((phoId, phoMullId))
 
     # load only objId connections from photoAll where object in photo_multi
-    print u'\tloading objects from photoAll...'
+    output(u'\tloading objects from photoAll...')
     for k, v in photoAll.iteritems():
         phoId = v['PhoId']
         mullId = v['MulId']
@@ -518,10 +521,10 @@ def samesame(photo_multi, photoAll):
     for k, v in objIdConnection.items():
         if len(v) < 2:
             del objIdConnection[k]
-    print u'\tfound %d objects in multiple photos' % len(objIdConnection)
+    output(u'\tfound %d objects in multiple photos' % len(objIdConnection))
 
     # invert objIdConnection to get per phoId connection
-    print '\tinverting objIdConnection...'
+    output('\tinverting objIdConnection...')
     phoIdConnection = {}
     for objId, v in objIdConnection.iteritems():
         allPhoMull = [entry[1] for entry in v]
@@ -530,7 +533,7 @@ def samesame(photo_multi, photoAll):
                 phoIdConnection[phoId] = []
             phoIdConnection[phoId] += allPhoMull
 
-    print '\tadding samesame to photo...'
+    output('\tadding samesame to photo...')
     for k, v in photo_multi.iteritems():
         v['same_PhoId'] = ''  # @toDo remove once safe
         v['same_object'] = []
@@ -542,7 +545,7 @@ def samesame(photo_multi, photoAll):
             ll.remove(phoMullId)  # remove self
             v['same_object'] = ll
 
-    print u"...done"
+    output(u"...done")
 
 
 def ausstellung_objDaten(austellungFile, objDaten):
@@ -558,9 +561,10 @@ def ausstellung_objDaten(austellungFile, objDaten):
     :return: dict (and updates objDaten)
     """
     # often requires manual fixing prior to crunch
-    print u"Confirm that any year formatting issues mentioned in the analysis " \
-          u"log have been corrected and the updated ausstellung file saved..."
-    raw_input(u"...by pressing enter when done")
+    helpers.verboseInput(u"Confirm that any year formatting issues mentioned "
+                         u"in the analysis log have been corrected and the "
+                         u"updated ausstellung file saved...\n"
+                         u"...by pressing enter when done")
 
     # setup
     dummyTitles = (
@@ -569,7 +573,7 @@ def ausstellung_objDaten(austellungFile, objDaten):
         u'lån till Frankrike 1947', u'test karin 20100520',
         u'test 20100629 (en post skapad för administrativa tester)',
         u'tennföremål 8 st till Strömsholm', u'utlån f justering av urverk')
-    print u"Trimming ausstellung and adding ausstellung to ObjDaten..."
+    output(u"Trimming ausstellung and adding ausstellung to ObjDaten...")
 
     # handle ausstellung
     austellungHeader = 'AobId|AusId|AusTitelS|AusOrtS|AusJahrS|AusDatumVonD|' \
@@ -595,11 +599,11 @@ def ausstellung_objDaten(austellungFile, objDaten):
         else:  # keep only objId part of this entry
             austellung[foundAusId[ausId]]['AobObjId'].add(objId)
             del austellung[k]
-    print '\taustellung reduced from %d to %d entries' % \
-          (originalSize, len(austellung))
+    output('\taustellung reduced from %d to %d entries' %
+           (originalSize, len(austellung)))
 
     # populate std_year
-    print '\tstandardising years...'
+    output('\tstandardising years...')
     for k, v in austellung.iteritems():
         year = v['AusJahrS']
         yfrom = v['AusDatumVonD'].replace(u' 00:00:00', u'').strip()
@@ -621,14 +625,14 @@ def ausstellung_objDaten(austellungFile, objDaten):
                 objIdConnection[objId] = []
             objIdConnection[objId].append(ausId)
 
-    print '\tadding ausId to objDaten...'
+    output('\tadding ausId to objDaten...')
     for k, v in objDaten.iteritems():
         objId = v['ObjId']
         v['ausId'] = []
         if objId in objIdConnection.keys():
             v['ausId'] = objIdConnection.pop(objId)
 
-    print u"...done"
+    output(u"...done")
     return austellung
 
 
@@ -688,16 +692,16 @@ def objDaten_sam(objDatenSamFile, objDaten):
     :return: None (but updates objDaten)
     """
     # setup
-    print u"Adding ObjDaten-samhörande to ObjDaten"
+    output(u"Adding ObjDaten-samhörande to ObjDaten")
 
     # handle objDatenSam
-    print '\treading ObjDaten_-_samhörande_nr into dictionary... (slow)'
+    output('\treading ObjDaten_-_samhörande_nr into dictionary... (slow)')
     objDatenSamHeader = 'OobId|OobObj1ID|OobObj2ID'
     objDatenSam = helpers.csvFileToDict(objDatenSamFile, 'OobId',
                                         objDatenSamHeader)
 
     # map object connections
-    print '\tmapping object connections...'
+    output('\tmapping object connections...')
     objIdConnection = {}
     for k, v in objDatenSam.iteritems():
         objId1 = v['OobObj1ID']
@@ -708,11 +712,11 @@ def objDaten_sam(objDatenSamFile, objDaten):
             objIdConnection[objId2] = []
         objIdConnection[objId1].append(objId2)
         objIdConnection[objId2].append(objId1)
-    print '\tfound %d connected objIds in %d entries' % \
-          (len(objIdConnection), len(objDatenSam))
+    output('\tfound %d connected objIds in %d entries' %
+           (len(objIdConnection), len(objDatenSam)))
 
     # clean up connections
-    print '\tremoving dupes, invalids and self...'
+    output('\tremoving dupes, invalids and self...')
     for objId, connectedIds in objIdConnection.items():
         connectedIds = list(set(connectedIds))  # remove dupe
         if objId in connectedIds:
@@ -728,14 +732,14 @@ def objDaten_sam(objDatenSamFile, objDaten):
             objIdConnection[objId] = connectedIds
 
     # add to objDaten
-    print '\tadding connections to objDaten...'
+    output('\tadding connections to objDaten...')
     for k, v in objDaten.iteritems():
         objId = v['ObjId']
         v['related'] = []
         if objId in objIdConnection.keys():
             v['related'] = objIdConnection.pop(objId)
 
-    print u"...done"
+    output(u"...done")
 
 
 def ereignis_objDaten(ereignisFile, objDaten, logFile):
@@ -752,7 +756,7 @@ def ereignis_objDaten(ereignisFile, objDaten, logFile):
     """
     # setup
     flog = codecs.open(logFile, 'w', 'utf-8')  # logfile
-    print u"Trimming eregnis and adding eregnis to ObjDaten..."
+    output(u"Trimming eregnis and adding eregnis to ObjDaten...")
 
     # handle eregnis
     ereignisHeader = 'EroId|ErgId|EroObjId|ErgKurztitelS|ErgArtS'
@@ -776,7 +780,7 @@ def ereignis_objDaten(ereignisFile, objDaten, logFile):
         else:  # keep only objId part of this entry
             ereignis[foundErgId[ergId]]['EroObjId'].add(objId)
             del ereignis[k]
-    print '\tergIds: reduced from %d to %d' % (originalSize, len(ereignis))
+    output('\tergIds: reduced from %d to %d' % (originalSize, len(ereignis)))
 
     # handle urls in ereignis and convert set to list
     for k, v in ereignis.iteritems():
@@ -807,7 +811,7 @@ def ereignis_objDaten(ereignisFile, objDaten, logFile):
             objIdConnection[objId].append(ergId)
 
     # add to objDaten
-    print '\tadding ergId to objDaten...'
+    output('\tadding ergId to objDaten...')
     for k, v in objDaten.iteritems():
         objId = v['ObjId']
         v['ergId'] = []
@@ -815,7 +819,7 @@ def ereignis_objDaten(ereignisFile, objDaten, logFile):
             v['ergId'] = objIdConnection.pop(objId)
 
     flog.close()
-    print u"...done"
+    output(u"...done")
     return ereignis
 
 
@@ -835,7 +839,7 @@ def kuenstler_objDaten(kuenstlerFile, objDaten, logFile):
     """
     # setup
     flog = codecs.open(logFile, 'w', 'utf-8')  # logfile
-    print u"Crunching kuenstler..."
+    output(u"Crunching kuenstler...")
     dummyNames = (u'ingen uppgift', )
     badRoles = (u'Leverantör', u'Auktion', u'Förmedlare', u'Givare',
                 u'Återförsäljare', u'Konservator')
@@ -888,10 +892,10 @@ def kuenstler_objDaten(kuenstlerFile, objDaten, logFile):
         else:  # keep only objId part of this entry
             kuenstler[foundKueId[kueId]]['ObjId'].add(objId)
             del kuenstler[k]
-    print '\tkueIds: reduced from %d to %d' % (originalSize, len(kuenstler))
+    output('\tkueIds: reduced from %d to %d' % (originalSize, len(kuenstler)))
 
     # add to objDaten
-    print '\tadding kueId to objDaten...'
+    output('\tadding kueId to objDaten...')
     for k, v in objDaten.iteritems():
         objId = v['ObjId']
         v['role:roleCmt:kueId'] = []
@@ -902,7 +906,7 @@ def kuenstler_objDaten(kuenstlerFile, objDaten, logFile):
     # correcting ort/land entries
     # stripping years from name
     # dropping a bunch of fields
-    print '\tfurther cleanup of kuenstler...'
+    output('\tfurther cleanup of kuenstler...')
     for k, v in kuenstler.iteritems():
         land = v['KudOrtS']  # missnamed in original database
         ort = v['KudLandS']  # missnamed in original database
@@ -930,7 +934,7 @@ def kuenstler_objDaten(kuenstlerFile, objDaten, logFile):
             del v[field]
 
     flog.close()
-    print u"...done"
+    output(u"...done")
     return kuenstler
 
 
@@ -994,10 +998,10 @@ def mulMass_add(objMassFile, objMultipleFile, objDaten):
     :return: dict, dict (and updates objDaten)
     """
     # setup
-    print u"Putting objMultiple and objMass into objDaten..."
+    output(u"Putting objMultiple and objMass into objDaten...")
 
     # handle objMass
-    print '\treading ObjMass into dictionary... (yes this takes some time)'
+    output('\treading ObjMass into dictionary... (yes this takes some time)')
     objMassHeader = 'ObmId|ObmObjId|ObmTypMasseS|ObmMasseS|' \
                     'ObjAufId|AufAufgabeS'
     objMass = helpers.csvFileToDict(objMassFile, 'ObmId', objMassHeader)
@@ -1005,7 +1009,7 @@ def mulMass_add(objMassFile, objMultipleFile, objDaten):
 
     # invert to get per objId connections
     # and remove any entries where objId not in objDaten
-    print '\tinverting objMass...'
+    output('\tinverting objMass...')
     objIdMassConnection = {}
     for k, v in objMass.items():
         obmId = v['ObmId']
@@ -1016,10 +1020,10 @@ def mulMass_add(objMassFile, objMultipleFile, objDaten):
         if objId not in objIdMassConnection.keys():
             objIdMassConnection[objId] = set([])
         objIdMassConnection[objId].add(obmId)
-    print '\tobjMass: reduced from %d to %d' % (originalSize, len(objMass))
+    output('\tobjMass: reduced from %d to %d' % (originalSize, len(objMass)))
 
     # handle objMultiple
-    print '\treading ObjMultiple into dictionary... (as does this)'
+    output('\treading ObjMultiple into dictionary... (as does this)')
     objMultipleHeader = 'OmuId|OmuObjId|OmuTypS|OmuBemerkungM|OmuInhalt01M|' \
                         'ObjInventarNrS|ObjAufId|AufAufgabeS'
     objMultiple = helpers.csvFileToDict(objMultipleFile, 'OmuId',
@@ -1028,7 +1032,7 @@ def mulMass_add(objMassFile, objMultipleFile, objDaten):
 
     # invert to get per objId connections
     # and remove any entries where objId not in objDaten
-    print '\tinverting objIdMultiple...'
+    output('\tinverting objIdMultiple...')
     objIdMultipleConnection = {}
     for k, v in objMultiple.items():
         omulId = v['OmuId']
@@ -1039,11 +1043,11 @@ def mulMass_add(objMassFile, objMultipleFile, objDaten):
         if objId not in objIdMultipleConnection.keys():
             objIdMultipleConnection[objId] = set([])
         objIdMultipleConnection[objId].add(omulId)
-    print '\tobjMultiple: reduced from %d to %d' % (originalSize,
-                                                    len(objMultiple))
+    output('\tobjMultiple: reduced from %d to %d' % (originalSize,
+                                                     len(objMultiple)))
 
     # adding ObjMul and ObjMass id to objDaten
-    print '\tadding ObjMul and ObjMass id to objDaten... (and this)'
+    output('\tadding ObjMul and ObjMass id to objDaten... (and this)')
     for k, v in objDaten.iteritems():
         objId = v['ObjId']
         v['massId'] = []
@@ -1053,7 +1057,7 @@ def mulMass_add(objMassFile, objMultipleFile, objDaten):
         if objId in objIdMultipleConnection.keys():
             v['mulId'] = list(objIdMultipleConnection.pop(objId))
 
-    print u"...done"
+    output(u"...done")
     return objMass, objMultiple
 
 

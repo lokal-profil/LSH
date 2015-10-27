@@ -8,6 +8,7 @@
 import codecs
 import os
 import helpers
+from helpers import output
 
 # limitations on namelength
 # shorten if longer GOODLENGTH cut if longer than MAXLENGTH
@@ -21,17 +22,22 @@ MAPPING_FOLDER = u'mappings'
 
 
 def run(folder=CSV_FOLDER, mapping=MAPPING_FOLDER, filenameP=PHOTO_FILE,
-        filenameO=OBJDATEN_FILE):
+        filenameO=OBJDATEN_FILE, outfolder=None):
     """
     Generates filenames from photo and object descriptions
     :param folder: the folder containing csv files
     :param mapping: the folder containing mapping files
     :param filenameP: the photo data csv file
     :param filenameO: the objDaten csv file
+    :param outfolder: if provided output is not put in default folder
     :returns: None
     """
+    # set unless overridden
+    if outfolder is None:
+        outfolder = folder
+
     # create target folders if they don't exist
-    targetFolders = (mapping, os.path.join(folder, LOG_SUBFOLDER))
+    targetFolders = (mapping, os.path.join(outfolder, LOG_SUBFOLDER))
     for t in targetFolders:
         if not os.path.isdir(t):
             os.mkdir(t)
@@ -39,7 +45,7 @@ def run(folder=CSV_FOLDER, mapping=MAPPING_FOLDER, filenameP=PHOTO_FILE,
     # make descriptions
     photoFile = os.path.join(folder, filenameP)
     objDatenFile = os.path.join(folder, filenameO)
-    logFile = os.path.join(folder, LOG_SUBFOLDER, u'filenames.log')
+    logFile = os.path.join(outfolder, LOG_SUBFOLDER, u'filenames.log')
     descriptions, photo = makeDescriptions(photoFile, objDatenFile, logFile)
 
     # output Commons
@@ -47,7 +53,7 @@ def run(folder=CSV_FOLDER, mapping=MAPPING_FOLDER, filenameP=PHOTO_FILE,
     commonsOutput(descriptions, mappingFile)
 
     # make Filenames
-    filenamesFile = os.path.join(folder, u'filenames.csv')
+    filenamesFile = os.path.join(outfolder, u'filenames.csv')
     makeFilenames(descriptions, photo, filenamesFile)
 
 
@@ -114,8 +120,8 @@ def makeDescriptions(photoFile, objDatenFile, logFile):
 
     # check uniqueness
     if len(uniques) != len(descriptions):
-        print u'Descriptions are not unique!!!!: %d were duplicate' % \
-              (len(uniques) - len(descriptions))
+        output(u'Descriptions are not unique!!!!: %d were duplicate' %
+               (len(uniques) - len(descriptions)))
 
     # output logs
     if len(skipLog) > 0:
@@ -129,9 +135,9 @@ def makeDescriptions(photoFile, objDatenFile, logFile):
         flog.write('%s\n' % '\n'.join(noHopeLog))
 
     # wrap up
-    print u'Processed %d images out of which %d has some type of problem. ' \
-          u'See log (%s) for more info.' % \
-          (len(photo), len(photo) - len(descriptions), logFile)
+    output(u'Processed %d images out of which %d has some type of problem. '
+           u'See log (%s) for more info.' %
+           (len(photo), len(photo) - len(descriptions), logFile))
     flog.close()
     return descriptions, photo
 
@@ -390,7 +396,7 @@ def commonsOutput(descriptions, mappingFile):
     # # write outro
     fOut.write(u'|}')
     fOut.close()
-    print u'Created %s' % mappingFile
+    output(u'Created %s' % mappingFile)
 
 
 def insufficient(text):
@@ -431,7 +437,7 @@ def makeFilenames(descriptions, photo, filenamesFile):
 
     # output
     helpers.dictToCsvFile(filenamesFile, filenames, filenamesHeader)
-    print u'Created %s' % (filenamesFile)
+    output(u'Created %s' % filenamesFile)
 
 
 if __name__ == '__main__':

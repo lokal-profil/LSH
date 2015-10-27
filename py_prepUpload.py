@@ -2,15 +2,20 @@
 # -*- coding: UTF-8  -*-
 #
 # Preparing files for upload and adding file extentions to filenames
-#
+# @toDo: Import improvements from batchUploadTools
+# @toDo: consider os.walk for file finding
 #
 import os
 import codecs
 import pipes
+import helpers
+from helpers import output
 from py_MakeInfo import MakeInfo
 
 # filename file
-FILENAMES = os.path.join(u'data', u'filenames.csv')
+DATA_DIR = u'data'
+CONNECTIONS_DIR = u'connections'
+FILENAMES = os.path.join(DATA_DIR, u'filenames.csv')
 
 
 def findFiles(path=u'.', filetypes=[u'.tif', u'.jpg']):
@@ -83,13 +88,13 @@ def makeHitlist(filename_file=FILENAMES):
     return (tree, nameToPho)
 
 
-def moveHits(path):
+def moveHits(path, filename_file=FILENAMES):
     '''
     run from main dir
-    path: path from running directory to directory with image file structure
+    :param path: path from cwd to directory with image file structure
     '''
     # Find and move all relevant files
-    tree, nameToPho = makeHitlist()
+    tree, nameToPho = makeHitlist(filename_file)
     cwd = os.getcwd()
     os.chdir(path)
     subdirs = []
@@ -97,15 +102,16 @@ def moveHits(path):
         if os.path.isdir(os.path.join('.', filename)) and filename.isupper():
             subdirs.append(filename)
     for subdir in subdirs:
-        counter, fileNum = moveFiles(subdir.lower(), tree, nameToPho, path=subdir, filetypes=[u'.tif', u'.jpg'])
-        print u'%s: %r out of %r were hits' % (subdir, counter, fileNum)
+        counter, fileNum = moveFiles(subdir.lower(), tree, nameToPho,
+                                     path=subdir, filetypes=[u'.tif', u'.jpg'])
+        output(u'%s: %r out of %r were hits' % (subdir, counter, fileNum))
     os.chdir(cwd)
 
     # Now add found extentions to filenames file
-    f = codecs.open(FILENAMES, 'r', 'utf8')
+    f = codecs.open(filename_file, 'r', 'utf8')
     lines = f.read().split('\n')
     f.close()
-    f = codecs.open(FILENAMES, 'w', 'utf8')
+    f = codecs.open(filename_file, 'w', 'utf8')
     header = lines.pop(0)
     f.write(u'%s\n' % header)
     for l in lines:
@@ -123,17 +129,18 @@ def moveHits(path):
         removeEmptyDirectories(os.path.join(path, subdir))
 
 
-def makeAndRename(path):
+def makeAndRename(path, data_dir=DATA_DIR, connections_dir=CONNECTIONS_DIR,
+                  filename_file=FILENAMES):
     '''
-    Create infofile and rename image file
-    path is the realtive path to the directory in which to process the files
+    Create info file and rename image file
+    :param path: the realtive path to the directory in which to process the files
     '''
-    tree, nameToPho = makeHitlist()
-    catTest(path)
+    tree, nameToPho = makeHitlist(filename_file)
+    catTest(path, data_dir, connections_dir, filename_file)
     flog = codecs.open(os.path.join(path, u'¤generator.log'), 'w', 'utf-8')  # logfile
     maker = MakeInfo()
-    maker.readInLibraries()
-    maker.readConnections()
+    maker.readInLibraries(folder=data_dir)
+    maker.readConnections(folder=connections_dir)
     for filename_in in os.listdir(path):
         if filename_in.startswith(u'¤'):  # log files
             continue
@@ -172,7 +179,7 @@ def negatives(path):
         if filename.endswith(u'.tif') and not filename.endswith(u'-negative.tif'):
             negative = u'%s-negative.tif' % filename[:-4]
             if os.path.isfile(os.path.join(path, negative)):
-                print u'%s was already inverted, skipping...' % filename
+                output(u'%s was already inverted, skipping...' % filename)
                 skipcount += 1
                 continue
             os.rename(os.path.join(path, filename), os.path.join(path, negative))
@@ -193,7 +200,7 @@ def negatives(path):
             f.close()
             count += 1
             if count % 10 == 0:
-                print u'%r files inverted (%r)' % (count, count+skipcount)
+                output(u'%r files inverted (%r)' % (count, count+skipcount))
 
 
 def negPosInfo(infoFile, filename):
@@ -222,12 +229,12 @@ def negPosInfo(infoFile, filename):
     return (neg, pos)
 
 
-def catTest(path, nameToPho=None):
+def catTest(path, data_dir, connections_dir, filename_file, nameToPho=None):
     '''
     check the category statistics for the files in a given directory
     '''
     if not nameToPho:
-        (tree, nameToPho) = makeHitlist()
+        tree, nameToPho = makeHitlist(filename_file)
     flog = codecs.open(os.path.join(path, u'¤catStats.log'), 'w', 'utf-8')  # logfile
     maker = MakeInfo()
     phoMull_list = []
@@ -235,7 +242,8 @@ def catTest(path, nameToPho=None):
         if not filename_in[:-4] in nameToPho.keys():
             continue
         phoMull_list.append(nameToPho[filename_in[:-4]]['phoMull'])
-    maker.catTestBatch(phoMull_list, flog)
+    maker.catTestBatch(phoMull_list, data_dir, connections_dir,
+                       outputPath=path, log=flog)
     flog.close()
 
 
@@ -306,27 +314,30 @@ def negativeCleanup(path):
     f.close()
 
 
-def removeEmptyDirectories(path):
-    '''
-    Remove any empty directories under a given directory
-    '''
+def removeEmptyDirectories(path, top=True):
+    """
+    Remove any empty directories under a given directory)
+    :param path:
+    :param top: set to True to not delete the current directory
+    :returns: None
+    """
     if not os.path.isdir(path):
         return
 
     # remove empty sub-directory
     files = os.listdir(path)
-    if len(files):
-        for f in files:
-            fullpath = os.path.join(path, f)
-            if os.path.isdir(fullpath):
-                removeEmptyDirectories(fullpath)
+    for f in files:
+        fullpath = os.path.join(path, f)
+        if os.path.isdir(fullpath):
+            removeEmptyDirectories(fullpath, top=False)
 
-    # delete directory if empty,
+    # re-read and delete directory if empty,
     files = os.listdir(path)
-    if len(files) == 0:
-        os.rmdir(path)
-    else:
-        print 'Not removing non-empty directory: %s' % path
+    if not top:
+        if len(files) == 0:
+            os.rmdir(path)
+        else:
+            output('Not removing non-empty directory: %s' % path)
 
 
 if __name__ == '__main__':
@@ -348,10 +359,10 @@ if __name__ == '__main__':
         u'\tnegativeCleanup ../diskkopia/m_b'
     argv = sys.argv[1:]
     if len(argv) == 2:
-        path = argv[1].decode(sys.getfilesystemencoding())  # str to unicode
+        path = helpers.convertFromCommandline(argv[1])
         if not os.path.isdir(path):
             print u'The provided path was not a valid directory: %s' % path
-            exit()
+            exit(1)
         if argv[0] == 'moveHits':
             moveHits(path=path)
         elif argv[0] == 'makeAndRename':

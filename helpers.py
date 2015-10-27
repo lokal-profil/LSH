@@ -13,6 +13,8 @@ import re  # neeeded by external2internalLink()
 import sys  # needed by convertFromCommandline()
 import locale  # needed by convertFromCommandline()
 
+VERBOSE = True
+
 
 def csvFileToDict(filename, keyCol, headerCheck, unique=True, keep=None,
                   lists=None, delimiter='|', listDelimiter=';', codec='utf-8'):
@@ -21,7 +23,7 @@ def csvFileToDict(filename, keyCol, headerCheck, unique=True, keep=None,
     the header row for keys
     :param filename: the file to open
     :param keyCol: the (label of the) column to use as a key in the dict
-                   str or tuple of strs to combine
+                   str or tuple of strs to combine (with a ":")
     :param headerCheck: a string to check against the header row
     :param unique: if we require that the keys are unique
     :param keep: tuple of columns to keep (defaults to None=all)
@@ -163,6 +165,8 @@ def promptManualUpdate(d, tmpFile, tmpHeader, keyCol):
     :param keyCol: column (label) to use as key for reading back temporary file
     :return: dict
     """
+    if not VERBOSE:
+        return d
     while True:
         choice = raw_input(u"Does the file need to be manually updated? "
                            u"[Y/N]:")
@@ -236,6 +240,26 @@ def convertFromCommandline(s):
     """
     return s.decode(sys.stdin.encoding or
                     locale.getpreferredencoding(True))
+
+
+def output(text):
+    """
+    A wrapper to only print text if VERBOSE is True
+    :param text: text to print
+    :returns: None
+    """
+    if VERBOSE:
+        print text
+
+
+def verboseInput(text):
+    """
+    A wrapper to only prompt if VERBOSE is True
+    :param text: text to print
+    :returns: str
+    """
+    if VERBOSE:
+        return raw_input(text)
 
 
 class MyError(Exception):

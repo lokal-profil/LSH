@@ -235,8 +235,15 @@ class MakeInfo:
             objData[u'multiple'] = True
             manyData = {}
             for o in objIds:
-                manyData[o] = MakeInfo.infoFromObject(self, o, {u'invNr': None, u'title': '', u'date': None, u'artist': None, u'cat_artist': None, u'manufacturer': None, u'depicted': None, u'cat_depicted': None, u'death_year': None})
-            objData[u'invNr'] = []; objData[u'date'] = []; objData[u'artist'] = []; objData[u'cat_artist'] = []; objData[u'manufacturer'] = []; objData[u'depicted'] = []; objData[u'cat_depicted'] = []
+                dataToFill = dict.fromkeys([u'invNr', u'title', u'date',
+                                            u'artist', u'cat_artist',
+                                            u'manufacturer', u'depicted',
+                                            u'cat_depicted', u'death_year'])
+                manyData[o] = MakeInfo.infoFromObject(self, o, dataToFill)
+            # dict.fromkeys doesn't allow initialisation with []
+            objData.update({i: [] for i in (u'invNr', u'date', u'artist',
+                                            u'cat_artist', u'manufacturer',
+                                            u'depicted', u'cat_depicted')})
             for k, v in manyData.iteritems():
                 if len(v[u'title']) > 0:
                     v[u'title'] = u' - %s' % v[u'title']
@@ -523,7 +530,7 @@ class MakeInfo:
             for r in related:
                 if r not in self.objD.keys():
                     continue  # skip items without images in this batch or previously batches
-                rInvNr  = self.objD[r][u'ObjInventarNrS']
+                rInvNr = self.objD[r][u'ObjInventarNrS']
                 rSource = self.source[self.objD[r][u'AufAufgabeS']]
                 if len(rInvNr) == 0:
                     rInvNr = self.objD[r][u'ObjTitelWeitereM']
@@ -555,7 +562,7 @@ class MakeInfo:
         depictedRoles = [u'Avbildning av', u'Avbildning']
         okRoles = artistRoles+manufacturerRoles+ownerRoles+depictedRoles
         badRoleCmts = [u'av kopia']
-        artist = []; manufacturer =[]; owner=[]; depicted=[]; cat_artist=[]; cat_depicted=[]
+        artist = []; manufacturer = []; owner= []; depicted = []; cat_artist = []; cat_depicted = []
         if len(roles) > 0:
             for r in roles:
                 role, roleCmt, kueId = r.split(':')
@@ -824,9 +831,9 @@ class MakeInfo:
         return out.strip()
     @staticmethod
     def makeTemplate(wikiname, origFile, photo_license, photo_id, source, orig_descr,
-                    orig_stich, photographer, objIds, see_also, categories, invNr, title, description, date, artist, manufacturer,
-                    owner, depicted, death_year, exhibits, orig_event, place, title_orig, title_en, material_tech, signature, dimensions,
-                    multiple, preview=False):
+                     orig_stich, photographer, objIds, see_also, categories, invNr, title, description, date, artist, manufacturer,
+                     owner, depicted, death_year, exhibits, orig_event, place, title_orig, title_en, material_tech, signature, dimensions,
+                     multiple, preview=False):
         # event (orig_event)
         # text = u'%s\n' % wikiname
         text = u'{{LSH artwork\n'

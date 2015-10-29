@@ -240,7 +240,7 @@ class MakeInfo:
             for k, v in manyData.iteritems():
                 if len(v[u'title']) > 0:
                     v[u'title'] = u' - %s' % v[u'title']
-                objData[u'invNr'].append(u'{{LSH-link|%s|%s}}%s' % (k, v[u'invNr'], v[u'title']))
+                objData[u'invNr'].append(u'{{LSH-link|%s|%s|%s}}%s' % (k, v[u'invNr'], source, v[u'title']))
                 if v[u'date']:
                     objData[u'date'].append(u'%s: %s' % (v[u'invNr'], v[u'date']))
                 if v[u'artist']:
@@ -778,7 +778,7 @@ class MakeInfo:
             u'Hallwylska museet': u'HWY',
             u'': u'LSH',
             u'LRK dubletter': u'LRK',
-            u'Skoklosters slotts boksamling': u'SKO'}
+            u'Skoklosters slotts boksamling': u'SKObok'}
     def makeRoles(self):
         self.rolesC = {
             u'Författare': u'{{Occupation|author}}',
@@ -886,7 +886,7 @@ class MakeInfo:
             text += u'%s\n' % '\n* '.join(orig_event)
         text += u'|date= '
         if multiple and date:
-            text += u'* %s\n' % '\n* '.join(date)
+            text += u'\n* %s\n' % '\n* '.join(date)
         elif date:
             text += u'%s\n' % date
         else:
@@ -934,7 +934,7 @@ class MakeInfo:
             text += u'\n'
         text += u'|original filename= %s\n' % origFile
         if multiple:
-            text += u'|object-multiple= * %s\n' % '\n* '.join(invNr)
+            text += u'|object-multiple= \n* %s\n' % '\n* '.join(invNr)
         else:
             text += u'|object-id= %s\n' % objIds
             text += u'|inventory number= %s\n' % invNr

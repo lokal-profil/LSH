@@ -358,11 +358,14 @@ def touchup(text):
     return text.strip(' .,;')
 
 
-def commonsOutput(descriptions, mappingFile):
+def commonsOutput(descriptions, mappingFile, allEntries=None):
     """
     Given filedescriptions this outputs it correctly in a Commons export format
     :param descriptions: dict of descriptions with phoId as key
     :param mappingFile: the target file for output
+    :param allEntries: optional, a list phoIds giving the order in which
+                       to output the entries. This allows for easier
+                       diff comparison
     :return: None
     """
     # setup
@@ -383,15 +386,18 @@ def commonsOutput(descriptions, mappingFile):
         u'===phoId | description | new description===\n\n'
         u'%s' % (GOODLENGTH, MAXLENGTH, chunkStart % (0, chunkSize)))
 
+    if allEntries is None:
+        allEntries = descriptions.keys()
     counter = 0
-    for phoId, v in descriptions.iteritems():
+    for phoId in allEntries:
         # Add regular breaks
         counter += 1
         if counter % chunkSize == 0:
             fOut.write(u'|}\n\n' + chunkStart % (counter, counter+chunkSize))
 
         # write row
-        fOut.write(rowFormat % (phoId, insufficient(v['descr'])))
+        descr = descriptions[phoId]['descr']
+        fOut.write(rowFormat % (phoId, insufficient(descr)))
 
     # # write outro
     fOut.write(u'|}')

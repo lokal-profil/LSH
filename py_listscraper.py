@@ -7,8 +7,11 @@
 # TODO:
 #   Rebuild using WikiApi
 #   Proper commenting
+#   Import improvements from batchUploadTools
+#   General cleanup
 #
 from common import Common
+import helpers
 import py_filenames as Filenames  # reuse methods for cleaning and outputting
 # from py_filenames import cleanName  # removes dissalowed characters etc.
 import codecs
@@ -153,12 +156,14 @@ def rowFormat(u, page):
 
 
 def parseFilenameEntries(contents):
-    '''
-    Given the contents of the filenames wikipage this returns improved entries
-    input: wikicode
-    @ output: list of changed entries-dict items
-    '''
+    """
+    Given the contents of the filenames wikipage this returns improved
+    entries together with a list of all encountered phoIds
+    :param contents: wikicode to parse
+    :returns: (list, list)
+    """
     units = []
+    allEntries = []
     contents = contents.split(u'\n')
     for line in contents:
         if not line.startswith(u'| '):
@@ -168,8 +173,9 @@ def parseFilenameEntries(contents):
             continue
         else:
             parts = line.split(u'||')
+            phoId = parts[0][len(u'| '):].strip()
+            allEntries.append(phoId)
             if len(parts[2].strip()) > 0:  # if filename was improved
-                phoId = parts[0][len(u'| '):].strip()
                 generated = parts[1].replace(u'<span style="color:red">', u'') \
                                     .replace(u'</span>', u'') \
                                     .strip()
@@ -178,7 +184,7 @@ def parseFilenameEntries(contents):
                     units.append({u'phoId': phoId,
                                   u'generated': generated,
                                   u'improved': improved})
-    return units
+    return units, allEntries
 
 
 def run(out_path=OUT_PATH, data_path=DATA_PATH):
@@ -211,62 +217,71 @@ def run(out_path=OUT_PATH, data_path=DATA_PATH):
     # need to do filenames differently
     mappingFile = os.path.join(MAPPING_FOLDER, u'Filenames.txt')
     contents = getPage(u'Commons:Batch uploading/LSH/Filenames')
-    units = parseFilenameEntries(contents)  # identify changes
+    units, allEntries = parseFilenameEntries(contents)  # identify changes
     if len(units) > 0:
         # load old filenames
-        oldfile = os.path.join(data_path, u'filenames.csv')
-        oldFilenames = Common.file_to_dict(oldfile, idcol=0)
+        filenamesHeader = 'PhoId|MulId|MulPfadS|MulDateiS|filename|ext'
+        filenamesFile = os.path.join(data_path, u'filenames.csv')
+        oldFilenames = helpers.csvFileToDict(filenamesFile, 'PhoId',
+                                             filenamesHeader)
         for unit in units:
-            if not unit[u'phoId'] in oldFilenames.keys():
-                print u'could not find id in old: %s, %s' % (unit[u'phoId'], unit[u'generated'])
+            phoId = unit[u'phoId']
+            if phoId not in oldFilenames.keys():
+                print u'could not find id in old: %s, %s' % \
+                      (phoId, unit[u'generated'])
                 exit(1)
-            oldDesc = oldFilenames[unit[u'phoId']][u'filename']
+            oldDesc = oldFilenames[phoId][u'filename']
             # newDesc = oldDesc.replace(unit[u'generated'], unit[u'improved'])
             # a safer implementation where new description is appended to
             # old ending. I.e. "- Museum - idNo"
             newDesc = u'%s %s' % (unit[u'improved'],
-                                  oldDesc[oldDesc.rfind('-', 0, oldDesc.rfind('-')):].strip())
+                                  splitFilename(oldDesc)[1])
             if oldDesc == newDesc:
                 # indicator that commons file may not having been updated which
                 # may cause more complex problems which are hard to test for
                 print u'did you run the updater a second time without ' \
                       u'first updating the filenames table on Commons?'
                 exit(1)
-            oldFilenames[unit[u'phoId']][u'filename'] = newDesc
+            oldFilenames[phoId][u'filename'] = newDesc
+
         # overwrite old filenames and old mapping
         # new filename.csv file w. header
-        out = codecs.open(oldfile, 'w', 'utf8')
-        out.write(u'PhoId|MulId|MulPfadS|MulDateiS|filename|ext\n')
-        # new Commons mapping file w. header
-        fbesk = codecs.open(mappingFile, 'w', 'utf-8')
-        Filenames.commonsOutput(fbesk, None, None, None, intro=True)
-        cOut = 0
-        for k, v in oldFilenames.iteritems():
-            out.write(u'%s|%s|%s|%s|%s|%s\n' % (v[u'PhoId'], v[u'MulId'],
-                      v[u'MulPfadS'], v[u'MulDateiS'], v[u'filename'],
-                      v[u'ext']))
-            Filenames.commonsOutput(fbesk,
-                                    v[u'PhoId'],
-                                    v[u'filename'][:v[u'filename'].rfind('-', 0, v[u'filename'].rfind('-'))].strip(),
-                                    cOut)
-            cOut += 1
-        out.close()
-        fbesk.close()
-        print u'Updated %s and produced a new mappingfile %s. Please upload the new one to Commons.' % (oldfile, mappingFile)
+        helpers.dictToCsvFile(filenamesFile, oldFilenames, filenamesHeader)
+        # new Commons mapping file needs a dict with all descriptions
+        mappingDict = {}
+        for phoId, v in oldFilenames.iteritems():
+            descr = splitFilename(v[u'filename'])[0]
+            mappingDict[phoId] = {'descr': descr}
+
+        Filenames.commonsOutput(mappingDict, mappingFile, allEntries)
+        print u'Updated %s and produced a new mappingfile %s. Please upload ' \
+              u'the new one to Commons.' % (filenamesFile, mappingFile)
+
+
+def splitFilename(txt):
+    """
+    Given a filename of the format "Descr - Museum - ID" split this to
+    return a tuple (Descr, - Museum - ID)
+    :param txt: the text to parse
+    """
+    descr = txt[:txt.rfind('-', 0, txt.rfind('-'))].strip()
+    rest = txt[txt.rfind('-', 0, txt.rfind('-')):].strip()
+    return (descr, rest)
+
 
 if __name__ == '__main__':
     import sys
     usage = u'Usage:\tpython py_listscraper.py out_path data_path\n' \
-        + u'\tout_path (optional):the relative pathname to the target ' \
-        + u'directory. Defaults to "%s"\n' % OUT_PATH \
-        + u'\tdata_path (optional):the relative pathname to the data ' \
-        + u'directory. Defaults to "%s"' % DATA_PATH
+            u'\tout_path (optional):the relative pathname to the target ' \
+            u'directory. Defaults to "%s"\n' \
+            u'\tdata_path (optional):the relative pathname to the data ' \
+            u'directory. Defaults to "%s"' % (OUT_PATH, DATA_PATH)
     argv = sys.argv[1:]
     if len(argv) == 0:
         run()
     elif len(argv) == 2:
-        argv[0] = argv[0].decode(sys.getfilesystemencoding())  # str to unicode
-        argv[1] = argv[1].decode(sys.getfilesystemencoding())  # str to unicode
+        argv[0] = helpers.convertFromCommandline(argv[0])
+        argv[1] = helpers.convertFromCommandline(argv[1])
         run(out_path=argv[0], data_path=argv[1])
     else:
         print usage

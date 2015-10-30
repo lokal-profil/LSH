@@ -12,10 +12,11 @@ import os
 # strings indicating a file belongs to the upload
 IDENTIFIERS = (u'Livrustkammaren', u'Skoklosters', u'Hallwylska', u'LSH')
 POST_DIR = u'postAnalysis'
-BROKEN_LINKS_FILE = u'BrokenFileLinks.csv'
-MISSING_FILES_FILE = u'AllMissingFiles.csv'
-FILENAME_FILE = u'data/filenames.csv'
-LSH_EXPORT_FILE = u'FileLinkExport.csv'
+BROKEN_LINKS_FILE = os.path.join(POST_DIR, u'BrokenFileLinks.csv')
+MISSING_FILES_FILE = os.path.join(POST_DIR, u'AllMissingFiles.csv')
+DATA_DIR = u'data'
+FILENAME_FILE = os.path.join(DATA_DIR, u'filenames.csv')
+LSH_EXPORT_FILE = os.path.join(POST_DIR, u'FileLinkExport.csv')
 
 
 def purgeBrokenLinks():
@@ -44,7 +45,7 @@ def findMissingImages():
         os.mkdir(POST_DIR)
 
     api = WikiApiHotfix.setUpApi(user=config.username, password=config.password, site=config.site)
-    f = codecs.open(u'%s/%s' % (POST_DIR, BROKEN_LINKS_FILE), 'w', 'utf8')
+    f = codecs.open(BROKEN_LINKS_FILE, 'w', 'utf8')
 
     # find which images point to (potentially) missing files
     pages = api.getCategoryMembers(categoryname=u'Category:Files with broken file links', cmnamespace=6)
@@ -74,7 +75,7 @@ def fixRenamedFiles(filename=BROKEN_LINKS_FILE):
     '''
     Replaces any broken file links for files known to have been renamed
     '''
-    f = codecs.open(u'%s/%s' % (POST_DIR, filename), 'r', 'utf8')
+    f = codecs.open(filename, 'r', 'utf8')
     lines = f.read().split('\n')
 
     changed = []
@@ -110,6 +111,7 @@ def findAllMissing(infile=FILENAME_FILE):
     Goes through the filenames file and checks each name for existence.
     Missing files are outputed to MISSING_FILES_FILE
     Existing files are outputed to LSH_EXPORT_FILE
+    @toDo: Add mulid in LSH export format?
     '''
     # create targetdirectory if it doesn't exist
     if not os.path.isdir(POST_DIR):
@@ -121,10 +123,10 @@ def findAllMissing(infile=FILENAME_FILE):
     lines = f.read().split('\n')
     f.close()
 
-    fMissing = codecs.open(u'%s/%s' % (POST_DIR, MISSING_FILES_FILE), 'w', 'utf8')
+    fMissing = codecs.open(MISSING_FILES_FILE, 'w', 'utf8')
     fMissing.write(u'%s\n' % lines.pop(0))
 
-    fFound = codecs.open(u'%s/%s' % (POST_DIR, LSH_EXPORT_FILE), 'w', 'utf8')
+    fFound = codecs.open(LSH_EXPORT_FILE, 'w', 'utf8')
     fFound.write(u'PhoId|PhmInhalt01M / PhmInhalt01M\n')
     prefix = u'https://commons.wikimedia.org/wiki/'
 

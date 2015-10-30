@@ -52,8 +52,10 @@ step 10 all can be done without the actual image files.
 12. Run `python py_prepUpload.py moveHits ../bilder` where *`../bilder`*
     is the relative path to the main image directory. Moves the relevant
     files to base directories and adds extension to `filenames.csv`
-13. Run `python py_prepUpload.py makeAndRename ../bilder/m_a` etc. for
-    each of the new image subdirectory. Creates info files and renames files
+13. Run `python py_prepUpload.py makeAndRename ../bilder/m_a batchCat` etc.
+    for each of the new image subdirectory. Where *`batchCat`*, if provided
+    is a datestamp (e.g. `2015-11`) used for collecting the images in a
+    category. Creates info files and renames files
   * Check `¤generator.log` for possible problems
 14. Run `python py_prepUpload.py negatives ../bilder/m_a` etc. for each
     of the image subdirectory containing negatives. Creates a positive

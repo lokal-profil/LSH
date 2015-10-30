@@ -130,11 +130,22 @@ def moveHits(path, filename_file=FILENAMES):
 
 
 def makeAndRename(path, data_dir=DATA_DIR, connections_dir=CONNECTIONS_DIR,
-                  filename_file=FILENAMES):
+                  filename_file=FILENAMES, batchCat=None):
     '''
     Create info file and rename image file
     :param path: the realtive path to the directory in which to process the files
+    :param batchCat: If given a category of the format
+                     Category:Media contributed by LSH: batchCat will be added
+                     to all files.
     '''
+    # require batchCat to be of some length
+    if batchCat is not None:
+        batchCat = batchCat.strip()
+        if len(batchCat) == 0:
+            batchCat = None
+        else:
+            batchCat = u'[[Category:Media contributed by LSH: %s]]' % batchCat
+
     tree, nameToPho = makeHitlist(filename_file)
     catTest(path, data_dir, connections_dir, filename_file)
     flog = codecs.open(os.path.join(path, u'¤generator.log'), 'w', 'utf-8')  # logfile
@@ -155,6 +166,8 @@ def makeAndRename(path, data_dir=DATA_DIR, connections_dir=CONNECTIONS_DIR,
             # Make info file
             infoFile = u'%s.txt' % filename_out[:-4]
             f = codecs.open(os.path.join(path, infoFile), 'w', 'utf-8')
+            if batchCat:
+                out += batchCat
             f.write(out)
             f.close()
             # Move image file
@@ -371,6 +384,13 @@ if __name__ == '__main__':
             negatives(path=path)
         elif argv[0] == 'negativeCleanup':
             negativeCleanup(path=path)
+        else:
+            print usage
+    elif len(argv) == 3:
+        path = helpers.convertFromCommandline(argv[1])
+        batchCat = helpers.convertFromCommandline(argv[2])
+        if argv[0] == 'makeAndRename':
+            makeAndRename(path=path, batchCat=batchCat)
         else:
             print usage
     else:

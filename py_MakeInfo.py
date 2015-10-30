@@ -957,7 +957,7 @@ class MakeInfo:
         if preview:
             text += u'}}<pre>\n%s</pre>\n' % categories
         else:
-            text += u'}}\n%s\n' % categories
+            text += u'}}\n%s' % categories
         return text.replace(u'<!>', u'<br/>')
     @staticmethod
     def depictedFormater(depicted, invNr=None):

@@ -1,0 +1,93 @@
+<!--From: ObjDaten 3.0.csv -->
+These are the keywords used to describe the objects themselves. Classification is used for all items whereas group is only used at HWY.
+
+when possible ord1 will be used instead of the more generic ord2.
+
+Multile categores are separated by a "/"
+===Keyword|frequency|commonscategory===
+
+====class: ord1====
+{{user:Lokal Profil/LSH2|category=}}
+{{User:Lokal Profil/LSH3
+|name      = Baljor och fodral
+|frequency = 2
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Stolar
+|frequency = 1
+|category  = Chairs
+}}
+{{User:Lokal Profil/LSH3
+|name      = Sablar
+|frequency = 1
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Ländskört
+|frequency = 1
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Bröstharnesk
+|frequency = 1
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Benpansar
+|frequency = 1
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Armband
+|frequency = 1
+|category  = 
+}}
+|}
+
+====class: ord2====
+{{user:Lokal Profil/LSH2|category=}}
+{{User:Lokal Profil/LSH3
+|name      = Rustningsdelar
+|frequency = 3
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Vapentillbehör
+|frequency = 1
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Smycken och prydnader
+|frequency = 1
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Möbler
+|frequency = 1
+|category  = 
+}}
+|}
+
+====class: class: HWY-grupp====
+{{user:Lokal Profil/LSH2|category=}}
+|}
+
+====Preserved mappings====
+{{user:Lokal Profil/LSH2|category=}}
+{{User:Lokal Profil/LSH3
+|name      = Porträtt
+|frequency = 0
+|category  = Portraits
+}}
+{{User:Lokal Profil/LSH3
+|name      = Fotografier
+|frequency = 0
+|category  = Photographs
+}}
+{{User:Lokal Profil/LSH3
+|name      = Bössor
+|frequency = 0
+|category  = Muskets
+}}
+|}

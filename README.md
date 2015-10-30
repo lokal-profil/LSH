@@ -46,7 +46,7 @@ step 10 all can be done without the actual image files.
 10. Do the actual mappings...
 
 11. Run `python py_listscraper.py`, to populate a new `connections` directory
-    and update filenames
+    and update `filenames.csv`
   * If filenames are updated then don't run again until Commons table has
     been updated.
 12. Run `python py_prepUpload.py moveHits ../bilder` where *`../bilder`*
@@ -85,3 +85,9 @@ step 10 all can be done without the actual image files.
 5. Run `python py_postUpload.py findMissing` to check filenames.csv for
    any files not present on Commons
   * This also generates an export file with photoid to url links for LSH
+
+## Tests
+Some basic tests have been added to simplify maintanance7improvement of
+the code base. Run these through:
+
+* `python tests/test_general.py`

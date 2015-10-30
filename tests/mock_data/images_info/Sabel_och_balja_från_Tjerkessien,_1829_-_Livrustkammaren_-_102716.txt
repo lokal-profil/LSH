@@ -1,0 +1,33 @@
+{{LSH artwork
+|artist= 
+|manufacturer= LRK 7125: Agah (Svärdfejare)
+|title= 
+|description= Sabel och balja från Tjerkessien, 1829.
+|original caption= Sabel och balja från Tjerkessien, 1829.<br/>
+'''Nyckelord''': Sablar, Balja, Föremålsbild
+|date= 
+* LRK 7126: 1829
+* LRK 7125: 1829
+* SKO 7125: {{other date|ca|{{other date|-|1600|1650}}}}
+|medium= 
+|dimensions= 
+|source= LRK
+|provenance= 
+|exhibition= 
+|inscriptions= 
+|place of origin= 
+|original filename= lm_dig11623
+|object-multiple= 
+* {{LSH-link|43732|LRK 7126|LRK}} - Balja till schaschka nr 7125, Cirkassien.
+* {{LSH-link|43731|LRK 7125|LRK}} - Sabel, schaschka, Cirkassien 1829
+* {{LSH-link|28239|SKO 7125|LRK}} - Balja
+|photo-id= 102716
+|photo-license= CC-BY-SA
+|photographer= Jenny Bergensten
+|deathyear= 
+|other_versions= 
+}}
+
+<!--Maintanance categories-->
+[[Category:Media contributed by LSH: without any categories]]
+[[Category:Media contributed by LSH: 2015-11]]

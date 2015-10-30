@@ -1,0 +1,45 @@
+{{LSH artwork
+|artist= 
+|title= {{Title|Höftbetäckning, ländskört tillverkad för Pfalzgreve Johan Casimirs begravningsrustning 1652 och omgjord för Johan Gyllenstierna och Karl X Gustavs begravningsrustning, Stockholm 1660.}}
+|description= {{sv|1=Driven mässingsplåt, utsidan slipad, förgylld och polerad. Av nio välvda skenor. Sammanfogade med på insidan fyra sämskade läderband, l 180-200 mm, b 20 mm. Översta skenans övre kant omvikt rundsmidd och med skuren dubbellinje och nitar i rad. I mitten driven horisontell ås med på var sida skurna linjer. I vänster kant hakhål, i höger kant avllångt hål med rundade kanter och innanför detta hasp. Resterande skenor med i övre kant mjukt V-formade urtagningar. Vid varje urtagning en nit, bildandes 11 vertikala rader nitar. I varje skenas mitt horisontellt löpande dubbellinje. Nedersta skenan med stålten i den omvikta, rundsmidda kanten. Samtliga skenors sidor omvikta och rundsmidda.}}
+|original caption= Kyritzryttarens förgyllda höftbetäckning, 1652.<br/>
+'''Nyckelord''': Föremålsbild, Rustning
+|event= * [[:sv:Karl X Gustav|Karl X Gustavs död och begravning]]
+* Johan Casimirs död och begravning
+|date= 1652
+|medium= 
+|dimensions= *  {{weight|g|3400}}
+* {{size|unit=mm|width=533}}
+* {{size|unit=mm|depth=280}} (ca)
+* {{size|unit=mm|height=230}}
+|source= LRK
+|provenance= 
+|exhibition= Dödens teater (2015-2016) [[Institution:Livrustkammaren|Livrustkammaren]]
+|inscriptions= 
+|place of origin= 
+|original filename= lm_dig16205
+|object-id= 59371
+|inventory number= LRK 22805
+|photo-id= 100719
+|photo-license= CC-BY-SA
+|photographer= [[Creator:Jens Mohr|]]
+|deathyear= 
+|other_versions= 
+<gallery caption="Related objects">
+File:Gyllene rustningssko tillverkad för Johan Gyllenstierna 1660 - Livrustkammaren - 100709.jpg|LRK 22813
+</gallery>
+}}
+
+<!--Event categories-->
+[[Category:Funeral of Charles X Gustav of Sweden]]
+
+<!--Photographer category-->
+[[Category:Jens Mohr]]
+
+<!--Maintanance categories-->
+[[Category:Media contributed by LSH: unmatched event]]
+[[Category:Media contributed by LSH: unmatched material]]
+[[Category:Media contributed by LSH: unmatched keyword]]
+[[Category:Media contributed by LSH: dim-with multiple size templates]]
+[[Category:Media contributed by LSH: unmatched objKeyword]]
+[[Category:Media contributed by LSH: 2015-11]]

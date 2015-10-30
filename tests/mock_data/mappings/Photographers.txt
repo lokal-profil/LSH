@@ -1,0 +1,33 @@
+<!--From: photo 3.0.csv -->
+
+===Photographers===
+{{user:Lokal Profil/LSH2|name=Photographer|creator=|category=}}
+{{User:Lokal Profil/LSH3
+|name      = Jenny Bergensten
+|frequency = 3
+|creator   = 
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Jens Mohr
+|frequency = 2
+|creator   = Jens Mohr
+|category  = Jens Mohr
+}}
+{{User:Lokal Profil/LSH3
+|name      = Erik Lernestål
+|frequency = 1
+|creator   = Erik Lernestål
+|category  = Erik Lernestål
+}}
+|}
+
+===Preserved mappings===
+{{user:Lokal Profil/LSH2|name=Photographer|creator=|category=}}
+{{User:Lokal Profil/LSH3
+|name      = Fredrik Andersson
+|frequency = 0
+|creator   = Fredrik Andersson
+|category  = Fredrik Andersson
+}}
+|}

@@ -1,0 +1,33 @@
+{{LSH artwork
+|artist= 
+|title= {{Title|Bröstharnesk, ledat. Troligen 1500-talets andra hälft.}}
+|description= {{sv|1=Drivet stål, tjockt gods. Sammanlagt fem delar utöver lanshaken. Utsidan slipad stålren och insidan svartbrun.<br/>Kort och bred form, utdragen i kraftig tapul. Övre kant närmast rak. Antydan till urtag för halsen, smala axlar. Långa urtag för armarna med extra skena, rörlig upptill i förlängt nithål. Kanterna kraftigt uppdrivna och repstavsformiga, bredast över mitten 20 mm. Harneskets nedre del består av två horisontella skenor rörliga genom på insidan satta läderband i sidor och mitt. Mittås längsmed hela bröstet. I sista skenan snett utstående skört, som bredast 35 mm.<br/>Upptill under halskanten en rektangulär bygel, L 19 mm. Strax under denna en tvärs över bröstet löpande försänkt bård i mitten nedsvängd i en spets. På vänster brösthalva 50 mm under halskanten är punsade gropar i två horisontella rader, 7 + 6 st. Tredelad lanshake fäst med två nitar. Över var axel ett spänne i kort läderrem.}}
+|original caption= 
+|date= {{other date|2half|{{other date|century|16}}}}
+|medium= {{technique|steel}}
+|dimensions= *  {{weight|g|7653}}
+* {{size|unit=mm|width=377|depth=205|height=385}}
+|source= LRK
+|provenance= 
+|exhibition= 
+|inscriptions= 
+|place of origin= 
+|original filename= LN_E01478
+|object-id= 59026
+|inventory number= LRK 22455
+|photo-id= 19393
+|photo-license= CC0
+|photographer= 
+|deathyear= 
+|negative= Bröstharnesk, ledat. Troligen 1500-talets andra hälft - Livrustkammaren - 19393-negative.tif
+|other_versions= 
+<gallery caption="Different images of same object">
+File:Bröstharnesk, ledat. Troligen 1500-talets andra hälft - Livrustkammaren - 68799.tif
+</gallery>
+}}
+
+<!--Maintanance categories-->
+[[Category:Media contributed by LSH: unmatched material]]
+[[Category:Media contributed by LSH: unmatched objKeyword]]
+[[Category:Media contributed by LSH: without any categories]]
+[[Category:Media contributed by LSH: 2015-11]]

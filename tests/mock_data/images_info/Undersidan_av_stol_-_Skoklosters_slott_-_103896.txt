@@ -1,0 +1,35 @@
+{{LSH artwork
+|artist= 
+|manufacturer= H Amand (möbelsnickare)
+|title= {{Title|Stol}}
+|description= {{sv|1=Svängda ben med käl och bandomlindade vulstknippen som direkt övergår i sargen, på samma sätt dekorerad ram till stoppad, konturerad rygg. Mitt på sargens framsida och på ryggens överstycke skulpterade rosor och rocailler. <br/>Utåtsvängda armstöd med stoppning. Sits och rygg samt armstödens stoppning klädda med rött-gulmönstrat fibertyg (bomull och obearbetad fiber av manillahampa). <br/>Klädseln spikad med mässingstännlikor. <br/>Omkring 1700-talets mitt. <br/>Tygklädseln från ca 1840. <br/>Stämplade på ena ryggstolpens baksida: "ME" : " H AMAND", menusier ebeniste, Paris.<br/>Märkta: <br/>1775:1 På sargens bakre insida "J" med blyerts.<br/>1775:2 På sargens främre insida "I" samt oläslig skrift med blyerts, på vänstra och högra insidan "xe"?<br/>1775:3 Märkt s. 1775:2 men "Ret"? på vänstra insidan. <br/>1775:4 På sargens främre insida "I", på dess vänstra insida "+" med blyerts. På sidornas insida inristat romb.<br/>1775:5 På sargens främre insida "I" med blyerts.<br/>1775:6 På sargens främre insida "x" med svart färg tre ggr. På sidornas insida "3" med blyerts. På bakre insidan "L"?}}
+|original caption= Undersidan av stol.<br/>
+'''Nyckelord''': Föremålsbild, Möbeltyg
+|date= {{other date|ca|1750}}
+|medium= 
+|dimensions=  {{size|unit=mm|depth=760|width=700|height=1020}}
+|source= SKO
+|provenance= 
+|exhibition= 
+|inscriptions= M E
+|place of origin= 
+|original filename= sm_dig11814
+|object-id= 23029
+|inventory number= SKO 1775
+|photo-id= 103896
+|photo-license= CC-BY-SA
+|photographer= Jenny Bergensten
+|deathyear= 
+|other_versions= 
+<gallery caption="Different images of same object">
+File:Undersidan av stol - Skoklosters slott - 103897.jpg
+</gallery>
+}}
+
+<!--Object categories-->
+[[Category:Chairs]]
+
+<!--Maintanance categories-->
+[[Category:Media contributed by LSH: unmatched creator]]
+[[Category:Media contributed by LSH: unmatched keyword]]
+[[Category:Media contributed by LSH: 2015-11]]

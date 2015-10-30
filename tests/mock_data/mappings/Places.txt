@@ -1,0 +1,49 @@
+<!--From: Ausstellung 3.0.csv - col: ausOrt-->
+<!--From: ObjMultiple 3.0.csv for OmuTypS = Tillverkningsland -->
+<!--From: ObjMultiple 3.0.csv for OmuTypS = Tillverkningsort-->
+The preffered order of making connections are: Institution, page, category(where the category is prefixed by a ":").
+
+Set commonsconnection of irrelevant places to "-"
+
+===Place|Frequency|Commonsconnection===
+
+====exhibit places====
+{{user:Lokal Profil/LSH2|name=Place|other=Commons connection}}
+{{User:Lokal Profil/LSH3
+|name      = Livrustkammaren
+|frequency = 2
+|other     = [[Institution:Livrustkammaren|Livrustkammaren]]
+}}
+{{User:Lokal Profil/LSH3
+|name      = Livrustkammaren, F-rummet
+|frequency = 1
+|other     = [[Institution:Livrustkammaren|Livrustkammaren]]
+}}
+{{User:Lokal Profil/LSH3
+|name      = 
+|frequency = 1
+|other     = -
+}}
+|}
+
+====origin-Countries====
+{{user:Lokal Profil/LSH2|name=Place|other=Commons connection}}
+{{User:Lokal Profil/LSH3
+|name      = Cirkassien (Tjerkessien)
+|frequency = 2
+|other     = 
+}}
+|}
+
+====origin-cities====
+{{user:Lokal Profil/LSH2|name=Place|other=Commons connection}}
+|}
+
+====Preserved mappings====
+{{user:Lokal Profil/LSH2|name=Place|other=Commons connection}}
+{{User:Lokal Profil/LSH3
+|name      = Skoklosters slott
+|frequency = 0
+|other     = [[Institution:Skoklosters slott|Skoklosters slott]]
+}}
+|}

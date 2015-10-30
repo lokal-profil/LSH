@@ -1,0 +1,40 @@
+<!--From: Ereignis 3.0.csv -->''wikipedia-link'' are used for descriptive texts whereas ''commonsconnection'' is a relevant category on commons.
+
+Set commonsconnection of irrelevant events to "-"
+
+Multiple categories are separated by "/"
+
+*död/begravning: [[:Category:Funeral of X of Sweden]]
+*kröning: [[:Category:Coronation of X of Sweden]]
+*bröllop: [[:Category:Wedding of X and Y of Sweden]]
+===Event|Frequency|wikipedia-link|Commonsconnection===
+{{user:Lokal Profil/LSH2|name=Event|link=Wikipedia-link|category=}}
+{{User:Lokal Profil/LSH3
+|name      = Karl X Gustavs död och begravning
+|frequency = 2
+|link      = :sv:Karl X Gustav
+|category  = Funeral of Charles X Gustav of Sweden
+}}
+{{User:Lokal Profil/LSH3
+|name      = Johan Casimirs död och begravning
+|frequency = 1
+|link      = 
+|category  = 
+}}
+|}
+
+===Preserved mappings===
+{{user:Lokal Profil/LSH2|name=Event|link=Wikipedia-link|category=}}
+{{User:Lokal Profil/LSH3
+|name      = Karl XV:s kröning
+|frequency = 0
+|link      = :sv:Karl XV
+|category  = Coronation of Charles XV of Sweden
+}}
+{{User:Lokal Profil/LSH3
+|name      = Karl X Gustavs kröning
+|frequency = 0
+|link      = :sv:Karl X Gustav
+|category  = Coronation of Charles X of Sweden
+}}
+|}

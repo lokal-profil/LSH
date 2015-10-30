@@ -1,0 +1,68 @@
+<!--From: kuenstler 3.0.csv -->
+''wikipedia-link'' is used for descriptive texts whereas creator is a creator template on commons and ''commoncat'' is a relevant category on commons.
+
+Set commonsconnection of irrelevant events to "-". Note that creator is only relevant for artists.
+
+===kueId|frequency|name|wikipedia-link|creator|commoncat===
+{{user:Lokal Profil/LSH2|name=Name <small>(kueId)</small>|link=Wikipedia-link|creator=|category=}}
+{{User:Lokal Profil/LSH3
+|name      = H Amand (möbelsnickare)
+|more      = 95
+|frequency = 2
+|link      = 
+|creator   = 
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Johan Gyllenstierna (greve, lantmarskalk)
+|more      = 12168
+|frequency = 2
+|link      = 
+|creator   = 
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Eugenia av Sverige (prinsessa, 1830-) Stockholms slott, Sverige
+|more      = 9361
+|frequency = 1
+|link      = 
+|creator   = 
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Agah (Svärdfejare)
+|more      = 323
+|frequency = 1
+|link      = 
+|creator   = 
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Karl XV av Sverige-Norge (kung, 1826-) Stockholms slott, Sverige
+|more      = 17034
+|frequency = 1
+|link      = :sv:Karl XV
+|creator   = -
+|category  = Charles XV of Sweden
+}}
+|}
+
+===Preserved mappings===
+{{user:Lokal Profil/LSH2|name=Name <small>(kueId)</small>|link=Wikipedia-link|creator=|category=}}
+{{User:Lokal Profil/LSH3
+|name      = 
+|more      = 32254
+|frequency = 0
+|link      = :sv:Carl Gustaf Wrangel
+|creator   = -
+|category  = Carl Gustaf Wrangel
+}}
+{{User:Lokal Profil/LSH3
+|name      = 
+|more      = 16904
+|frequency = 0
+|link      = :sv:Karl X Gustav
+|creator   = -
+|category  = Charles X Gustav of Sweden
+}}
+|}

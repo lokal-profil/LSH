@@ -1,0 +1,38 @@
+{{LSH artwork
+|artist= 
+|manufacturer= [[:sv:Karl XV|Karl XV av Sverige-Norge]]
+|title= {{Title|Armband}}
+|description= {{sv|1=Sammansatt av 17 svarvade träkulor, 4 av ebenholz, 8 av valnöt, 5 av jakaranda(?). Genomborrade och uppträdda på svart tråd, hålen skodda med fembladiga blommor av guld, på två av blommorna en liten ring. Lås av guld.<br/>Enligt anteckning i SHM svarvade av prins Karl (XV) vid 16 års ålder, och skänkta till prinsessan Eugenia, gåva av henne till SHM 1868.}}
+|original caption= Armband av träkulor, 1842.<br/>
+'''Nyckelord''': Föremålsbild, Runda, Armband, Trä
+|date= 1842
+|medium= {{technique|wood}}
+|dimensions= *  {{weight|g|13}}
+* {{size|unit=mm|length=205}}
+|source= LRK
+|provenance= Eugenia av Sverige (prinsessa, 1830-) Stockholms slott, Sverige
+|exhibition= * Prinsessor
+* Det Glittrar, prel. till 30 aug 2015 (2014-2015) [[Institution:Livrustkammaren|Livrustkammaren]]
+|inscriptions= 
+|place of origin= 
+|original filename= lm_dig14104
+|object-id= 36579
+|inventory number= LRK 123
+|photo-id= 98906
+|photo-license= CC-BY-SA
+|photographer= [[Creator:Erik Lernestål|]]
+|deathyear= 
+|other_versions= 
+}}
+
+<!--Artist categories-->
+[[Category:Charles XV of Sweden]]
+
+<!--Photographer category-->
+[[Category:Erik Lernestål]]
+
+<!--Maintanance categories-->
+[[Category:Media contributed by LSH: unmatched material]]
+[[Category:Media contributed by LSH: unmatched objKeyword]]
+[[Category:Media contributed by LSH: unmatched keyword]]
+[[Category:Media contributed by LSH: 2015-11]]

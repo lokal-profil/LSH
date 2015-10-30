@@ -1,4 +1,9 @@
 config.py
 *.log
-*.txt
-*.csv
+data/*
+clean_csv/*
+original_csv/*
+connections/*
+old_connections/*
+postAnalysis/*
+mappings/*

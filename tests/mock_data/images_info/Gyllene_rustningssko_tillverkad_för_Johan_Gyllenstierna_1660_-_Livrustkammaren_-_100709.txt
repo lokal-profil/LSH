@@ -1,0 +1,40 @@
+{{LSH artwork
+|artist= 
+|title= {{Title|Benskena med rustningssko, tillverkad för Johan Gyllenstierna och Karl X Gustavs begravningsrustning, Stockholm 1660.}}
+|description= {{sv|1=Av driven mässingsplåt med utsidan slipad, förgylld och polerad. Sammanlagt 13 delar.<br/>Över benet två avlånga och välvda skenor bildandes ett rör. Sammanfogade i varandra och öppningsbara med på ena sidan upptill och nertill ett gångjärn och på andra sidan gångjärnsförsedda beslag över genomborrad tapp. Låsning sker med en på beslaget nitad hasp. Bägge skenorna med upptill och nertill omvikta rundade kanter och driven vertikalt löpande svagt spetsig mittås. I främre skenan nertill rundad urtagning över foten. <br/>På bakre skenan upptill ett nitat stålband, b 10 mm, böjt nedåt till en hake. Nertill en sporre med åt sidorna tre konturerade vingar, fästade med nitar. I mitten kulformig hals med nedåt, svagt utåt riktad profilerad klyka. Trissa i form av femuddig stjärna.<br/>Sko av tio välvda skenor, de fyra inre svängda bakåt och de yttre framåt, fästade nertill med nitar. Skenorna är placerade omlott och möts i mitten över en ovalt formad något större skena. Framtill över tårna en 100 mm lång tvärt avslutad "kappa" med nervikta kanter. Alla skenor med svagt spetsig mittås och skurna kantlinjer. På insidan sämskade läderband där nitarna fäster. Under tåpartiet två läderband, b 43 mm.}}
+|original caption= Gyllene rustningssko tillverkad för Johan Gyllenstierna 1660.<br/>
+'''Nyckelord''': Sporrar, Rustning, Förgylld, Föremålsbild, Kyritzryttaren
+|event= [[:sv:Karl X Gustav|Karl X Gustavs död och begravning]]
+|date= 1660
+|medium= 
+|dimensions= *  {{weight|g|2700}}
+* {{size|unit=mm|width=140|length=360|height=480}}
+|source= LRK
+|provenance= 
+|exhibition= Dödens teater (2015-2016) [[Institution:Livrustkammaren|Livrustkammaren]]
+|inscriptions= 
+|place of origin= 
+|original filename= lm_dig16195
+|object-id= 59379
+|inventory number= LRK 22813
+|photo-id= 100709
+|photo-license= CC-BY-SA
+|photographer= [[Creator:Jens Mohr|]]
+|deathyear= 
+|other_versions= 
+<gallery caption="Related objects">
+File:Kyritzryttarens förgyllda höftbetäckning, 1652 - Livrustkammaren - 100719.jpg|LRK 22805
+</gallery>
+}}
+
+<!--Event categories-->
+[[Category:Funeral of Charles X Gustav of Sweden]]
+
+<!--Photographer category-->
+[[Category:Jens Mohr]]
+
+<!--Maintanance categories-->
+[[Category:Media contributed by LSH: unmatched material]]
+[[Category:Media contributed by LSH: unmatched objKeyword]]
+[[Category:Media contributed by LSH: unmatched keyword]]
+[[Category:Media contributed by LSH: 2015-11]]

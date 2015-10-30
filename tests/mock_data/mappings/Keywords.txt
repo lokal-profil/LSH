@@ -1,0 +1,95 @@
+<!--From: Photo_stichwort 3.0.csv -->
+Set commonsconnection of irrelevant keywords to "-"
+
+Multiple categories are separated by "/"
+===Keyword|frequency|description|commonsconnection===
+{{user:Lokal Profil/LSH2|category=}}
+{{User:Lokal Profil/LSH3
+|name      = Föremålsbild
+|more      = Museiföremål
+|frequency = 6
+|category  = -
+}}
+{{User:Lokal Profil/LSH3
+|name      = Rustning
+|more      = Rustningar
+|frequency = 2
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Trä
+|more      = -
+|frequency = 1
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Stol
+|more      = Stolar
+|frequency = 1
+|category  = Chairs
+}}
+{{User:Lokal Profil/LSH3
+|name      = Sporrar
+|more      = -
+|frequency = 1
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Sablar
+|more      = Blankvapen
+|frequency = 1
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Runda
+|more      = -
+|frequency = 1
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Möbeltyg
+|more      = -
+|frequency = 1
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Kyritzryttaren
+|more      = -
+|frequency = 1
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Förgylld
+|more      = Förgyllda
+|frequency = 1
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Balja
+|more      = Baljor
+|frequency = 1
+|category  = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = Armband
+|more      = Smycken
+|frequency = 1
+|category  = 
+}}
+|}
+
+===Preserved mappings===
+{{user:Lokal Profil/LSH2|category=}}
+{{User:Lokal Profil/LSH3
+|name      = Verktyg
+|more      = -
+|frequency = 0
+|category  = Tools
+}}
+{{User:Lokal Profil/LSH3
+|name      = Gevär
+|more      = -
+|frequency = 0
+|category  = Firearms
+}}
+|}

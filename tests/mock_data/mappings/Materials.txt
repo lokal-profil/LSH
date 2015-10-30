@@ -1,0 +1,67 @@
+<!--From: ObjMultiple 3.0.csv -->
+commonsconnection is the relevant parameter for {{tl|technique}}. Don't forget to add a translation in Swedish at [[Template:Technique/sv]]
+
+Set commonsconnection of irrelevant technique/material to "-".
+
+===technique/material|frequency|commonsconnection===
+{{user:Lokal Profil/LSH2|name=Technique/material|technique=}}
+{{User:Lokal Profil/LSH3
+|name      = stål
+|frequency = 3
+|technique = steel
+}}
+{{User:Lokal Profil/LSH3
+|name      = trä
+|frequency = 2
+|technique = wood
+}}
+{{User:Lokal Profil/LSH3
+|name      = sämskskinn
+|frequency = 2
+|technique = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = silver
+|frequency = 2
+|technique = silver
+}}
+{{User:Lokal Profil/LSH3
+|name      = mässingsplåt
+|frequency = 2
+|technique = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = läder
+|frequency = 2
+|technique = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = silvergalon
+|frequency = 1
+|technique = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = koppar
+|frequency = 1
+|technique = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = guldgalon
+|frequency = 1
+|technique = 
+}}
+{{User:Lokal Profil/LSH3
+|name      = guld
+|frequency = 1
+|technique = 
+}}
+|}
+
+===Preserved mappings===
+{{user:Lokal Profil/LSH2|name=Technique/material|technique=}}
+{{User:Lokal Profil/LSH3
+|name      = mässing
+|frequency = 0
+|technique = brass
+}}
+|}

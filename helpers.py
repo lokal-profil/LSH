@@ -259,7 +259,7 @@ def verboseInput(text):
     :returns: str
     """
     if VERBOSE:
-        return raw_input(text)
+        return raw_input(text).strip()
 
 
 class MyError(Exception):

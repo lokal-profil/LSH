@@ -153,7 +153,7 @@ class MakeInfo:
         origFile = self.wikinameD[pho_mull][u'MulDateiS']
         photo_license = self.lic[phoInfo[u'PhoAufnahmeortS']]
         photo_id = phoInfo[u'PhoId']
-        source = self.source[phoInfo[u'PhoSwdS']]
+        source = self.source[phoInfo[u'PhoSwdS']]  # can be overridden by objData
         orig_descr = phoInfo[u'PhoBeschreibungM']
         photographer = u'%s %s' % (phoInfo[u'AdrVorNameS'], phoInfo[u'AdrNameS'])
         photographer = photographer.strip()
@@ -201,6 +201,7 @@ class MakeInfo:
                    u'title': None,
                    u'description': None,
                    u'date': None,
+                   u'source': None,
                    u'artist': None,
                    u'manufacturer': None,
                    u'owner': None,
@@ -228,6 +229,9 @@ class MakeInfo:
             # cat_meta.append(u'one object')
             objIds = objIds[0]
             objData = MakeInfo.infoFromObject(self, objIds, objData)
+            # use object source instead since this contains SKObok info
+            if objData[u'source']:
+                source = objData[u'source']
             if objData[u'cat_meta']:
                 cat_meta = cat_meta+objData[u'cat_meta']
         else:
@@ -238,7 +242,8 @@ class MakeInfo:
                 dataToFill = dict.fromkeys([u'invNr', u'title', u'date',
                                             u'artist', u'cat_artist',
                                             u'manufacturer', u'depicted',
-                                            u'cat_depicted', u'death_year'])
+                                            u'cat_depicted', u'death_year',
+                                            u'source'])
                 manyData[o] = MakeInfo.infoFromObject(self, o, dataToFill)
             # dict.fromkeys doesn't allow initialisation with []
             objData.update({i: [] for i in (u'invNr', u'date', u'artist',
@@ -367,6 +372,7 @@ class MakeInfo:
 
         # collect info from ObjDaten.csv
         source = self.source[objInfo[u'AufAufgabeS']]
+        data[u'source'] = source
         nyckelord = objInfo[u'ObjTitelOriginalS']  # titel/nyckelord
         kort = objInfo[u'ObjTitelWeitereM']  # kortbeskrivning
         invNr = objInfo[u'ObjInventarNrS']
@@ -398,7 +404,9 @@ class MakeInfo:
         # Specifically Skokloster boksamling uses Signumno. instead of inv. no.
         if len(invNr) == 0:
             invNr = kort
-        data[u'invNr'] = u'%s %s' % (source, invNr)
+            data[u'invNr'] = u'SKO %s' % invNr  # don't want SKObok here
+        else:
+            data[u'invNr'] = u'%s %s' % (source, invNr)
 
         # Title
         if source == u'LRK':
@@ -751,7 +759,8 @@ class MakeInfo:
                 returns.append(u'%s{{size|unit=%s%s}}%s' % (circa_size, unit_size, size, prefix_size))
         elif nice:
             # well formated but separate templates needed
-            cat_meta.append(u'dim-with multiple size templates')
+            if len(nice_dims) > 0:
+                cat_meta.append(u'dim-with multiple size templates')
             for d in nice_dims:
                 role, prefix, num, unit, ca = d
                 if len(prefix) > 0:
@@ -872,9 +881,9 @@ class MakeInfo:
         if depicted:
             if multiple:
                 for dep in depicted:
-                    invNr = dep[0]
+                    invNrDep = dep[0]
                     # depList = dep[1]
-                    text += MakeInfo.depictedFormater(depicted, invNr=invNr)
+                    text += MakeInfo.depictedFormater(depicted, invNr=invNrDep)
             else:
                 text += MakeInfo.depictedFormater(depicted)
         if description:

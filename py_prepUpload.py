@@ -126,7 +126,7 @@ def moveHits(path, filename_file=FILENAMES):
 
     # And now delete all of the emptied directory
     for subdir in subdirs:
-        removeEmptyDirectories(os.path.join(path, subdir))
+        removeEmptyDirectories(os.path.join(path, subdir), top=False)
 
 
 def makeAndRename(path, data_dir=DATA_DIR, connections_dir=CONNECTIONS_DIR,

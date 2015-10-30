@@ -16,6 +16,7 @@ import os
 import json
 from PyCJWiki import Wiki
 import config as config
+import helpers
 
 
 def setUp(password, user):
@@ -31,7 +32,7 @@ def setUp(password, user):
 
 
 def upFiles(path, password=config.password, user=config.username,
-            target=u'Uploaded'):
+            target=u'Uploaded', cutoff=None):
     '''
     Uploads files to Commons. Moves any processed files to the target folder
     '''
@@ -51,8 +52,11 @@ def upFiles(path, password=config.password, user=config.username,
         os.mkdir(u'%s_warnings' % target)
 
     files = os.listdir(u'.')
+    counter = 1
     for f in files:
         if f.endswith((u'.tif', u'.jpg')):
+            if cutoff and counter > cutoff:
+                break
             infoFile = u'%s.txt' % f[:-4]
             if not os.path.exists(infoFile):
                 flog.write(u'%s: Found tif/jpg without info' % f)
@@ -63,6 +67,7 @@ def upFiles(path, password=config.password, user=config.username,
             result = commons.chunkupload(f, f, info, info)
             flog.write(u'%s\n' % result.decode('utf8'))
             flog.flush()
+            counter += 1
             # parse results and move files
             jresult = json.loads(result[result.find('{'):])
             if 'error' in jresult.keys():
@@ -82,8 +87,8 @@ def upFiles(path, password=config.password, user=config.username,
 def updateInfoLocal(path, password=config.password, user=config.username,
                     target=u'Updated',
                     comment=u'Updating information page due to improved '
-                        u'algorithm for batch upload. See '
-                        u'[[Commons:Batch_uploading/LSH]] for more info'):
+                            u'algorithm for batch upload. See '
+                            u'[[Commons:Batch_uploading/LSH]] for more info'):
     '''
     Overwrites the information on the given filepages.
     Essentially upFiles without the filetransfer
@@ -129,8 +134,8 @@ def updateInfoLocal(path, password=config.password, user=config.username,
 def updateInfoOnline(path, password=config.password, user=config.username,
                      target=u'Updated', live=False,
                      comment=u'Updating information page due to improved '
-                        u'algorithm for batch upload. See '
-                        u'[[Commons:Batch_uploading/LSH]] for more info'):
+                             u'algorithm for batch upload. See '
+                             u'[[Commons:Batch_uploading/LSH]] for more info'):
     '''
     Rewrites the currently uploaded information, sends it to a modifier
     and uploads the new result
@@ -195,16 +200,22 @@ def changeInfo(fileName, oldInfo):
 
 if __name__ == '__main__':
     import sys
-    usage = u'Usage:\tpython py_Uploader.py path\n' \
-        u'\tpath: the relative pathname to the directory containing ' \
-        u'images and descriptions.\n'
+    usage = u'Usage:\tpython py_Uploader.py path cutoff\n' \
+            u'\tpath: the relative path to the directory containing ' \
+            u'images and descriptions.\n' \
+            u'\tcutoff is optional and allows the upload to stop after ' \
+            u'the specified number of files'
     argv = sys.argv[1:]
-    if len(argv) == 1:
-        path = argv[0].decode(sys.getfilesystemencoding())  # str to unicode
+    if len(argv) in (1, 2):
+        path = helpers.convertFromCommandline(argv[0])
         if not os.path.isdir(path):
             print u'The provided path was not a valid directory: %s' % path
             exit()
-        upFiles(path)
+        if len(argv) == 2:
+            cutoff = int(argv[1])
+            upFiles(path, cutoff=cutoff)
+        else:
+            upFiles(path)
     else:
         print usage
 # EoF

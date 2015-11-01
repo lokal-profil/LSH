@@ -4,8 +4,8 @@
 # Post upload library
 # TODO: Batch purges
 #
-from WikiApi import WikiApi as WikiApi
-import config as config
+import WikiApi as wikiApi
+import helpers
 import codecs
 import os
 
@@ -19,8 +19,8 @@ FILENAME_FILE = os.path.join(DATA_DIR, u'filenames.csv')
 LSH_EXPORT_FILE = os.path.join(POST_DIR, u'FileLinkExport.csv')
 
 
-def purgeBrokenLinks():
-    api = WikiApiHotfix.setUpApi(user=config.username, password=config.password, site=config.site)
+def purgeBrokenLinks(configPath=u'config.json'):
+    api = helpers.openConnection(configPath, apiClass=WikiApiHotfix)
 
     # find which images point to (potentially) missing files
     # Todo: Package them in batches of 10/25? before purging
@@ -35,7 +35,7 @@ def purgeBrokenLinks():
     print u'Found %d pages with broken links' % count
 
 
-def findMissingImages():
+def findMissingImages(configPath=u'config.json'):
     '''
     Goes through any LSH images with broken file links to identify the
     missing images
@@ -44,7 +44,7 @@ def findMissingImages():
     if not os.path.isdir(POST_DIR):
         os.mkdir(POST_DIR)
 
-    api = WikiApiHotfix.setUpApi(user=config.username, password=config.password, site=config.site)
+    api = helpers.openConnection(configPath, apiClass=WikiApiHotfix)
     f = codecs.open(BROKEN_LINKS_FILE, 'w', 'utf8')
 
     # find which images point to (potentially) missing files
@@ -71,7 +71,7 @@ def findMissingImages():
           u'(i.e. be the same as in filenames file' % BROKEN_LINKS_FILE
 
 
-def fixRenamedFiles(filename=BROKEN_LINKS_FILE):
+def fixRenamedFiles(filename=BROKEN_LINKS_FILE, configPath=u'config.json'):
     '''
     Replaces any broken file links for files known to have been renamed
     '''
@@ -88,7 +88,7 @@ def fixRenamedFiles(filename=BROKEN_LINKS_FILE):
             changed.append({'new': u'%s.%s' % (newName, oldName[-3:]),  # add file ending
                             'old': oldName[len('File:'):]})  # strip namespace
 
-    comApi = WikiApi.setUpApi(user=config.username, password=config.password, site=config.site)
+    comApi = helpers.openConnection(configPath)
 
     while len(changed) > 0:
         active = changed.pop()
@@ -106,7 +106,7 @@ def fixRenamedFiles(filename=BROKEN_LINKS_FILE):
                     comApi.editText(name, contentsNew, u'Fixing broken filelinks from [[Commons:Batch_uploading/LSH|batch upload]]', minor=True, bot=True, nocreate=True, userassert=None)
 
 
-def findAllMissing(infile=FILENAME_FILE):
+def findAllMissing(infile=FILENAME_FILE, configPath=u'config.json'):
     '''
     Goes through the filenames file and checks each name for existence.
     Missing files are outputed to MISSING_FILES_FILE
@@ -117,7 +117,7 @@ def findAllMissing(infile=FILENAME_FILE):
     if not os.path.isdir(POST_DIR):
         os.mkdir(POST_DIR)
 
-    comApi = WikiApi.setUpApi(user=config.username, password=config.password, site=config.site)
+    comApi = helpers.openConnection(configPath)
 
     f = codecs.open(infile, 'r', 'utf8')
     lines = f.read().split('\n')
@@ -150,7 +150,7 @@ def findAllMissing(infile=FILENAME_FILE):
     fFound.close()
 
 
-class WikiApiHotfix(WikiApi):
+class WikiApiHotfix(wikiApi.WikiApi):
     '''Extends the WikiApi class with post_upload specific methods'''
 
     def getMissingImages(self, page, debug=False):

@@ -10,17 +10,14 @@ Note however that the majority of the codebase is old and the coding might make 
 
 The SQL scripts were created by [Fredrik Andersson](http://lsh.se/sv/fredrik-andersson) at LSH.
 
-Included is PyCJWiki Version 1.31 (C) by [Smallman12q](https://en.wikipedia.org/wiki/User_talk:Smallman12q) GPL,
-see http://www.gnu.org/licenses/.
-
-## TODO
-* Change over from PyCJWiki to WikiApi...
-* Make older bits not suck...
-
 Requires [WikiApi](https://github.com/lokal-profil/ODOK/blob/master/tools/WikiApi.py)
 
 WikiApi is based on PyCJWiki Version 1.31 (C) by [Smallman12q](https://en.wikipedia.org/wiki/User_talk:Smallman12q) GPL,
 see http://www.gnu.org/licenses/.
+
+## TODO
+* In listscraper. Back-up connections/Filename.txt. Use WikiApi. Compare to BatchUploadTools.
+* Make older bits not suck...
 
 ## Workflow
 

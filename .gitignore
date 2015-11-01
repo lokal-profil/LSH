@@ -1,4 +1,4 @@
-config.py
+config.json
 *.log
 data/*
 clean_csv/*

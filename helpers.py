@@ -8,12 +8,35 @@
 #
 import codecs
 import os
+import json  # needed by loadJsonConfig
 import urllib2  # needed by urldecodeUTF8()
 import re  # neeeded by external2internalLink()
 import sys  # needed by convertFromCommandline()
 import locale  # needed by convertFromCommandline()
+import WikiApi as wikiApi  # needed by openConnection()
 
 VERBOSE = True
+
+
+def openConnection(configPath, apiClass=wikiApi.WikiApi):
+    """
+    Open a connection to Commons using the specified config file and apiClass
+    :param configPath: path to config.json file
+    :param apiClass: apiClass to open a connection with
+                     (default: wikiApi.WikiApi)
+    :returns: wikiApi
+    """
+    # load config
+    config = loadJsonConfig(configPath)
+
+    # open connections
+    scriptIdentity = u'LSHUploader/%s' % config['version']
+    wApi = apiClass.setUpApi(user=config['username'],
+                             password=config['password'],
+                             site=config['com_site'],
+                             scriptidentify=scriptIdentity,
+                             verbose=VERBOSE)
+    return wApi
 
 
 def csvFileToDict(filename, keyCol, headerCheck, unique=True, keep=None,
@@ -229,6 +252,51 @@ def is_int(s):
         return True
     except (ValueError, TypeError):
         return False
+
+
+def findFiles(path, fileExts, subdir=True):
+    """
+    Identify all files with a given extension in a given directory
+    :param path: path to directory to look in
+    :param fileExts: tuple of allowed file extensions (case insensitive)
+    :param subdir: whether subdirs should also be searched
+    :returns: list of paths to found files
+    """
+    files = []
+    subdirs = []
+    for filename in os.listdir(path):
+        if os.path.splitext(filename)[1].lower() in fileExts:
+            files.append(os.path.join(path, filename))
+        elif os.path.isdir(os.path.join(path, filename)):
+            subdirs.append(os.path.join(path, filename))
+    if subdir:
+        for subdir in subdirs:
+            files += findFiles(path=subdir, fileExts=fileExts)
+    return files
+
+
+def loadJsonConfig(filename=u'config.json'):
+    """
+    Load and return json config file as a dict.
+    Looks in local directory first.
+    If file isn't there then looks in user directory.
+    If file is in neither location then error is raised
+    :param filename: name of json config file
+    :returns: dict
+    """
+    try:
+        f = open(filename, 'r')
+        config = json.load(f)
+        f.close()
+    except IOError, e:
+        if e.errno == 2:  # file not found
+            path = os.getenv("HOME")
+            f = open(os.path.join(path, filename), 'r')
+            config = json.load(f)
+            f.close()
+        else:
+            raise
+    return config
 
 
 def convertFromCommandline(s):

@@ -3,7 +3,8 @@
 #
 # Preparing files for upload and adding file extentions to filenames
 # @toDo: Import improvements from batchUploadTools
-# @toDo: consider os.walk for file finding
+# @toDo: Stop using cwd
+#        Default to FILEEXTS
 #
 import os
 import codecs
@@ -16,39 +17,26 @@ from py_MakeInfo import MakeInfo
 DATA_DIR = u'data'
 CONNECTIONS_DIR = u'connections'
 FILENAMES = os.path.join(DATA_DIR, u'filenames.csv')
+FILEEXTS = (u'.tif', u'.jpg', u'.tiff', u'.jpeg')
 
 
-def findFiles(path=u'.', filetypes=[u'.tif', u'.jpg']):
-    '''
-    first call should be without the path parameter
-    if not run from the starting directory then first use
-    os.chdir(path)
-    '''
-    files = []
-    subdirs = []
-    for filename in os.listdir(path):
-        try:
-            if any(filename.endswith(x) for x in filetypes):
-                files.append(os.path.join(path, filename))
-        except UnicodeDecodeError:
-            print 'UnicodeDecodeError: %s' % os.path.join(path, filename)
-            exit
-        if os.path.isdir(os.path.join(path, filename)):
-            subdirs.append(os.path.join(path, filename))
-    for subdir in subdirs:
-        files += findFiles(path=subdir)
-    return files
-
-
-def moveFiles(target, tree, nameToPho, path=u'.', filetypes=[u'.tif', u'.jpg']):
-    '''
-    move all files in the given dir and subdirs of the specified
-    filetypes to the target dir
-    '''
+def moveFiles(target, tree, nameToPho, path=u'.', filetypes=FILEEXTS):
+    """
+    Move all files in the given dir and subdirs of the specified
+    filetypes to the target dir.
+    :param target: target directory to move files to
+    :param tree: treestructure of expected filenames
+    :param nameToPho: look-up dictionary for filenames to phoId
+    :param path: path to directory in which to look for files and
+                 subdirectories (defaults to ".")
+    :param filetypes: tuple of allowed file extensions (defaults to FILEEXTS)
+    :returns: int, int (moved files, total files)
+    """
     # create target if it doesn't exist
     if not os.path.isdir(target):
         os.mkdir(target)
-    files = findFiles(path, filetypes)
+
+    files = helpers.findFiles(path, filetypes)
     counter = 0
     for filename in files:
         filepath, plain_name = os.path.split(filename)

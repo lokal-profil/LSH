@@ -1,0 +1,7 @@
+{
+    "@meta": "Example settings file for a LSH batch upload",
+    "com_site": "https://commons.wikimedia.org",
+    "username": "SomeUsername",
+    "password": "SomePassword",
+    "version": "Script version number"
+}

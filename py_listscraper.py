@@ -5,7 +5,6 @@
 # storing these as correctly formated local files
 #
 # TODO:
-#   Rebuild using WikiApi
 #   Proper commenting
 #   Import improvements from batchUploadTools
 #   General cleanup
@@ -16,39 +15,12 @@ from helpers import output
 import py_filenames as Filenames  # reuse methods for cleaning and outputting
 # from py_filenames import cleanName  # removes dissalowed characters etc.
 import codecs
-import urllib
-import urllib2
-from json import loads
 import os
 
 OUT_PATH = u'connections'
 DATA_PATH = u'data'
 MAPPING_FOLDER = u'mappings'
 COMMONS_PREFIX = u'Commons:Batch uploading/LSH'
-
-
-def getPage(page, verbose=False):
-    '''
-    Queries the Commons API for the contents of a given page
-    @ input: page to look at
-    @ output: contents of page
-    '''
-    wikiurl = u'https://commons.wikimedia.org'
-    apiurl = '%s/w/api.php' % wikiurl
-    urlbase = '%s?action=query&prop=revisions&format=json&rvprop=content&rvlimit=1&titles=' % apiurl
-    url = urlbase+urllib.quote(page.encode('utf-8'))
-    if verbose:
-        print url
-    req = urllib2.urlopen(url)
-    j = loads(req.read())
-    req.close()
-    pageid = j['query']['pages'].keys()[0]
-    if pageid == u'-1':
-        print 'no entry for "%s"' % page
-        return None
-    else:
-        content = j['query']['pages'][pageid]['revisions'][0]['*']
-        return content
 
 
 def parseEntries(contents):
@@ -65,7 +37,8 @@ def parseEntries(contents):
         if not table:
             break
         while(True):
-            unit, table, dummy = Common.findUnit(table, row_t, u'}}', brackets={u'{{': u'}}'})
+            unit, table, dummy = Common.findUnit(table, row_t, u'}}',
+                                                 brackets={u'{{': u'}}'})
             if not unit:
                 break
             params = {u'name': '',
@@ -78,7 +51,8 @@ def parseEntries(contents):
                       u'other': ''
                       }
             while(True):
-                part, unit, dummy = Common.findUnit(unit, u'|', u'\n', brackets={u'[[': u']]', u'{{': u'}}'})
+                part, unit, dummy = Common.findUnit(
+                    unit, u'|', u'\n', brackets={u'[[': u']]', u'{{': u'}}'})
                 if not part:
                     break
                 if u'=' in part:
@@ -92,7 +66,8 @@ def parseEntries(contents):
                         if (key) in params.keys():
                             params[key] = value.split(u'/')
                         else:
-                            print u'Unrecognised parameter: %s = %s' % (key, value)
+                            print u'Unrecognised parameter: %s = %s' \
+                                  % (key, value)
             units.append(params.copy())
             # end units
         # end tables
@@ -100,6 +75,11 @@ def parseEntries(contents):
 
 
 def formatOutput(units, page):
+    #@reubuild so that this uses helpers.dictToCsvFile(filename, d, header)
+    #this then sets header and rowformat makes the dict
+    #needed:
+    ##add header (or drop header requirement in helpers.dictToCsvFile)
+    ##drop * prefix in csv (requires followup in MakeInfo, at least)
     txt = u''
     for u in units:
         txt += u'%s\n' % rowFormat(u, page)
@@ -191,7 +171,7 @@ def parseFilenameEntries(contents):
 
 
 def run(outPath=OUT_PATH, dataPath=DATA_PATH, mappingsPath=MAPPING_FOLDER,
-        commonsPrefix=COMMONS_PREFIX):
+        commonsPrefix=COMMONS_PREFIX, configPath=u'config.json'):
     # Define a list of pages and output files
     # where page has the format Commons:Batch uploading/LSH/*
     # and outputfile the format: commons-*.csv
@@ -206,10 +186,13 @@ def run(outPath=OUT_PATH, dataPath=DATA_PATH, mappingsPath=MAPPING_FOLDER,
     # create out_path if it doesn't exist
     if not os.path.isdir(outPath):
         os.mkdir(outPath)
+
     # fetch, parse and save each page
+    comApi = helpers.openConnection(configPath)
     for k, v in pages.iteritems():
-        contents = getPage(u'%s/%s' % (commonsPrefix, k))
-        units = parseEntries(contents)
+        comPage = u'%s/%s' % (commonsPrefix, k)
+        contents = comApi.getPage(comPage)
+        units = parseEntries(contents[comPage])
         outdata = formatOutput(units, k)
         outFile = os.path.join(outPath, u'commons-%s.csv' % v)
         out = codecs.open(outFile, 'w', 'utf8')
@@ -219,8 +202,11 @@ def run(outPath=OUT_PATH, dataPath=DATA_PATH, mappingsPath=MAPPING_FOLDER,
 
     # need to do filenames differently
     mappingFile = os.path.join(mappingsPath, u'Filenames.txt')
-    contents = getPage(u'%s/Filenames' % commonsPrefix)
-    units, allEntries = parseFilenameEntries(contents)  # identify changes
+    comPage = u'%s/Filenames' % commonsPrefix
+    contents = comApi.getPage(comPage)
+
+    # identify changes
+    units, allEntries = parseFilenameEntries(contents[comPage])
     if len(units) > 0:
         # load old filenames
         filenamesHeader = 'PhoId|MulId|MulPfadS|MulDateiS|filename|ext'
@@ -266,6 +252,7 @@ def splitFilename(txt):
     Given a filename of the format "Descr - Museum - ID" split this to
     return a tuple (Descr, - Museum - ID)
     :param txt: the text to parse
+    :returns: (str, str)
     """
     descr = txt[:txt.rfind('-', 0, txt.rfind('-'))].strip()
     rest = txt[txt.rfind('-', 0, txt.rfind('-')):].strip()

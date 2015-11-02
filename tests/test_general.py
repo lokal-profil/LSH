@@ -260,8 +260,8 @@ def test_makeInfoAndRename(func):
 
     # run test
     filenameFile = os.path.join(DIR_DATA, u'filenames.csv')
-    func(DIR_TMP, data_dir=DIR_DATA, connections_dir=DIR_CONNECTIONS,
-         filename_file=filenameFile, batchCat=u'2015-11')
+    func(DIR_TMP, dataDir=DIR_DATA, connectionsDir=DIR_CONNECTIONS,
+         filenameFile=filenameFile, batchCat=u'2015-11')
 
     # check file structure
     expected = getCleanFileTree(DIR_IMAGES_INFO)

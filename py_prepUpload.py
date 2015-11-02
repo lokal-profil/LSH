@@ -3,8 +3,7 @@
 #
 # Preparing files for upload and adding file extentions to filenames
 # @toDo: Import improvements from batchUploadTools
-# @toDo: Stop using cwd
-#        Default to FILEEXTS
+#        Cleanup untouched functions (negatives() onwards)
 #
 import os
 import codecs
@@ -20,7 +19,7 @@ FILENAMES = os.path.join(DATA_DIR, u'filenames.csv')
 FILEEXTS = (u'.tif', u'.jpg', u'.tiff', u'.jpeg')
 
 
-def moveFiles(target, tree, nameToPho, path=u'.', filetypes=FILEEXTS):
+def moveFiles(target, tree, nameToPho, path=u'.', fileExts=FILEEXTS):
     """
     Move all files in the given dir and subdirs of the specified
     filetypes to the target dir.
@@ -32,16 +31,17 @@ def moveFiles(target, tree, nameToPho, path=u'.', filetypes=FILEEXTS):
     :param filetypes: tuple of allowed file extensions (defaults to FILEEXTS)
     :returns: int, int (moved files, total files)
     """
+    baseDir, subdir = os.path.split(path)
     # create target if it doesn't exist
     if not os.path.isdir(target):
         os.mkdir(target)
 
-    files = helpers.findFiles(path, filetypes)
+    files = helpers.findFiles(path, fileExts)
     counter = 0
     for filename in files:
         filepath, plain_name = os.path.split(filename)
         fileKey, ext = os.path.splitext(plain_name)  # filename, .ext
-        filepath = filepath.lstrip(u'./')
+        filepath = filepath.replace(baseDir, '').lstrip(u'./')
         if filepath in tree.keys() and fileKey in tree[filepath]:
             os.rename(filename, os.path.join(target, plain_name))
             counter += 1
@@ -50,82 +50,88 @@ def moveFiles(target, tree, nameToPho, path=u'.', filetypes=FILEEXTS):
     return (counter, len(files))
 
 
-def makeHitlist(filename_file=FILENAMES):
-    '''
+def makeHitlist(filenamesFile=FILENAMES):
+    """
     Goes through the allowed filenames and builds up a treestructure
-    as well as a look-up dictionary for filenames to phoId (and new filenames).
-    '''
-    f = codecs.open(filename_file, 'r', 'utf8')
-    lines = f.read().split('\n')
+    {directory: [filenames]} as well as a look-up dictionary for filenames
+    to phoId {MulDateiS: {phoMull, filename, ext}}
+    :param filenamesFile: filenames data file
+    :returns: dict, dict
+    """
+    # load filenames file
+    filenamesHeader = 'PhoId|MulId|MulPfadS|MulDateiS|filename|ext'
+    filenames = helpers.csvFileToDict(filenamesFile, 'PhoId', filenamesHeader)
+
     tree = {}
     nameToPho = {}
-    first = True
-    for l in lines:
-        if first or len(l) == 0:
-            first = False
-            continue
-        phoId, mullId, path, name, new_name, ext = l.split('|')
-        path = path.replace('\\', '/')  # linux<->windows
-        if path in tree.keys():
-            tree[path].append(name)
-        else:
-            tree[path] = [name, ]
-        nameToPho[name] = {'phoMull': u'%s:%s' % (phoId, mullId),
-                           'filename': new_name,
-                           'ext': ext}
+    for phoId, v in filenames.iteritems():
+        oldName = v['MulDateiS']
+        path = v['MulPfadS'].replace('\\', os.sep)  # windows -> current os
+        if path not in tree.keys():
+            tree[path] = []
+        tree[path].append(oldName)
+        nameToPho[oldName] = {'phoMull': u'%s:%s' % (phoId, v['MulId']),
+                              'filename': v['filename'],
+                              'ext': v['ext']}
     return (tree, nameToPho)
 
 
-def moveHits(path, filename_file=FILENAMES):
-    '''
-    run from main dir
-    :param path: path from cwd to directory with image file structure
-    '''
+def moveHits(path, filenamesFile=FILENAMES):
+    """
+    Goes through the root export directory to find any matching file and
+    moves these to a lower case version of the directory. This flattens
+    out the directory structure whilst making it easy to identify any
+    non-matched files.
+    :param path: path to directory with image file structures
+    :param filenamesFile: filenames data file
+    :returns: None
+    """
     # Find and move all relevant files
-    tree, nameToPho = makeHitlist(filename_file)
-    cwd = os.getcwd()
-    os.chdir(path)
+    tree, nameToPho = makeHitlist(filenamesFile)
     subdirs = []
-    for filename in os.listdir('.'):
-        if os.path.isdir(os.path.join('.', filename)) and filename.isupper():
-            subdirs.append(filename)
+    for filename in os.listdir(path):
+        # for LSH all files are in upper case directories
+        filenamePath = os.path.join(path, filename)
+        if os.path.isdir(filenamePath) and filename.isupper():
+            subdirs.append(filenamePath)
     for subdir in subdirs:
         counter, fileNum = moveFiles(subdir.lower(), tree, nameToPho,
-                                     path=subdir, filetypes=[u'.tif', u'.jpg'])
-        output(u'%s: %r out of %r were hits' % (subdir, counter, fileNum))
-    os.chdir(cwd)
+                                     path=subdir)
+        output(u'%s: %d out of %d were hits' % (subdir, counter, fileNum))
 
-    # Now add found extentions to filenames file
-    f = codecs.open(filename_file, 'r', 'utf8')
-    lines = f.read().split('\n')
-    f.close()
-    f = codecs.open(filename_file, 'w', 'utf8')
-    header = lines.pop(0)
-    f.write(u'%s\n' % header)
-    for l in lines:
-        if len(l) == 0:
-            continue
-        col = l.split('|')
-        name = col[3]
-        if name in nameToPho.keys():
-            col[5] = nameToPho[name]['ext']  # overwrite extention
-        f.write(u'%s\n' % '|'.join(col))
-    f.close()
+    # load filenames file
+    filenamesHeader = 'PhoId|MulId|MulPfadS|MulDateiS|filename|ext'
+    oldFilenames = helpers.csvFileToDict(filenamesFile, 'PhoId',
+                                         filenamesHeader)
 
-    # And now delete all of the emptied directory
+    # Add found extentions to filenames file
+    for phoId, v in oldFilenames.iteritems():
+        oldFilename = v['MulDateiS']
+        if oldFilename in nameToPho.keys():
+            v['ext'] = nameToPho[oldFilename]['ext']  # overwrite extention
+
+    # output updated file
+    helpers.dictToCsvFile(filenamesFile, oldFilenames, filenamesHeader)
+
+    # delete all emptied directories
     for subdir in subdirs:
-        removeEmptyDirectories(os.path.join(path, subdir), top=False)
+        removeEmptyDirectories(subdir, top=False)
 
 
-def makeAndRename(path, data_dir=DATA_DIR, connections_dir=CONNECTIONS_DIR,
-                  filename_file=FILENAMES, batchCat=None):
-    '''
+def makeAndRename(path, dataDir=DATA_DIR, connectionsDir=CONNECTIONS_DIR,
+                  filenameFile=FILENAMES, batchCat=None):
+    """
     Create info file and rename image file
-    :param path: the realtive path to the directory in which to process the files
+    :param path: relative path to the directory in which to process files
     :param batchCat: If given a category of the format
                      Category:Media contributed by LSH: batchCat will be added
                      to all files.
-    '''
+    :returns: None
+    """
+    # logfile
+    logfile = os.path.join(path, u'¤generator.log')
+    flog = codecs.open(logfile, 'a', 'utf-8')
+
     # require batchCat to be of some length
     if batchCat is not None:
         batchCat = batchCat.strip()
@@ -134,36 +140,42 @@ def makeAndRename(path, data_dir=DATA_DIR, connections_dir=CONNECTIONS_DIR,
         else:
             batchCat = u'[[Category:Media contributed by LSH: %s]]' % batchCat
 
-    tree, nameToPho = makeHitlist(filename_file)
-    catTest(path, data_dir, connections_dir, filename_file)
-    flog = codecs.open(os.path.join(path, u'¤generator.log'), 'w', 'utf-8')  # logfile
+    tree, nameToPho = makeHitlist(filenameFile)
+
+    # get category statistics
+    catTest(path, dataDir, connectionsDir, filenameFile)
+
+    # initialise maker
     maker = MakeInfo()
-    maker.readInLibraries(folder=data_dir)
-    maker.readConnections(folder=connections_dir)
-    for filename_in in os.listdir(path):
-        if filename_in.startswith(u'¤'):  # log files
+    maker.readInLibraries(folder=dataDir)
+    maker.readConnections(folder=connectionsDir)
+
+    for filenameIn in os.listdir(path):
+        baseName = os.path.splitext(filenameIn)[0]
+
+        if filenameIn.startswith(u'¤'):  # log files
             continue
-        elif not filename_in[:-4] in nameToPho.keys():
-            flog.write(u'%s did not have a photoId\n' % filename_in)
+        elif baseName not in nameToPho.keys():
+            flog.write(u'%s did not have a photoId\n' % filenameIn)
             continue
-        phoMull = nameToPho[filename_in[:-4]]['phoMull']
-        filename_out = u'%s.%s' % (nameToPho[filename_in[:-4]]['filename'].replace(u' ', u'_'),
-                                   nameToPho[filename_in[:-4]]['ext'])
+        phoMull = nameToPho[baseName]['phoMull']
+        filenameOut = u'%s.%s' % (nameToPho[baseName]['filename'].replace(u' ', u'_'),
+                                  nameToPho[baseName]['ext'])
         wName, out = maker.infoFromPhoto(phoMull, preview=False, testing=False)
         if out:
             # Make info file
-            infoFile = u'%s.txt' % filename_out[:-4]
+            infoFile = u'%s.txt' % os.path.splitext(filenameOut)[0]
             f = codecs.open(os.path.join(path, infoFile), 'w', 'utf-8')
             if batchCat:
                 out += batchCat
             f.write(out)
             f.close()
             # Move image file
-            os.rename(os.path.join(path, filename_in),
-                      os.path.join(path, filename_out))
-            flog.write(u'%s outputed to %s\n' % (filename_in, filename_out))
+            os.rename(os.path.join(path, filenameIn),
+                      os.path.join(path, filenameOut))
+            flog.write(u'%s outputed to %s\n' % (filenameIn, filenameOut))
         else:
-            flog.write(u'%s failed to make infopage. See log\n' % filename_in)
+            flog.write(u'%s failed to make infopage. See log\n' % filenameIn)
 
 
 def negatives(path):
@@ -201,7 +213,7 @@ def negatives(path):
             f.close()
             count += 1
             if count % 10 == 0:
-                output(u'%r files inverted (%r)' % (count, count+skipcount))
+                output(u'%d files inverted (%d)' % (count, count+skipcount))
 
 
 def negPosInfo(infoFile, filename):
@@ -296,20 +308,21 @@ def negativeCleanup(path):
     # output to log
     logFilename = u'¤conversion-errors.log'
     f = codecs.open(os.path.join(path, logFilename), 'w', 'utf-8')
-    f.write(u'Total: %r, problems %r\n' % (len(os.listdir(path)), len(no_invert)+len(no_original)))
-    f.write(u'\n== no_invert: %r ==\n' % len(no_invert))
+    f.write(u'Total: %d, problems %d\n' % (len(os.listdir(path)),
+                                           len(no_invert) + len(no_original)))
+    f.write(u'\n== no_invert: %d ==\n' % len(no_invert))
     for i in no_invert:
         f.write(u'%s\n' % i)
-    f.write(u'\n== no_original: %r ==\n' % len(no_original))
+    f.write(u'\n== no_original: %d ==\n' % len(no_original))
     for i in no_original:
         f.write(u'%s\n' % i)
-    f.write(u'\n== no_invert_info: %r ==\n' % len(no_invert_info))
+    f.write(u'\n== no_invert_info: %d ==\n' % len(no_invert_info))
     for i in no_invert_info:
         f.write(u'%s\n' % i)
-    f.write(u'\n== no_original_info: %r ==\n' % len(no_original_info))
+    f.write(u'\n== no_original_info: %d ==\n' % len(no_original_info))
     for i in no_original_info:
         f.write(u'%s\n' % i)
-    f.write(u'\n== just_info: %r ==\n' % len(just_info))
+    f.write(u'\n== just_info: %d ==\n' % len(just_info))
     for i in just_info:
         f.write(u'%s\n' % i)
     f.close()
@@ -317,8 +330,8 @@ def negativeCleanup(path):
 
 def removeEmptyDirectories(path, top=True):
     """
-    Remove any empty directories under a given directory)
-    :param path:
+    Remove any empty directories and subdirectories
+    :param path: path to direcotry to start deleting from
     :param top: set to True to not delete the current directory
     :returns: None
     """
@@ -344,20 +357,20 @@ def removeEmptyDirectories(path, top=True):
 if __name__ == '__main__':
     import sys
     usage = u'Usage:\tpython py_prepUpload.py action path\n' \
-        u'\taction: moveHits - moves the relevant files to base directories ' \
-        u'and adds extention to filenames\n' \
-        u'\t\tpath: relative pathname to main directory for images\n' \
-        u'\taction: makeAndRename - make info files and rename\n' \
-        u'\t\tpath: relative pathname to a directory containing images\n' \
-        u'\taction: negatives - create positives for the relevant directories\n' \
-        u'\t\tpath: relative pathname to a directory containing images\n' \
-        u'\taction: negativeCleanup - spot any conversion problems from negatives\n' \
-        u'\t\tpath: relative pathname to a directory containing images\n' \
-        u'\tExamples:\n' \
-        u'\tmoveHits ../diskkopia\n' \
-        u'\tmakeAndRename ../diskkopia/m_dig\n' \
-        u'\tnegatives ../diskkopia/m_b\n' \
-        u'\tnegativeCleanup ../diskkopia/m_b'
+            u'\taction: moveHits - moves the relevant files to base ' \
+            u'directories and adds extention to filenames\n' \
+            u'\t\tpath: relative pathname to main directory for images\n' \
+            u'\taction: makeAndRename - make info files and rename\n' \
+            u'\t\tpath: relative pathname to a directory containing images\n' \
+            u'\taction: negatives - create positives for the relevant directories\n' \
+            u'\t\tpath: relative pathname to a directory containing images\n' \
+            u'\taction: negativeCleanup - spot any conversion problems from negatives\n' \
+            u'\t\tpath: relative pathname to a directory containing images\n' \
+            u'\tExamples:\n' \
+            u'\tmoveHits ../diskkopia\n' \
+            u'\tmakeAndRename ../diskkopia/m_dig\n' \
+            u'\tnegatives ../diskkopia/m_b\n' \
+            u'\tnegativeCleanup ../diskkopia/m_b'
     argv = sys.argv[1:]
     if len(argv) == 2:
         path = helpers.convertFromCommandline(argv[1])

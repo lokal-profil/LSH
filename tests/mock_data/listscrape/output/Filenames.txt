@@ -1,0 +1,26 @@
+Final filename becomes: <descr> - <museum> - <photoId>.<ext>
+
+Attempts have been made to keep descriptions under 100 characters with a hard limit at 128 characters
+
+You are free to improve the descriptions by adding an alternativ in the last column.
+===phoId | description | new description===
+
+====0-250====
+{| class="wikitable sortable"
+|-
+! PhoId !! generated <descr> !! improved <descr>
+|-
+| 103897 || En väldigt ändrad beskrivning || 
+|-
+| 103896 || Undersidan av stol || 
+|-
+| 98906 || Armband av träkulor, 1842 || 
+|-
+| 19393 || Bröstharnesk, ledat. Troligen 1500-talets andra hälft || 
+|-
+| 100719 || Kyritzryttarens förgyllda höftbetäckning, 1652 || 
+|-
+| 100709 || Gyllene rustningssko tillverkad för Johan Gyllenstierna 1660 || 
+|-
+| 102716 || Sabel och balja från Tjerkessien, 1829 || 
+|}

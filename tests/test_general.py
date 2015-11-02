@@ -12,6 +12,7 @@ import py_crunchCSVData as Crunch
 import py_makeMappings as Mappings
 import py_filenames as Filenames
 import py_prepUpload as Prep
+import py_listscraper as Listscraper
 import shutil
 import helpers
 DIR_CLEAN = u'tests/mock_data/clean_csv'
@@ -19,12 +20,15 @@ DIR_DATA = u'tests/mock_data/data'
 DIR_MAPPINGS = u'tests/mock_data/mappings'
 DIR_OLD_CONNECTIONS = u'tests/mock_data/old_connections'
 DIR_CONNECTIONS = u'tests/mock_data/connections'
+DIR_LISTSCRAPE_INPUT = u'tests/mock_data/listscrape/input'
+DIR_LISTSCRAPE_OUTPUT = u'tests/mock_data/listscrape/output'
 DIR_IMAGES = u'tests/mock_data/images'
 DIR_IMAGES_FOLDERS_INPUT = u'tests/mock_data/image_folders/input'
 DIR_IMAGES_FOLDERS_OUTPUT = u'tests/mock_data/image_folders/output'
 DIR_IMAGES_INFO = u'tests/mock_data/images_info'
 DIR_NEGATIVES_INPUT = u'tests/mock_data/negatives/input/'
 DIR_NEGATIVES_OUTPUT = u'tests/mock_data/negatives/output/'
+COMMONS_PREFIX = u'User:LSHuploadBot/testdata'
 DIR_TMP = u'tests/tmp'
 
 
@@ -112,7 +116,7 @@ def getFiles(path, fileExts):
     """
     Returns all filenames in a directory with a given extension(s)
     :param path: path to directory to llok in
-    :param fileExts: str|tupple of file endings (incl. ".")
+    :param fileExts: str|tuple of file endings (incl. ".")
     :returns: list
     """
     if isinstance(fileExts, (str, unicode)):
@@ -164,6 +168,7 @@ def test_mappings(func):
 def test_filenames(func):
     """
     Checks that creating filenames gives the right results
+    @toDO: Add something triggering <span>
     """
     func(folder=DIR_DATA, mapping=DIR_TMP, outfolder=DIR_TMP)
 
@@ -180,6 +185,35 @@ def test_filenames(func):
     actual = getLines(f, DIR_TMP)
     if not areEqualUpToOrder(expected, actual):
         print u'test_filenames failed for %s' % f
+
+    # clean up
+    shutil.rmtree(DIR_TMP)
+
+
+def test_listscraper(func):
+    """
+    Checks that scraping lists gives the right results
+    """
+    # copy mock files to temporary folder since these are changed
+    shutil.copytree(DIR_LISTSCRAPE_INPUT, DIR_TMP)
+
+    # run test
+    func(outPath=DIR_TMP, dataPath=DIR_TMP, mappingsPath=DIR_TMP,
+         commonsPrefix=COMMONS_PREFIX)
+
+    # check file structure
+    expected = getCleanFileTree(DIR_LISTSCRAPE_OUTPUT)
+    actual = getCleanFileTree(DIR_TMP)
+    if not expected == actual:
+        print u'test_listscraper failed for tree'
+
+    # check info file contents
+    files = getFiles(DIR_LISTSCRAPE_OUTPUT, ('.csv', '.txt'))
+    for f in files:
+        expected = getContents(f, DIR_LISTSCRAPE_OUTPUT)
+        actual = getContents(f, DIR_TMP)
+        if not expected == actual:
+            print u'test_listscraper failed for %s' % f
 
     # clean up
     shutil.rmtree(DIR_TMP)
@@ -283,6 +317,7 @@ helpers.VERBOSE = False
 test_crunch(Crunch.run)
 test_mappings(Mappings.run)
 test_filenames(Filenames.run)
+test_listscraper(Listscraper.run)
 test_moveHits(Prep.moveHits)
 test_makeInfoAndRename(Prep.makeAndRename)
 test_makeNegatives(Prep.negatives)

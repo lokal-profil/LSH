@@ -12,16 +12,19 @@
 #
 from common import Common
 import helpers
+from helpers import output
 import py_filenames as Filenames  # reuse methods for cleaning and outputting
 # from py_filenames import cleanName  # removes dissalowed characters etc.
 import codecs
 import urllib
 import urllib2
 from json import loads
+import os
 
 OUT_PATH = u'connections'
 DATA_PATH = u'data'
 MAPPING_FOLDER = u'mappings'
+COMMONS_PREFIX = u'Commons:Batch uploading/LSH'
 
 
 def getPage(page, verbose=False):
@@ -187,8 +190,8 @@ def parseFilenameEntries(contents):
     return units, allEntries
 
 
-def run(out_path=OUT_PATH, data_path=DATA_PATH):
-    import os
+def run(outPath=OUT_PATH, dataPath=DATA_PATH, mappingsPath=MAPPING_FOLDER,
+        commonsPrefix=COMMONS_PREFIX):
     # Define a list of pages and output files
     # where page has the format Commons:Batch uploading/LSH/*
     # and outputfile the format: commons-*.csv
@@ -201,27 +204,27 @@ def run(out_path=OUT_PATH, data_path=DATA_PATH):
              u'Photographers': u'Photographers'
              }
     # create out_path if it doesn't exist
-    if not os.path.isdir(out_path):
-        os.mkdir(out_path)
+    if not os.path.isdir(outPath):
+        os.mkdir(outPath)
     # fetch, parse and save each page
     for k, v in pages.iteritems():
-        contents = getPage(u'Commons:Batch uploading/LSH/%s' % k)
+        contents = getPage(u'%s/%s' % (commonsPrefix, k))
         units = parseEntries(contents)
-        output = formatOutput(units, k)
-        outFile = os.path.join(out_path, u'commons-%s.csv' % v)
+        outdata = formatOutput(units, k)
+        outFile = os.path.join(outPath, u'commons-%s.csv' % v)
         out = codecs.open(outFile, 'w', 'utf8')
-        out.write(output)
+        out.write(outdata)
         out.close()
-        print u'Created %s' % outFile
+        output(u'Created %s' % outFile)
 
     # need to do filenames differently
-    mappingFile = os.path.join(MAPPING_FOLDER, u'Filenames.txt')
-    contents = getPage(u'Commons:Batch uploading/LSH/Filenames')
+    mappingFile = os.path.join(mappingsPath, u'Filenames.txt')
+    contents = getPage(u'%s/Filenames' % commonsPrefix)
     units, allEntries = parseFilenameEntries(contents)  # identify changes
     if len(units) > 0:
         # load old filenames
         filenamesHeader = 'PhoId|MulId|MulPfadS|MulDateiS|filename|ext'
-        filenamesFile = os.path.join(data_path, u'filenames.csv')
+        filenamesFile = os.path.join(dataPath, u'filenames.csv')
         oldFilenames = helpers.csvFileToDict(filenamesFile, 'PhoId',
                                              filenamesHeader)
         for unit in units:
@@ -254,8 +257,8 @@ def run(out_path=OUT_PATH, data_path=DATA_PATH):
             mappingDict[phoId] = {'descr': descr}
 
         Filenames.commonsOutput(mappingDict, mappingFile, allEntries)
-        print u'Updated %s and produced a new mappingfile %s. Please upload ' \
-              u'the new one to Commons.' % (filenamesFile, mappingFile)
+        output(u'Updated %s and produced a new mappingfile %s. Please upload '
+               u'the new one to Commons.' % (filenamesFile, mappingFile))
 
 
 def splitFilename(txt):
@@ -282,7 +285,7 @@ if __name__ == '__main__':
     elif len(argv) == 2:
         argv[0] = helpers.convertFromCommandline(argv[0])
         argv[1] = helpers.convertFromCommandline(argv[1])
-        run(out_path=argv[0], data_path=argv[1])
+        run(outPath=argv[0], dataPath=argv[1])
     else:
         print usage
 # EoF

@@ -16,7 +16,7 @@ WikiApi is based on PyCJWiki Version 1.31 (C) by [Smallman12q](https://en.wikipe
 see http://www.gnu.org/licenses/.
 
 ## TODO
-* In listscraper. Back-up connections/Filename.txt. Use WikiApi. Compare to BatchUploadTools.
+* Import improvements done in BatchUploadTools
 * Make older bits not suck...
 
 ## Workflow

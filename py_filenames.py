@@ -144,8 +144,8 @@ def makeDescriptions(photoFile, objDatenFile, logFile):
 
 def getDescFromPhoBes(text):
     """
-    Given a text filter and chop it to get a suitable description
-    :param text:
+    Given a text, filter and chop it to get a suitable description
+    :param text: text to process
     :return: str
     """
     # setup

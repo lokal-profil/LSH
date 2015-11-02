@@ -6,6 +6,7 @@
 # @ToDo:
 # data files should not be hardcoded
 # Make many small functions instead of the current behemoths
+# Add an init which calls readInLibraries & readConnections
 #
 import codecs
 import os

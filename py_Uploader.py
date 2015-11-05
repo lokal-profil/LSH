@@ -26,7 +26,8 @@ def upFiles(inPath, cutoff=None, target=u'Uploaded', configPath=u'config.json',
     :param test: set to True to test but not upload
     :returns: None
     """
-    comApi = helpers.openConnection(configPath, apiClass=wikiApi.CommonsApi)
+    comApi = helpers.openConnection(configPath, apiClass=wikiApi.CommonsApi,
+                                    verbose=True)
 
     # Verify inPath
     if not os.path.isdir(inPath):

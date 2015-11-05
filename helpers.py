@@ -18,7 +18,7 @@ import WikiApi as wikiApi  # needed by openConnection()
 VERBOSE = True
 
 
-def openConnection(configPath, apiClass=wikiApi.WikiApi):
+def openConnection(configPath, apiClass=wikiApi.WikiApi, verbose=VERBOSE):
     """
     Open a connection to Commons using the specified config file and apiClass
     :param configPath: path to config.json file
@@ -35,7 +35,7 @@ def openConnection(configPath, apiClass=wikiApi.WikiApi):
                              password=config['password'],
                              site=config['com_site'],
                              scriptidentify=scriptIdentity,
-                             verbose=VERBOSE)
+                             verbose=verbose)
     return wApi
 
 

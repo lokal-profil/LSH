@@ -73,7 +73,8 @@ def upFiles(inPath, cutoff=None, target=u'Uploaded', configPath=u'config.json',
             continue
 
         # stop here if testing
-        result = comApi.chunkupload(baseName, f, txt, txt)
+        result = comApi.chunkupload(baseName, f, txt, txt,
+                                    uploadifbadprefix=True)
 
         # parse results and move files
         baseInfoName = os.path.basename(infoFile)

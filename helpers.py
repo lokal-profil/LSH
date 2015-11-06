@@ -18,14 +18,19 @@ import WikiApi as wikiApi  # needed by openConnection()
 VERBOSE = True
 
 
-def openConnection(configPath, apiClass=wikiApi.WikiApi, verbose=VERBOSE):
+def openConnection(configPath, apiClass=wikiApi.WikiApi, verbose=None):
     """
     Open a connection to Commons using the specified config file and apiClass
     :param configPath: path to config.json file
     :param apiClass: apiClass to open a connection with
                      (default: wikiApi.WikiApi)
+    :param verbose: set to override global VERBOSE
     :returns: wikiApi
     """
+    # read in Verbose (since direct assignment prevents uppdating the global)
+    if verbose is None:
+        verbose = VERBOSE
+
     # load config
     config = loadJsonConfig(configPath)
 

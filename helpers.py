@@ -25,7 +25,7 @@ def openConnection(configPath, apiClass=wikiApi.WikiApi, verbose=None):
     :param apiClass: apiClass to open a connection with
                      (default: wikiApi.WikiApi)
     :param verbose: set to override global VERBOSE
-    :returns: wikiApi
+    :return: wikiApi
     """
     # read in Verbose (since direct assignment prevents uppdating the global)
     if verbose is None:
@@ -265,7 +265,7 @@ def findFiles(path, fileExts, subdir=True):
     :param path: path to directory to look in
     :param fileExts: tuple of allowed file extensions (case insensitive)
     :param subdir: whether subdirs should also be searched
-    :returns: list of paths to found files
+    :return: list of paths to found files
     """
     files = []
     subdirs = []
@@ -287,7 +287,7 @@ def loadJsonConfig(filename=u'config.json'):
     If file isn't there then looks in user directory.
     If file is in neither location then error is raised
     :param filename: name of json config file
-    :returns: dict
+    :return: dict
     """
     try:
         f = open(filename, 'r')
@@ -319,7 +319,7 @@ def output(text):
     """
     A wrapper to only print text if VERBOSE is True
     :param text: text to print
-    :returns: None
+    :return: None
     """
     if VERBOSE:
         print text
@@ -329,7 +329,7 @@ def verboseInput(text):
     """
     A wrapper to only prompt if VERBOSE is True
     :param text: text to print
-    :returns: str
+    :return: str
     """
     if VERBOSE:
         return raw_input(text).strip()

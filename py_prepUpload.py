@@ -29,7 +29,7 @@ def moveFiles(target, tree, nameToPho, path=u'.', fileExts=FILEEXTS):
     :param path: path to directory in which to look for files and
                  subdirectories (defaults to ".")
     :param filetypes: tuple of allowed file extensions (defaults to FILEEXTS)
-    :returns: int, int (moved files, total files)
+    :return: int, int (moved files, total files)
     """
     baseDir, subdir = os.path.split(path)
     # create target if it doesn't exist
@@ -56,7 +56,7 @@ def makeHitlist(filenamesFile=FILENAMES):
     {directory: [filenames]} as well as a look-up dictionary for filenames
     to phoId {MulDateiS: {phoMull, filename, ext}}
     :param filenamesFile: filenames data file
-    :returns: dict, dict
+    :return: dict, dict
     """
     # load filenames file
     filenamesHeader = 'PhoId|MulId|MulPfadS|MulDateiS|filename|ext'
@@ -84,7 +84,7 @@ def moveHits(path, filenamesFile=FILENAMES):
     non-matched files.
     :param path: path to directory with image file structures
     :param filenamesFile: filenames data file
-    :returns: None
+    :return: None
     """
     # Find and move all relevant files
     tree, nameToPho = makeHitlist(filenamesFile)
@@ -126,7 +126,7 @@ def makeAndRename(path, dataDir=DATA_DIR, connectionsDir=CONNECTIONS_DIR,
     :param batchCat: If given a category of the format
                      Category:Media contributed by LSH: batchCat will be added
                      to all files.
-    :returns: None
+    :return: None
     """
     # logfile
     logfile = os.path.join(path, u'¤generator.log')
@@ -333,7 +333,7 @@ def removeEmptyDirectories(path, top=True):
     Remove any empty directories and subdirectories
     :param path: path to direcotry to start deleting from
     :param top: set to True to not delete the current directory
-    :returns: None
+    :return: None
     """
     if not os.path.isdir(path):
         return

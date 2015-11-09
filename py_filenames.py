@@ -30,7 +30,7 @@ def run(folder=CSV_FOLDER, mapping=MAPPING_FOLDER, filenameP=PHOTO_FILE,
     :param filenameP: the photo data csv file
     :param filenameO: the objDaten csv file
     :param outfolder: if provided output is not put in default folder
-    :returns: None
+    :return: None
     """
     # set unless overridden
     if outfolder is None:
@@ -212,7 +212,7 @@ def getDescFromObj(obj):
     """
     Constructs a suitable description based on an entry in ObjDaten
     :param obj: the objDaten item
-    :returns: str
+    :return: str
     """
     badStrings = [u'<!>', u'(?)', u'Biografi och genealogi', u'Geografi',
                   u'Konst- och kulturhistoria', u'Samhälls- & rättsvetenskap',
@@ -268,7 +268,7 @@ def cleanName(text):
     """
     Removes unwanted strings from a text string
     :param text: text to test
-    :returns: str
+    :return: str
     """
     # simple strings to remove
     easyBadStrings = (u'Fler inventarienr.', u'Fler inventarienr',
@@ -283,7 +283,7 @@ def cleanString(text):
     """
     Removes characters which are forbidden/undesired in filenames from string
     :param text: the text to test
-    :returns: str
+    :return: str
     """
     # bad characters  - extend as more are identified
     # Note that ":" is complicated as it has several different interpretaions.
@@ -307,7 +307,7 @@ def shortenString(text):
     If a string is larger than GOODLENGTH then this tries to
     find a sensibel shortening
     :param text: text to test
-    :returns: str
+    :return: str
     """
     badchar = u'-., '  # kanske även "
     if u'<!>' in text:
@@ -342,7 +342,7 @@ def touchup(text):
     Tweaks a string by removing surrounding bracket or quotes as well as
     some trailing punctuation
     :param text: text to test
-    :returns: str
+    :return: str
     """
     # If string starts and ends with bracket or quotes then remove
     brackets = {u'(': ')', u'[': ']', u'{': '}', u'"': '"'}

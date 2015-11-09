@@ -38,7 +38,7 @@ def areEqualUpToOrder(a, b):
     of the lines
     :param a: a list
     :param b: a list
-    :returns: bool
+    :return: bool
     """
     diff1 = set(a) - set(b)
     diff2 = set(b) - set(a)
@@ -51,7 +51,7 @@ def areEqualUpToOrderWithLists(a, b):
     of the lines, and the order of any lists
     :param a: a list
     :param b: a list
-    :returns: bool
+    :return: bool
     """
     diff_old = list(set(a) - set(b))
     diff_new = list(set(b) - set(a))
@@ -68,7 +68,7 @@ def sortAnythingListlike(row, colDelimiter='|', listDelimiter=';'):
     :param row: text to parse
     :param colDelimiter: delimiter for separating columns
     :param listDelimiter: delimiter used in lists
-    :returns: str
+    :return: str
     """
     parts = row.split(colDelimiter)
     for i in range(len(parts)):
@@ -82,7 +82,7 @@ def getContents(filename, path):
     Opens a file and returns the contents
     :param filename: the filename to open
     :param path: path to the filename
-    :returns: str
+    :return: str
     """
     filename = os.path.join(path, filename)
     f = codecs.open(filename, 'r', 'utf-8')
@@ -94,7 +94,7 @@ def getLines(filename, path):
     Opens a file and returns the containing lines
     :param filename: the filename to open
     :param path: path to the filename
-    :returns: list
+    :return: list
     """
     return getContents(filename, path).split('\n')
 
@@ -103,7 +103,7 @@ def getCleanFileTree(startpath):
     """
     Returns os.walk but with the root scrubbed from the output
     :param startpath: path to start walk at
-    :returns: list
+    :return: list
     """
     tree = []
     for root, dirs, files in os.walk(startpath):
@@ -117,7 +117,7 @@ def getFiles(path, fileExts):
     Returns all filenames in a directory with a given extension(s)
     :param path: path to directory to llok in
     :param fileExts: str|tuple of file endings (incl. ".")
-    :returns: list
+    :return: list
     """
     if isinstance(fileExts, (str, unicode)):
         fileExts = (fileExts, )

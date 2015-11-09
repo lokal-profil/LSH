@@ -36,7 +36,7 @@ def fixFiles(in_path=CSV_DIR_ORIG, out_path=CSV_DIR_CLEAN, encoding='utf-16'):
     :param in_path: the folder containing the original csv files (optional)
     :param out_path: the folder to which cleand csv are written (optional)
     :param encoding: encoding of the original files (optional)
-    :returns: None
+    :return: None
     """
     # convert to unicode if not the case
     if type(in_path) == str:
@@ -77,7 +77,7 @@ def hackfix(txt, file_out):
     1) Remove any S:\[...].jpg
     :param txt: text to process
     :param file_out: (output) name of file being processed
-    :returns: str
+    :return: str
     """
     txt_orig = txt
     if file_out.endswith(u'objMultiple.csv'):
@@ -95,7 +95,7 @@ def fixLinebreak(file_in, file_out, encoding):
     :param file_in: filename to load (including path)
     :param file_out: filename to write to (including path)
     :param encoding: encoding to load the file with
-    :returns: str - the loaded treated text
+    :return: str - the loaded treated text
     """
     # load, convert and parse file
     fin = codecs.open(file_in, 'r', encoding)

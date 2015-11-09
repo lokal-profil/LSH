@@ -143,7 +143,7 @@ def parseFilenameEntries(contents):
     Given the contents of the filenames wikipage this returns improved
     entries together with a list of all encountered phoIds
     :param contents: wikicode to parse
-    :returns: (list, list)
+    :return: (list, list)
     """
     units = []
     allEntries = []
@@ -252,7 +252,7 @@ def splitFilename(txt):
     Given a filename of the format "Descr - Museum - ID" split this to
     return a tuple (Descr, - Museum - ID)
     :param txt: the text to parse
-    :returns: (str, str)
+    :return: (str, str)
     """
     descr = txt[:txt.rfind('-', 0, txt.rfind('-'))].strip()
     rest = txt[txt.rfind('-', 0, txt.rfind('-')):].strip()

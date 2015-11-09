@@ -20,11 +20,17 @@ LSH_EXPORT_FILE = os.path.join(POST_DIR, u'FileLinkExport.csv')
 
 
 def purgeBrokenLinks(configPath=u'config.json'):
+    """
+    Finds images which contain links to (potentially) missing files
+    and purges these to identify any files which are actually missing
+    :param configPath: path to config.json file
+    :return: None
+    """
     api = helpers.openConnection(configPath, apiClass=WikiApiHotfix)
 
-    # find which images point to (potentially) missing files
     # Todo: Package them in batches of 10/25? before purging
-    pages = api.getCategoryMembers(categoryname=u'Category:Files with broken file links', cmnamespace=6)
+    categoryname = u'Category:Files with broken file links'
+    pages = api.getCategoryMembers(categoryname=categoryname, cmnamespace=6)
     count = 0
     for page in pages:
         if any(i in page for i in IDENTIFIERS):
@@ -36,10 +42,12 @@ def purgeBrokenLinks(configPath=u'config.json'):
 
 
 def findMissingImages(configPath=u'config.json'):
-    '''
+    """
     Goes through any LSH images with broken file links to identify the
     missing images
-    '''
+    :param configPath: path to config.json file
+    :return: None
+    """
     # create targetdirectory if it doesn't exist
     if not os.path.isdir(POST_DIR):
         os.mkdir(POST_DIR)
@@ -48,7 +56,8 @@ def findMissingImages(configPath=u'config.json'):
     f = codecs.open(BROKEN_LINKS_FILE, 'w', 'utf8')
 
     # find which images point to (potentially) missing files
-    pages = api.getCategoryMembers(categoryname=u'Category:Files with broken file links', cmnamespace=6)
+    categoryname = u'Category:Files with broken file links'
+    pages = api.getCategoryMembers(categoryname=categoryname, cmnamespace=6)
 
     # find which images are refered to
     missing = []
@@ -67,13 +76,16 @@ def findMissingImages(configPath=u'config.json'):
             print m
     f.close()
     print u'Go through %s and add any known renamed files after the pipe. ' \
-          u'Note that the renamed value should not include prefix or extention ' \
+          u'Note that the renamed value should not include "File:"-prefix ' \
           u'(i.e. be the same as in filenames file' % BROKEN_LINKS_FILE
 
 
 def fixRenamedFiles(filename=BROKEN_LINKS_FILE, configPath=u'config.json'):
     '''
     Replaces any broken file links for files known to have been renamed
+    :param filename: path to output file
+    :param configPath: path to config.json file
+    :return: None
     '''
     f = codecs.open(filename, 'r', 'utf8')
     lines = f.read().split('\n')
@@ -85,11 +97,12 @@ def fixRenamedFiles(filename=BROKEN_LINKS_FILE, configPath=u'config.json'):
         oldName, newName = l.split('|')
         if len(newName.strip()) > 0:
             # if a rename was specified
-            changed.append({'new': u'%s.%s' % (newName, oldName[-3:]),  # add file ending
-                            'old': oldName[len('File:'):]})  # strip namespace
+            changed.append({'new': u'%s' % newName,
+                            'old': oldName[len('File:'):]})  # strip prefix
 
     comApi = helpers.openConnection(configPath)
-
+    comment = u'Fixing broken filelinks from ' \
+              u'[[Commons:Batch_uploading/LSH|batch upload]]'
     while len(changed) > 0:
         active = changed.pop()
         links = comApi.getImageUsage(u'File:%s' % active['old'], iunamespace=6)
@@ -103,64 +116,72 @@ def fixRenamedFiles(filename=BROKEN_LINKS_FILE, configPath=u'config.json'):
                 if contents == contentsNew:
                     print 'no change for %s' % name
                 else:
-                    comApi.editText(name, contentsNew, u'Fixing broken filelinks from [[Commons:Batch_uploading/LSH|batch upload]]', minor=True, bot=True, nocreate=True, userassert=None)
+                    comApi.editText(name, contentsNew, comment, minor=True,
+                                    bot=True, nocreate=True, userassert=None)
+    print 'Check that any replacements worked since double replacements on the same ' \
+          'page is known to cause errors'
 
 
-def findAllMissing(infile=FILENAME_FILE, configPath=u'config.json'):
-    '''
+def findAllMissing(filenamesFile=FILENAME_FILE, configPath=u'config.json'):
+    """
     Goes through the filenames file and checks each name for existence.
     Missing files are outputed to MISSING_FILES_FILE
     Existing files are outputed to LSH_EXPORT_FILE
-    @toDo: Add mulid in LSH export format?
-    '''
+    :param filenamesFile: path to filenames data file
+    :param configPath: path to config.json file
+    :return: None
+    """
     # create targetdirectory if it doesn't exist
     if not os.path.isdir(POST_DIR):
         os.mkdir(POST_DIR)
 
-    comApi = helpers.openConnection(configPath)
+    # load filenames file
+    filenamesHeader = 'PhoId|MulId|MulPfadS|MulDateiS|filename|ext'
+    filenames = helpers.csvFileToDict(filenamesFile, 'PhoId', filenamesHeader)
 
-    f = codecs.open(infile, 'r', 'utf8')
-    lines = f.read().split('\n')
-    f.close()
-
-    fMissing = codecs.open(MISSING_FILES_FILE, 'w', 'utf8')
-    fMissing.write(u'%s\n' % lines.pop(0))
-
-    fFound = codecs.open(LSH_EXPORT_FILE, 'w', 'utf8')
-    fFound.write(u'PhoId|PhmInhalt01M / PhmInhalt01M\n')
-    prefix = u'https://commons.wikimedia.org/wiki/'
-
+    # identify all Commons filenames
     files = {}
-    for l in lines:
-        if len(l) == 0:
-            continue
-        PhoId, MulId, MulPfadS, MulDateiS, filename, ext = l.split('|')
-        files[u'File:%s.%s' % (filename, ext)] = l
-
+    for k, v in filenames.iteritems():
+        commonsFile = u'File:%s.%s' % (v['filename'], v['ext'])
+        files[commonsFile] = v
     print u'Found %d filenames' % len(files)
 
+    # get extra info from Commons
+    comApi = helpers.openConnection(configPath)
     fileInfos = comApi.getPageInfo(files.keys())
+
+    # determine which are pressent and which are missing
+    missing = {}
+    found = {}
+    prefix = u'https://commons.wikimedia.org/wiki/'
     for name, info in fileInfos.iteritems():
         if 'missing' in info.keys():
-            fMissing.write(u'%s\n' % files[name])
+            missing[name] = files[name]
         else:
-            phoId = files[name].split('|')[0]
-            fFound.write(u'%s|%s%s\n' % (phoId, prefix, name.replace(' ', '_')))
-    fMissing.close()
-    fFound.close()
+            found[name] = {
+                'PhoId': v['PhoId'],
+                'MulId': v['MulId'],
+                'CommonsFile': '%s%s' % (prefix, name.replace(' ', '_'))
+                }
+
+    # output files
+    foundHeader = u'PhoId|MulId|CommonsFile'
+    helpers.dictToCsvFile(LSH_EXPORT_FILE, found, foundHeader)
+    helpers.dictToCsvFile(MISSING_FILES_FILE, missing, filenamesHeader)
+    print u'Created %s and %s' % (LSH_EXPORT_FILE, MISSING_FILES_FILE)
 
 
 class WikiApiHotfix(wikiApi.WikiApi):
-    '''Extends the WikiApi class with post_upload specific methods'''
+    """Extends the WikiApi class with post_upload specific methods"""
 
     def getMissingImages(self, page, debug=False):
-        '''
+        """
         Returns a list of all images linked to from a page where the
         given image does not exist
         :param page: The page to look at, incl. any namespace prefix
         :param iunamespace: namespace to limit the search to (0=main, 6=file)
         :return: list of pagenames
-        '''
+        """
         # print "Fetching getMissingImages: " + page
         members = []
         # action=query&prop=images&format=json&imlimit=1&titles=File%3AFoo.jpg&generator=images&gimlimit=100
@@ -174,7 +195,7 @@ class WikiApiHotfix(wikiApi.WikiApi):
             print u'getMissingImages() page:%s \n' % page
             print jsonr
 
-        # "query":{"pages":{"-1":{"ns":6,"title":"File:Axelgeh\u00e4ng - Livrustkammaren - 42925.tif","missing":""}
+        # "query":{"pages":{"-1":{"ns":6,"title":"File:Examplefile.tif","missing":""}
         for page in jsonr['query']['pages']:
             if int(page) < 0:
                 page = jsonr['query']['pages'][page]
@@ -185,11 +206,12 @@ class WikiApiHotfix(wikiApi.WikiApi):
         return members
 
     def purgeLinks(self, page, forcelinkupdate=True, debug=False):
-        '''
+        """
         Triggers a purge (and link update) for the given page
         :param page: The page to look at, incl. any namespace prefix
         :param forcelinkupdate: for links table to be updated
-        '''
+        :return: None
+        """
         # action=query&prop=images&format=json&imlimit=1&titles=File%3AFoo.jpg&generator=images&gimlimit=100
         jsonr = self.httpPOST("purge", [('forcelinkupdate', ''),
                                         ('titles', page.encode('utf-8'))])
@@ -206,14 +228,14 @@ class WikiApiHotfix(wikiApi.WikiApi):
 if __name__ == '__main__':
     import sys
     usage = u'Usage:\tpython py_postUpload.py action\n' \
-        u'\taction: purge - purges broken fileliks in LSH files and ' \
-        u'produces a file with remaining broken file links\n' \
-        u'\taction: rename - repairs broken file links for any files where ' \
-        u'a new name was added to broken file links\n' \
-        u'\taction: updateBroken - updates the brokenFileLinks file ' \
-        u'(overwriting any added renamings)\n' \
-        u'\taction: findMissing - checks all filenames for existance ' \
-        u'and produces a link table for LSH import'
+            u'\taction: purge - purges broken fileliks in LSH files and ' \
+            u'produces a file with remaining broken file links\n' \
+            u'\taction: rename - repairs broken file links for any files where ' \
+            u'a new name was added to broken file links\n' \
+            u'\taction: updateBroken - updates the brokenFileLinks file ' \
+            u'(overwriting any added renamings)\n' \
+            u'\taction: findMissing - checks all filenames for existance ' \
+            u'and produces a link table for LSH import'
     argv = sys.argv[1:]
     if len(argv) == 1:
         if argv[0] == 'purge':

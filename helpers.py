@@ -259,6 +259,20 @@ def is_int(s):
         return False
 
 
+def sortedBy(d, sortkey=u'freq'):
+    """
+    Given a dictionary where each entry is in turn a dict, this returns
+    a list of the keys orderd by decreasing value of the sortkey
+    (key in the inner dict)
+    :param d: dictionary to sort
+    :param sortkey: key in inner dict to sort by
+    :return: list
+    """
+    return sorted(d.iteritems(),
+                  key=lambda (k, v): (v[sortkey], k),
+                  reverse=True)
+
+
 def findFiles(path, fileExts, subdir=True):
     """
     Identify all files with a given extension in a given directory

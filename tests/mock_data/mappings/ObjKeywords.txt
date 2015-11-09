@@ -9,37 +9,37 @@ Multile categores are separated by a "/"
 ====class: ord1====
 {{user:Lokal Profil/LSH2|category=}}
 {{User:Lokal Profil/LSH3
-|name      = Baljor och fodral
+|name      = baljor och fodral
 |frequency = 2
 |category  = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Stolar
+|name      = stolar
 |frequency = 1
 |category  = Chairs
 }}
 {{User:Lokal Profil/LSH3
-|name      = Sablar
+|name      = sablar
 |frequency = 1
 |category  = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Ländskört
+|name      = ländskört
 |frequency = 1
 |category  = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Bröstharnesk
+|name      = bröstharnesk
 |frequency = 1
 |category  = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Benpansar
+|name      = benpansar
 |frequency = 1
 |category  = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Armband
+|name      = armband
 |frequency = 1
 |category  = 
 }}
@@ -48,22 +48,22 @@ Multile categores are separated by a "/"
 ====class: ord2====
 {{user:Lokal Profil/LSH2|category=}}
 {{User:Lokal Profil/LSH3
-|name      = Rustningsdelar
+|name      = rustningsdelar
 |frequency = 3
 |category  = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Vapentillbehör
+|name      = vapentillbehör
 |frequency = 1
 |category  = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Smycken och prydnader
+|name      = smycken och prydnader
 |frequency = 1
 |category  = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Möbler
+|name      = möbler
 |frequency = 1
 |category  = 
 }}
@@ -76,17 +76,17 @@ Multile categores are separated by a "/"
 ====Preserved mappings====
 {{user:Lokal Profil/LSH2|category=}}
 {{User:Lokal Profil/LSH3
-|name      = Porträtt
+|name      = porträtt
 |frequency = 0
 |category  = Portraits
 }}
 {{User:Lokal Profil/LSH3
-|name      = Fotografier
+|name      = fotografier
 |frequency = 0
 |category  = Photographs
 }}
 {{User:Lokal Profil/LSH3
-|name      = Bössor
+|name      = bössor
 |frequency = 0
 |category  = Muskets
 }}

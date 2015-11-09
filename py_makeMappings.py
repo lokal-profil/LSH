@@ -15,6 +15,7 @@
 #
 from py_MakeInfo import MakeInfo
 from helpers import output
+import helpers
 from py_prepCSVData import CSV_CONFIG  # needed to load CSV_FILES
 import codecs
 import os
@@ -113,24 +114,25 @@ def makePlaceAndMaterial(A, oDict):
         if len(mul) > 0:
             mul = mul.split(';')
             for m in mul:
-                typ = A.multiD[m][u'OmuTypS']
+                typ = A.multiD[m][u'OmuTypS'].lower()
                 value = A.multiD[m][u'OmuInhalt01M']
                 # val_cmt = A.multiD[m][u'OmuBemerkungM']
                 if len(value) == 0:
                     continue
-                elif typ.lower() in mat_techTypes:
+                elif typ in mat_techTypes:
+                    value = value.lower()
                     if value in techDict.keys():
-                        techDict[value] = techDict[value]+v
+                        techDict[value] += v
                     else:
                         techDict[value] = v
-                elif typ.lower() in landType:
+                elif typ in landType:
                     if value in landDict.keys():
-                        landDict[value] = landDict[value]+v
+                        landDict[value] += v
                     else:
                         landDict[value] = v
-                elif typ.lower() in ortType:
+                elif typ in ortType:
                     if value in ortDict.keys():
-                        ortDict[value] = ortDict[value]+v
+                        ortDict[value] += v
                     else:
                         ortDict[value] = v
     # print len(landDict), len(ortDict), len(techDict)
@@ -161,7 +163,7 @@ def writeMaterials(filename, dDict):
     f = codecs.open(filename, 'w', 'utf8')
     f.write(intro)
     f.write(header)
-    for key, val in sortedBy(dDict):
+    for key, val in helpers.sortedBy(dDict):
         if once and val[u'freq'] == 0:
             once = False
             f.write(footer)
@@ -182,11 +184,11 @@ def makeObjKeywords(A, oDict):
     ord2Dict = {}
     gruppDict = {}
     for k, v in oDict.iteritems():
-        classification = A.objD[k][u'ObjSystematikS']
-        grupp = A.objD[k][u'ObjReferenzNrS']
+        classification = A.objD[k][u'ObjSystematikS'].lower()
+        grupp = A.objD[k][u'ObjReferenzNrS'].lower()
         if len(grupp) > 1:
             if grupp in gruppDict.keys():
-                gruppDict[grupp] = gruppDict[grupp]+1
+                gruppDict[grupp] += 1
             else:
                 gruppDict[grupp] = 1
         # ord1 OR
@@ -195,7 +197,7 @@ def makeObjKeywords(A, oDict):
         if len(classification) > 0:
             if u'(' not in classification:
                 if classification in ord1Dict.keys():
-                    ord1Dict[classification] = ord1Dict[classification]+1
+                    ord1Dict[classification] += 1
                 else:
                     ord1Dict[classification] = 1
                 # parts = classification.split(',')
@@ -213,11 +215,11 @@ def makeObjKeywords(A, oDict):
                         ord2s = d[pos+1:].split(',')
                         ord2 = ord2s[len(ord2s)-1].strip()  # keep last word only
                         if ord1 in ord1Dict.keys():
-                            ord1Dict[ord1] = ord1Dict[ord1]+1
+                            ord1Dict[ord1] += 1
                         else:
                             ord1Dict[ord1] = 1
                         if ord2 in ord2Dict.keys():
-                            ord2Dict[ord2] = ord2Dict[ord2]+1
+                            ord2Dict[ord2] += 1
                         else:
                             ord2Dict[ord2] = 1
     # print len(ord1Dict), len(ord2Dict), len(gruppDict)
@@ -297,7 +299,7 @@ def writePhotographers(filename, dDict):
     f = codecs.open(filename, 'w', 'utf8')
     f.write(intro)
     f.write(header)
-    for key, val in sortedBy(dDict):
+    for key, val in helpers.sortedBy(dDict):
         if once and val[u'freq'] == 0:
             once = False
             f.write(footer)
@@ -321,7 +323,7 @@ def makeKeywords(A):
     phoIds = []  # to make sure all phoIds really are present
     for k, v in A.stichD.iteritems():
         descr = v[u'StiSynonymS']
-        key = v[u'StiBezeichnungS']
+        key = v[u'StiBezeichnungS'].lower()
         if descr == u'':
             descr = u'-'
         if key not in keywords.keys():
@@ -386,7 +388,7 @@ def writeKeywords(filename, dDict):
     f = codecs.open(filename, 'w', 'utf8')
     f.write(intro)
     f.write(header)
-    for key, val in sortedBy(dDict):
+    for key, val in helpers.sortedBy(dDict):
         if once and val[u'freq'] == 0:
             once = False
             f.write(footer)
@@ -534,7 +536,7 @@ def writeEvents(filename, dDict):
     f = codecs.open(filename, 'w', 'utf8')
     f.write(intro)
     f.write(header)
-    for key, val in sortedBy(dDict):
+    for key, val in helpers.sortedBy(dDict):
         if once and val[u'freq'] == 0:
             once = False
             f.write(footer)
@@ -671,7 +673,7 @@ def writePeople(filename, dDict):
     f = codecs.open(filename, 'w', 'utf8')
     f.write(intro)
     f.write(header)
-    for key, val in sortedBy(dDict):
+    for key, val in helpers.sortedBy(dDict):
         if once and val[u'freq'] == 0:
             once = False
             f.write(footer)
@@ -708,22 +710,22 @@ def writeObjKeywords(filename, ord1Dict, ord2Dict, gruppDict, emptyObjCats):
     f.write(intro)
     f.write(u'\n====class: ord1====\n')
     f.write(header)
-    for key, val in sortedBy(ord1Dict):
+    for key, val in helpers.sortedBy(ord1Dict):
         f.write(row % (key, val[u'freq'], '/'.join(val[u'connect'])))
     f.write(footer)
     f.write(u'\n====class: ord2====\n')
     f.write(header)
-    for key, val in sortedBy(ord2Dict):
+    for key, val in helpers.sortedBy(ord2Dict):
         f.write(row % (key, val[u'freq'], '/'.join(val[u'connect'])))
     f.write(footer)
     f.write(u'\n====class: class: HWY-grupp====\n')
     f.write(header)
-    for key, val in sortedBy(gruppDict):
+    for key, val in helpers.sortedBy(gruppDict):
         f.write(row % (key, val[u'freq'], '/'.join(val[u'connect'])))
     f.write(footer)
     f.write(u'\n====Preserved mappings====\n')
     f.write(header)
-    for key, val in sortedBy(emptyObjCats):
+    for key, val in helpers.sortedBy(emptyObjCats):
         f.write(row % (key, val[u'freq'], '/'.join(val[u'connect'])))
     f.write(footer)
     f.close()
@@ -755,22 +757,22 @@ def writePlaces(filename, exhibitPlaces, landDict, ortDict, emptyPlaces):
     f.write(intro)
     f.write(u'\n====exhibit places====\n')
     f.write(header)
-    for key, val in sortedBy(exhibitPlaces):
+    for key, val in helpers.sortedBy(exhibitPlaces):
         f.write(row % (key, val[u'freq'], val[u'connect']))
     f.write(footer)
     f.write(u'\n====origin-Countries====\n')
     f.write(header)
-    for key, val in sortedBy(landDict):
+    for key, val in helpers.sortedBy(landDict):
         f.write(row % (key, val[u'freq'], val[u'connect']))
     f.write(footer)
     f.write(u'\n====origin-cities====\n')
     f.write(header)
-    for key, val in sortedBy(ortDict):
+    for key, val in helpers.sortedBy(ortDict):
         f.write(row % (key, val[u'freq'], val[u'connect']))
     f.write(footer)
     f.write(u'\n====Preserved mappings====\n')
     f.write(header)
-    for key, val in sortedBy(emptyPlaces):
+    for key, val in helpers.sortedBy(emptyPlaces):
         f.write(row % (key, val[u'freq'], val[u'connect']))
     f.write(footer)
     f.close()
@@ -823,16 +825,6 @@ def simpleEmpty(oldDict, newDicts):
             emptyDict[k] = {u'freq': 0, u'connect': v}
 
     return emptyDict
-
-
-def sortedBy(dDict, sortkey=u'freq'):
-    '''
-    Given a dictionary this returns a list of the keys orderd
-    by decreasing value of the sortkey
-    '''
-    return sorted(dDict.iteritems(),
-                  key=lambda (k, v): (v[sortkey], k),
-                  reverse=True)
 
 
 if __name__ == '__main__':

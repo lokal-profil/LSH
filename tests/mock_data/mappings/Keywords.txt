@@ -5,73 +5,73 @@ Multiple categories are separated by "/"
 ===Keyword|frequency|description|commonsconnection===
 {{user:Lokal Profil/LSH2|category=}}
 {{User:Lokal Profil/LSH3
-|name      = Föremålsbild
+|name      = föremålsbild
 |more      = Museiföremål
 |frequency = 6
 |category  = -
 }}
 {{User:Lokal Profil/LSH3
-|name      = Rustning
+|name      = rustning
 |more      = Rustningar
 |frequency = 2
 |category  = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Trä
+|name      = trä
 |more      = -
 |frequency = 1
 |category  = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Stol
+|name      = stol
 |more      = Stolar
 |frequency = 1
 |category  = Chairs
 }}
 {{User:Lokal Profil/LSH3
-|name      = Sporrar
+|name      = sporrar
 |more      = -
 |frequency = 1
 |category  = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Sablar
+|name      = sablar
 |more      = Blankvapen
 |frequency = 1
 |category  = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Runda
+|name      = runda
 |more      = -
 |frequency = 1
 |category  = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Möbeltyg
+|name      = möbeltyg
 |more      = -
 |frequency = 1
 |category  = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Kyritzryttaren
+|name      = kyritzryttaren
 |more      = -
 |frequency = 1
 |category  = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Förgylld
+|name      = förgylld
 |more      = Förgyllda
 |frequency = 1
 |category  = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Balja
+|name      = balja
 |more      = Baljor
 |frequency = 1
 |category  = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Armband
+|name      = armband
 |more      = Smycken
 |frequency = 1
 |category  = 
@@ -81,13 +81,13 @@ Multiple categories are separated by "/"
 ===Preserved mappings===
 {{user:Lokal Profil/LSH2|category=}}
 {{User:Lokal Profil/LSH3
-|name      = Verktyg
+|name      = verktyg
 |more      = -
 |frequency = 0
 |category  = Tools
 }}
 {{User:Lokal Profil/LSH3
-|name      = Gevär
+|name      = gevär
 |more      = -
 |frequency = 0
 |category  = Firearms

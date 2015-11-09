@@ -184,6 +184,7 @@ class MakeInfo:
             for s in stichIds:
                 stichKey = self.stichD[s][u'StiBezeichnungS']
                 orig_stich.append(stichKey)
+                stichKey = stichKey.lower()
                 # map to actual category
                 if stichKey in self.stichC.keys() and self.stichC[stichKey]:
                     for sc in self.stichC[stichKey]:
@@ -377,8 +378,8 @@ class MakeInfo:
         nyckelord = objInfo[u'ObjTitelOriginalS']  # titel/nyckelord
         kort = objInfo[u'ObjTitelWeitereM']  # kortbeskrivning
         invNr = objInfo[u'ObjInventarNrS']
-        group = objInfo[u'ObjReferenzNrS']
-        classification = objInfo[u'ObjSystematikS']
+        group = objInfo[u'ObjReferenzNrS'].lower()
+        classification = objInfo[u'ObjSystematikS'].lower()
         date = objInfo[u'ObjDatierungS']
         description = objInfo[u'ObjReserve01M']
         # multi-valued columns need to be tested first
@@ -629,17 +630,18 @@ class MakeInfo:
         okTypes = [u'tillverkningsort', u'tillverkningsland', u'titel (engelsk)',
                    u'titel'] + sigTypes + mat_techTypes
         for m in mulId:
-            typ = self.multiD[m][u'OmuTypS']
+            typ = self.multiD[m][u'OmuTypS'].lower()
             value = self.multiD[m][u'OmuInhalt01M'].strip()
             val_cmt = self.multiD[m][u'OmuBemerkungM'].strip()
-            if typ.lower() in okTypes and len(value) > 0:
+            if typ in okTypes and len(value) > 0:
                 if len(val_cmt) == 0 or val_cmt == value:
                     val_cmt = None
-                if typ.lower() in sigTypes:
+                if typ in sigTypes:
                     if val_cmt:
                         value = u'%s [%s]' % (value, val_cmt)
                     sign.add(value)
-                elif typ.lower() in mat_techTypes:
+                elif typ in mat_techTypes:
+                    value = value.lower()
                     if value in self.materialC.keys() and self.materialC[value]:
                         for sc in self.materialC[value]:
                             value = u'{{technique|%s}}' % sc
@@ -648,13 +650,13 @@ class MakeInfo:
                             material_tech.add(value)
                     elif value in self.materialC.keys():
                         cat_meta.append(u'unmatched material')
-                elif typ.lower() == u'tillverkningsort':
+                elif typ == u'tillverkningsort':
                     if value in self.placesC.keys() and self.placesC[value]:
                         value = self.placesC[value]
                     elif value in self.placesC.keys():
                         cat_meta.append(u'unmatched place')
                     tOrt.append(value)
-                elif typ.lower() == u'tillverkningsland':
+                elif typ == u'tillverkningsland':
                     if value in self.placesC.keys() and self.placesC[value]:
                         value = self.placesC[value]
                     elif value in self.placesC.keys():
@@ -662,12 +664,12 @@ class MakeInfo:
                     if val_cmt:
                         value = u'%s (%s)' % (value, val_cmt)
                     tLand.append(value)
-                elif typ.lower() == u'titel (engelsk)':
+                elif typ == u'titel (engelsk)':
                     if value != data[u'title']:
                         if val_cmt:
                             value = u'%s (%s)' % (value, val_cmt)
                         title_en.add(value)
-                elif typ.lower() == u'titel':
+                elif typ == u'titel':
                     if value != data[u'title']:
                         if val_cmt:
                             value = u'%s (%s)' % (value, val_cmt)
@@ -1011,7 +1013,7 @@ class MakeInfo:
         :param printed: list previously printed images
         :param addTo: text to add the output to
         :param captions: a {filename: caption} dict. Defaults to None
-        :returns: str, list
+        :return: str, list
         """
         # check for duplicates
         filenames = list(set(filenames))  # remove internal duplicates

@@ -6,6 +6,11 @@ Set commonsconnection of irrelevant technique/material to "-".
 ===technique/material|frequency|commonsconnection===
 {{user:Lokal Profil/LSH2|name=Technique/material|technique=}}
 {{User:Lokal Profil/LSH3
+|name      = valnöt
+|frequency = 6
+|technique = 
+}}
+{{User:Lokal Profil/LSH3
 |name      = stål
 |frequency = 4
 |technique = steel
@@ -16,13 +21,8 @@ Set commonsconnection of irrelevant technique/material to "-".
 |technique = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = Valnöt
-|frequency = 4
-|technique = 
-}}
-{{User:Lokal Profil/LSH3
-|name      = valnöt
-|frequency = 2
+|name      = läder
+|frequency = 3
 |technique = 
 }}
 {{User:Lokal Profil/LSH3
@@ -46,11 +46,6 @@ Set commonsconnection of irrelevant technique/material to "-".
 |technique = 
 }}
 {{User:Lokal Profil/LSH3
-|name      = läder
-|frequency = 2
-|technique = 
-}}
-{{User:Lokal Profil/LSH3
 |name      = silvergalon
 |frequency = 1
 |technique = 
@@ -67,11 +62,6 @@ Set commonsconnection of irrelevant technique/material to "-".
 }}
 {{User:Lokal Profil/LSH3
 |name      = guld
-|frequency = 1
-|technique = 
-}}
-{{User:Lokal Profil/LSH3
-|name      = Läder
 |frequency = 1
 |technique = 
 }}

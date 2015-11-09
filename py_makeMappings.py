@@ -105,9 +105,9 @@ def makePlaceAndMaterial(A, oDict):
     landDict = {}
     ortDict = {}
     techDict = {}
-    mat_techTypes = [u'Material', u'Material och teknik', u'Teknik']
-    ortType = u'Tillverkningsort'
-    landType = u'Tillverkningsland'
+    mat_techTypes = [u'material', u'material och teknik', u'teknik']
+    ortType = u'tillverkningsort'
+    landType = u'tillverkningsland'
     for k, v in oDict.iteritems():
         mul = A.objD[k][u'mulId']
         if len(mul) > 0:
@@ -118,17 +118,17 @@ def makePlaceAndMaterial(A, oDict):
                 # val_cmt = A.multiD[m][u'OmuBemerkungM']
                 if len(value) == 0:
                     continue
-                elif typ in mat_techTypes:
+                elif typ.lower() in mat_techTypes:
                     if value in techDict.keys():
                         techDict[value] = techDict[value]+v
                     else:
                         techDict[value] = v
-                elif typ in landType:
+                elif typ.lower() in landType:
                     if value in landDict.keys():
                         landDict[value] = landDict[value]+v
                     else:
                         landDict[value] = v
-                elif typ in ortType:
+                elif typ.lower() in ortType:
                     if value in ortDict.keys():
                         ortDict[value] = ortDict[value]+v
                     else:

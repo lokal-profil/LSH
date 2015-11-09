@@ -619,21 +619,22 @@ class MakeInfo:
     # -----------------------------------------------------------------------------------------------
     def multiCruncher(self, mulId, data, cat_meta):
         tOrt=[]; tLand=[]; title_en=[]; title_orig=[]; material_tech=[]; sign=[]
-        mat_techTypes = [u'Material', u'Material och teknik', u'Teknik']
-        sigTypes = [u'Signatur/Påskrift', u'Signering', u'Signatur']
-        okTypes = [u'Tillverkningsort', u'Tillverkningsland', u'Titel (engelsk)', u'Titel']+sigTypes+mat_techTypes
+        mat_techTypes = [u'material', u'material och teknik', u'teknik']
+        sigTypes = [u'signatur/påskrift', u'signering', u'signatur']
+        okTypes = [u'tillverkningsort', u'tillverkningsland', u'titel (engelsk)',
+                   u'titel'] + sigTypes + mat_techTypes
         for m in mulId:
             typ = self.multiD[m][u'OmuTypS']
             value = self.multiD[m][u'OmuInhalt01M'].strip()
             val_cmt = self.multiD[m][u'OmuBemerkungM'].strip()
-            if typ in okTypes and len(value) > 0:
+            if typ.lower() in okTypes and len(value) > 0:
                 if len(val_cmt) == 0 or val_cmt == value:
                     val_cmt = None
-                if typ in sigTypes:
+                if typ.lower() in sigTypes:
                     if val_cmt:
                         value = u'%s [%s]' % (value, val_cmt)
                     sign.append(value)
-                elif typ in mat_techTypes:
+                elif typ.lower() in mat_techTypes:
                     if value in self.materialC.keys() and self.materialC[value]:
                         for sc in self.materialC[value]:
                             value = u'{{technique|%s}}' % sc
@@ -642,13 +643,13 @@ class MakeInfo:
                             material_tech.append(value)
                     elif value in self.materialC.keys():
                         cat_meta.append(u'unmatched material')
-                elif typ == u'Tillverkningsort':
+                elif typ.lower() == u'tillverkningsort':
                     if value in self.placesC.keys() and self.placesC[value]:
                         value = self.placesC[value]
                     elif value in self.placesC.keys():
                         cat_meta.append(u'unmatched place')
                     tOrt.append(value)
-                elif typ == u'Tillverkningsland':
+                elif typ.lower() == u'tillverkningsland':
                     if value in self.placesC.keys() and self.placesC[value]:
                         value = self.placesC[value]
                     elif value in self.placesC.keys():
@@ -656,12 +657,12 @@ class MakeInfo:
                     if val_cmt:
                         value = u'%s (%s)' % (value, val_cmt)
                     tLand.append(value)
-                elif typ == u'Titel (engelsk)':
+                elif typ.lower() == u'titel (engelsk)':
                     if value != data[u'title']:
                         if val_cmt:
                             value = u'%s (%s)' % (value, val_cmt)
                         title_en.append(value)
-                elif typ == u'Titel':
+                elif typ.lower() == u'titel':
                     if value != data[u'title']:
                         if val_cmt:
                             value = u'%s (%s)' % (value, val_cmt)

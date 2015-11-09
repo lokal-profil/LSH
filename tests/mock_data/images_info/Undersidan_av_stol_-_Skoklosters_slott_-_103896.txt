@@ -6,7 +6,7 @@
 |original caption= Undersidan av stol.<br/>
 '''Nyckelord''': Föremålsbild, Möbeltyg
 |date= {{other date|ca|1750}}
-|medium= 
+|medium= {{technique|fakeMapping}} - {{technique|fakeMapping}}
 |dimensions=  {{size|unit=mm|depth=760|width=700|height=1020}}
 |source= SKO
 |provenance= 
@@ -30,6 +30,7 @@ File:Undersidan av stol - Skoklosters slott - 103897.jpg
 [[Category:Chairs]]
 
 <!--Maintanance categories-->
+[[Category:Media contributed by LSH: unmatched material]]
 [[Category:Media contributed by LSH: unmatched creator]]
 [[Category:Media contributed by LSH: unmatched keyword]]
 [[Category:Media contributed by LSH: 2015-11]]

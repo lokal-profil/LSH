@@ -1,38 +1,42 @@
 OmuId|OmuObjId|OmuTypS|OmuBemerkungM|OmuInhalt01M|ObjInventarNrS|ObjAufId|AufAufgabeS
-306117|23029|material||fibertyg|1775|172|Skoklosters slott
-306116|23029|material||Valnöt|1775|172|Skoklosters slott
+1021808|23029|Material och teknik||valnöt|1775|172|Skoklosters slott
 210967|23029|Signatur/Påskrift||M E|1775|172|Skoklosters slott
-786401|36579|Material|guld|guld|123|166|Livrustkammaren
+306116|23029|material||Valnöt|1775|172|Skoklosters slott
+306117|23029|material||fibertyg|1775|172|Skoklosters slott
+315710|28239|material||Läder|7125|172|Skoklosters slott
+315711|28239|material||stål|7125|172|Skoklosters slott
+319460|23029|material||fibertyg|1775|172|Skoklosters slott
+319559|23029|Material och teknik||Valnöt|1775|172|Skoklosters slott
 327175|36579|Kortbeskrivning||armband|123|166|Livrustkammaren
+334327|43731|Kortbeskrivning||Sabel schaschka Cirkassien|7125|166|Livrustkammaren
+334328|43732|Kortbeskrivning||balja till schaschka 7125|7126|166|Livrustkammaren
+349622|59026|Kortbeskrivning||bröstharnesk, ledat m lanshake|22455|166|Livrustkammaren
+349967|59371|Kortbeskrivning||höftbetäckning kyritzryttaren|22805|166|Livrustkammaren
+349975|59379|Kortbeskrivning||Rustningssko Kyritzryttaren|22813|166|Livrustkammaren
+405031|43731|Tillverkningsland||Cirkassien (Tjerkessien)|7125|166|Livrustkammaren
+405032|43732|Tillverkningsland||Cirkassien (Tjerkessien)|7126|166|Livrustkammaren
 539287|36579|Sakord||armband|123|166|Livrustkammaren
-786400|36579|Material|trä|trä|123|166|Livrustkammaren
+546435|43731|Sakord||sabel|7125|166|Livrustkammaren
+546436|43732|Sakord||balja|7126|166|Livrustkammaren
+561640|59026|Sakord||harnesk|22455|166|Livrustkammaren
+561985|59371|Sakord||rustning|22805|166|Livrustkammaren
+561993|59379|Sakord||benpansar|22813|166|Livrustkammaren
+743971|59371|Material|Färg: förgyllt, material: mässingsplåt|mässingsplåt|22805|166|Livrustkammaren
 743972|59371|Material|Färg: brun, material: läder|läder|22805|166|Livrustkammaren
 743973|59371|Material|Färg: ljusbrun, material: sämskskinn|sämskskinn|22805|166|Livrustkammaren
-561985|59371|Sakord||rustning|22805|166|Livrustkammaren
-743971|59371|Material|Färg: förgyllt, material: mässingsplåt|mässingsplåt|22805|166|Livrustkammaren
-349967|59371|Kortbeskrivning||höftbetäckning kyritzryttaren|22805|166|Livrustkammaren
-561993|59379|Sakord||benpansar|22813|166|Livrustkammaren
-788857|59379|Material|koppar|koppar|22813|166|Livrustkammaren
-788761|59379|Material|sämskskinn|sämskskinn|22813|166|Livrustkammaren
-788760|59379|Material|Färg: förgylld, material: mässingsplåt|mässingsplåt|22813|166|Livrustkammaren
-349975|59379|Kortbeskrivning||Rustningssko Kyritzryttaren|22813|166|Livrustkammaren
-773044|59026|Material|läder|läder|22455|166|Livrustkammaren
-561640|59026|Sakord||harnesk|22455|166|Livrustkammaren
-773043|59026|Material|stål|stål|22455|166|Livrustkammaren
-349622|59026|Kortbeskrivning||bröstharnesk, ledat m lanshake|22455|166|Livrustkammaren
-315711|28239|material||stål|7125|172|Skoklosters slott
-315710|28239|material||Läder|7125|172|Skoklosters slott
-334327|43731|Kortbeskrivning||Sabel schaschka Cirkassien|7125|166|Livrustkammaren
-546435|43731|Sakord||sabel|7125|166|Livrustkammaren
 746581|43731|Material|b2 - blankvapen - klinga, material: stål|stål|7125|166|Livrustkammaren
 746582|43731|Material|b1 - blankvapen - fäste, material: silver|silver|7125|166|Livrustkammaren
-405031|43731|Tillverkningsland||Cirkassien (Tjerkessien)|7125|166|Livrustkammaren
-793310|43731|Signering|Agah|amela Agah|7125|166|Livrustkammaren
+752267|43732|Material|trä|trä|7126|166|Livrustkammaren
 752268|43732|Material|stål|stål|7126|166|Livrustkammaren
 752269|43732|Material|silvergalon|silvergalon|7126|166|Livrustkammaren
-334328|43732|Kortbeskrivning||balja till schaschka 7125|7126|166|Livrustkammaren
-752267|43732|Material|trä|trä|7126|166|Livrustkammaren
-546436|43732|Sakord||balja|7126|166|Livrustkammaren
-752271|43732|Material|guldgalon|guldgalon|7126|166|Livrustkammaren
 752270|43732|Material|silver|silver|7126|166|Livrustkammaren
-405032|43732|Tillverkningsland||Cirkassien (Tjerkessien)|7126|166|Livrustkammaren
+752271|43732|Material|guldgalon|guldgalon|7126|166|Livrustkammaren
+773043|59026|Material|stål|stål|22455|166|Livrustkammaren
+773044|59026|Material|läder|läder|22455|166|Livrustkammaren
+786400|36579|Material|trä|trä|123|166|Livrustkammaren
+786401|36579|Material|guld|guld|123|166|Livrustkammaren
+788760|59379|Material|Färg: förgylld, material: mässingsplåt|mässingsplåt|22813|166|Livrustkammaren
+788761|59379|Material|sämskskinn|sämskskinn|22813|166|Livrustkammaren
+788857|59379|Material|koppar|koppar|22813|166|Livrustkammaren
+793310|43731|Signering|Agah|amela Agah|7125|166|Livrustkammaren
+

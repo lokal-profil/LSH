@@ -7,7 +7,7 @@
 |event= * [[:sv:Karl X Gustav|Karl X Gustavs död och begravning]]
 * Johan Casimirs död och begravning
 |date= 1652
-|medium= 
+|medium= {{technique|leather}} (Färg: brun, material: läder)
 |dimensions= *  {{weight|g|3400}}
 * {{size|unit=mm|width=533}}
 * {{size|unit=mm|depth=280}} (ca)

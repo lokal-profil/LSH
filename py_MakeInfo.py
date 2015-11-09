@@ -618,7 +618,12 @@ class MakeInfo:
         return data
     # -----------------------------------------------------------------------------------------------
     def multiCruncher(self, mulId, data, cat_meta):
-        tOrt=[]; tLand=[]; title_en=[]; title_orig=[]; material_tech=[]; sign=[]
+        tOrt = []
+        tLand = []
+        title_en = set()
+        title_orig = set()
+        material_tech = set()
+        sign = set()
         mat_techTypes = [u'material', u'material och teknik', u'teknik']
         sigTypes = [u'signatur/påskrift', u'signering', u'signatur']
         okTypes = [u'tillverkningsort', u'tillverkningsland', u'titel (engelsk)',
@@ -633,14 +638,14 @@ class MakeInfo:
                 if typ.lower() in sigTypes:
                     if val_cmt:
                         value = u'%s [%s]' % (value, val_cmt)
-                    sign.append(value)
+                    sign.add(value)
                 elif typ.lower() in mat_techTypes:
                     if value in self.materialC.keys() and self.materialC[value]:
                         for sc in self.materialC[value]:
                             value = u'{{technique|%s}}' % sc
                             if val_cmt:
                                 value = u'%s (%s)' % (value, val_cmt)
-                            material_tech.append(value)
+                            material_tech.add(value)
                     elif value in self.materialC.keys():
                         cat_meta.append(u'unmatched material')
                 elif typ.lower() == u'tillverkningsort':
@@ -661,36 +666,37 @@ class MakeInfo:
                     if value != data[u'title']:
                         if val_cmt:
                             value = u'%s (%s)' % (value, val_cmt)
-                        title_en.append(value)
+                        title_en.add(value)
                 elif typ.lower() == u'titel':
                     if value != data[u'title']:
                         if val_cmt:
                             value = u'%s (%s)' % (value, val_cmt)
-                        title_orig.append(value)
+                        title_orig.add(value)
         # format and send to relevant field
         # this is were Connection-lookup shold be done add maintanance cat if lookup fails
         if len(sign) > 0:
-            data[u'signature'] = sign
+            data[u'signature'] = list(sign)
         if len(material_tech) > 0:
-            data[u'material_tech'] = material_tech
+            data[u'material_tech'] = list(material_tech)
         if len(title_en) > 0:
-            data[u'title_en'] = title_en
+            data[u'title_en'] = list(title_en)
         if len(title_orig) > 0:
-            data[u'title_orig'] = title_orig
+            data[u'title_orig'] = list(title_orig)
         if len(tOrt) > 0 and len(tLand) > 0:
-            data[u'place'] = []
+            places = set()
             if len(tOrt) == len(tLand):
                 for i in range(0, len(tLand)):
                     place = '%s, %s' % (tOrt[i], tLand[i])
-                    data[u'place'].append(place)
+                    places.add(place)
             else:
-                tOrt = '; '.join(tOrt)
-                tLand = '; '.join(tLand)
-                data[u'place'].append(u'%s / %s' % (tOrt, tLand))
+                tOrt = '; '.join(set(tOrt))
+                tLand = '; '.join(set(tLand))
+                places.add(u'%s / %s' % (tOrt, tLand))
+            data[u'place'] = list(places)
         elif len(tOrt) > 0:
-            data[u'place'] = tOrt
+            data[u'place'] = list(set(tOrt))
         elif len(tLand) > 0:
-            data[u'place'] = tLand
+            data[u'place'] = list(set(tLand))
 
     def dimensionCruncher(self, dims, cat_meta, debug=''):
         '''takes a list of tuples and returns a list of strings'''

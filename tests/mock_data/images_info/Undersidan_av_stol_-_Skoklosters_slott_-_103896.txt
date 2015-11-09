@@ -6,7 +6,7 @@
 |original caption= Undersidan av stol.<br/>
 '''Nyckelord''': Föremålsbild, Möbeltyg
 |date= {{other date|ca|1750}}
-|medium= {{technique|fakeMapping}} - {{technique|fakeMapping}}
+|medium= {{technique|fakeMapping}}
 |dimensions=  {{size|unit=mm|depth=760|width=700|height=1020}}
 |source= SKO
 |provenance= 

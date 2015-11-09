@@ -79,12 +79,13 @@ step 10 all can be done without the actual image files.
 4. Run `python py_postUpload.py updateBroken` to find any remaining files
    with broken links
   * These indicate missing files, these can some times be uploaded manually
+   but should otherwise be unlinked.
 5. Run `python py_postUpload.py findMissing` to check filenames.csv for
    any files not present on Commons
   * This also generates an export file with photoid to url links for LSH
 
 ## Tests
-Some basic tests have been added to simplify maintanance7improvement of
+Some basic tests have been added to simplify maintanance/improvement of
 the code base. Run these through:
 
 * `python tests/test_general.py`

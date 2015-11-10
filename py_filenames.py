@@ -298,8 +298,11 @@ def cleanString(text):
                u'”': u' ', u'"': u' ', u'“': u' '}
     for k, v in badChar.iteritems():
         text = text.replace(k, v)
+
+    # replace any remaining colons
     if u':' in text:
         text = text.replace(u':', u'-')
+
     # replace double space by single space
     text = text.replace('  ', ' ')
     return text.strip()

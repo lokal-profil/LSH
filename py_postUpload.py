@@ -159,8 +159,8 @@ def findAllMissing(filenamesFile=FILENAME_FILE, configPath=u'config.json'):
             missing[name] = files[name]
         else:
             found[name] = {
-                'PhoId': v['PhoId'],
-                'MulId': v['MulId'],
+                'PhoId': files[name]['PhoId'],
+                'MulId': files[name]['MulId'],
                 'CommonsFile': '%s%s' % (prefix, name.replace(' ', '_'))
                 }
 

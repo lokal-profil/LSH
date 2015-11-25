@@ -27,7 +27,7 @@ def openConnection(configPath, apiClass=wikiApi.WikiApi, verbose=None):
     :param verbose: set to override global VERBOSE
     :return: wikiApi
     """
-    # read in Verbose (since direct assignment prevents uppdating the global)
+    # read in Verbose (cannot use GLOBAL as function default if it changes)
     if verbose is None:
         verbose = VERBOSE
 

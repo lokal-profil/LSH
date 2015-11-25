@@ -359,9 +359,12 @@ def touchup(text):
                 # slice in check is due to quote-bracket
                 text = text[1:-1]
 
+    # Get rid of leading/trailing punctuation
+    text = text.strip(' .,;')
+
     # Make sure first character is upper case
     text = text[:1].upper() + text[1:]
-    return text.strip(' .,;')
+    return text
 
 
 def commonsOutput(descriptions, mappingFile, allEntries=None):

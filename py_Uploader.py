@@ -35,7 +35,7 @@ def upFiles(inPath, cutoff=None, target=u'Uploaded', configPath=u'config.json',
         exit(1)
 
     # create target directories if they don't exist
-    doneDir = os.path.join(inPath, u'Uploaded')
+    doneDir = os.path.join(inPath, target)
     errorDir = u'%s_errors' % doneDir
     warningsDir = u'%s_warnings' % doneDir
     if not os.path.isdir(doneDir):

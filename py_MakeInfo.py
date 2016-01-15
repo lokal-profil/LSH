@@ -702,6 +702,7 @@ class MakeInfo:
 
     def dimensionCruncher(self, dims, cat_meta, debug=''):
         '''takes a list of tuples and returns a list of strings'''
+        #@toDo: make sure named parameters are used for size (incl. unit). See if "part=" was added
         # check if all are simply formatted
         lUnits = [u'm', u'dm', u'cm', u'mm']
         wUnits = [u'g', u'kg']
@@ -854,8 +855,10 @@ class MakeInfo:
                      owner, depicted, death_year, exhibits, orig_event, place, title_orig, title_en, material_tech, signature, dimensions,
                      multiple, preview=False):
         # event (orig_event)
-        # text = u'%s\n' % wikiname
-        text = u'{{LSH artwork\n'
+        text = u''
+        if preview:
+            text += u'%s\n' % wikiname
+        text += u'{{LSH artwork\n'
         text += u'|artist= '
         if artist:
             if len(artist) > 1:

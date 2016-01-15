@@ -213,8 +213,11 @@ class WikiApiHotfix(wikiApi.WikiApi):
         :return: None
         """
         # action=query&prop=images&format=json&imlimit=1&titles=File%3AFoo.jpg&generator=images&gimlimit=100
-        jsonr = self.httpPOST("purge", [('forcelinkupdate', ''),
-                                        ('titles', page.encode('utf-8'))])
+        requestparams = [
+            ('titles', page.encode('utf-8'))]
+        if forcelinkupdate:
+            requestparams.append(('forcelinkupdate', ''))
+        jsonr = self.httpPOST("purge", requestparams)
 
         if debug:
             print u'purgeImageLinks() page:%s \n' % page

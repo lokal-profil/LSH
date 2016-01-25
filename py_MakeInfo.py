@@ -159,7 +159,7 @@ class MakeInfo:
         photographer = u'%s %s' % (phoInfo[u'AdrVorNameS'], phoInfo[u'AdrNameS'])
         photographer = photographer.strip()
         # photographer, cat_photographer = self.photographers[photographer]
-        if len(photographer) == 0:
+        if not photographer:
             cat_photographer = None
         else:
             cat_photographer = self.photographerCatC[photographer]
@@ -168,19 +168,19 @@ class MakeInfo:
                 photographer = u'[[%s|]]' % creator  # link photographer
         # multi-valued columns need to be tested first
         objIds = phoInfo[u'PhoObjId']
-        if len(objIds) > 0:
+        if objIds:
             objIds = objIds.split(';')
         stichIds = phoInfo[u'PstId']
-        if len(stichIds) > 0:
+        if stichIds:
             stichIds = stichIds.split(';')
         same_object = phoInfo[u'same_object']
-        if len(same_object) > 0:
+        if same_object:
             same_object = same_object.split(';')
 
         # category-stichwort
         orig_stich = []
         cat_stich = []
-        if len(stichIds) > 0:
+        if stichIds:
             for s in stichIds:
                 stichKey = self.stichD[s][u'StiBezeichnungS']
                 orig_stich.append(stichKey)
@@ -191,9 +191,9 @@ class MakeInfo:
                         cat_stich.append(sc)
                 elif stichKey in self.stichC.keys():
                     cat_meta.append(u'unmatched keyword')
-        if len(cat_stich) == 0:
+        if not cat_stich:
             cat_stich = None
-        if len(orig_stich) == 0:
+        if not orig_stich:
             orig_stich = u''
         else:
             orig_stich = ', '.join(orig_stich)
@@ -225,7 +225,7 @@ class MakeInfo:
                    u'cat_obj': None,
                    u'multiple': False}
         # Deal with info from objIds
-        if len(objIds) == 0:  # do nothing
+        if not objIds:  # do nothing
             cat_meta.append(u'no objects')
         elif len(objIds) == 1:
             # cat_meta.append(u'one object')
@@ -252,7 +252,7 @@ class MakeInfo:
                                             u'cat_artist', u'manufacturer',
                                             u'depicted', u'cat_depicted')})
             for k, v in manyData.iteritems():
-                if len(v[u'title']) > 0:
+                if v[u'title']:
                     v[u'title'] = u' - %s' % v[u'title']
                 objData[u'invNr'].append(u'{{LSH-link|%s|%s|%s}}%s' % (k, v[u'invNr'], source, v[u'title']))
                 if v[u'date']:
@@ -274,7 +274,7 @@ class MakeInfo:
         # see also
         see_also = u''
         printedPics = []
-        if len(same_object) > 0:
+        if same_object:
             galleryTitle = u'Different images of same object'
             filenames = []
             for so in same_object:
@@ -322,11 +322,11 @@ class MakeInfo:
             categories, printedCats = MakeInfo.makeCategory(u'Depicted categories', objData[u'cat_depicted'], printed=printedCats, addTo=categories)
         if objData[u'cat_obj']:
             categories, printedCats = MakeInfo.makeCategory(u'Object categories', objData[u'cat_obj'], printed=printedCats, addTo=categories)
-        if len(printedCats) == 0:
+        if not printedCats:
             cat_meta.append(u'without any categories')
         if cat_photographer:  # after "no category" since these are a type of meta categories
             categories, printedCats = MakeInfo.makeCategory(u'Photographer category', [cat_photographer, ], printed=printedCats, addTo=categories)
-        if len(cat_meta) > 0:
+        if cat_meta:
             cat_meta = list(set(cat_meta))
             categories, printedCats = MakeInfo.makeCategory(u'Maintanance categories', cat_meta, pre=u'Media contributed by LSH: ', printed=printedCats, addTo=categories)
 
@@ -384,27 +384,27 @@ class MakeInfo:
         description = objInfo[u'ObjReserve01M']
         # multi-valued columns need to be tested first
         exhibits = objInfo[u'ausId']
-        if len(exhibits) > 0:
+        if exhibits:
             exhibits = exhibits.split(';')
         related = objInfo[u'related']
-        if len(related) > 0:
+        if related:
             related = related.split(';')
         events = objInfo[u'ergId']
-        if len(events) > 0:
+        if events:
             events = events.split(';')
         roles = objInfo[u'role:roleCmt:kueId']
-        if len(roles) > 0:
+        if roles:
             roles = roles.split(';')
         mulId = objInfo[u'mulId']
-        if len(mulId) > 0:
+        if mulId:
             mulId = mulId.split(';')
         dimensions = objInfo[u'massId']
-        if len(dimensions) > 0:
+        if dimensions:
             dimensions = dimensions.split(';')
 
         # InvNr. Note that Skokloster boksamling uses kort
         # Specifically Skokloster boksamling uses Signumno. instead of inv. no.
-        if len(invNr) == 0:
+        if not invNr:
             invNr = kort
             data[u'invNr'] = u'SKO %s' % invNr  # don't want SKObok here
         else:
@@ -417,7 +417,7 @@ class MakeInfo:
             data[u'title'] = nyckelord
 
         # description
-        if len(description) > 0:
+        if description:
             data[u'description'] = description
 
         # datering
@@ -429,12 +429,12 @@ class MakeInfo:
         data[u'date'] = date
 
         # exhibits
-        if len(exhibits) > 0:
+        if exhibits:
             data[u'exhibits'] = []
             exhibitD = {}
             counter = 0
             for e in exhibits:
-                counter = counter+1
+                counter += 1
                 exName = self.aussD[e][u'AusTitelS']
                 exPlace = self.aussD[e][u'AusOrtS']
                 exYear = self.aussD[e][u'std_year']
@@ -442,7 +442,7 @@ class MakeInfo:
                     exPlace = self.placesC[exPlace]
                 elif exPlace in self.placesC.keys():
                     cat_meta.append(u'unmatched place')
-                if len(exYear) > 0:
+                if exYear:
                     out = u'%s (%s) %s' % (exName, exYear, exPlace)
                 else:
                     out = u'%s: %s' % (exName, exPlace)
@@ -451,7 +451,7 @@ class MakeInfo:
                 data[u'exhibits'].append(exhibitD[key])
 
         # events
-        if len(events) > 0:
+        if events:
             orig_event = []
             cat_event = []
             for e in events:
@@ -466,17 +466,17 @@ class MakeInfo:
                     orig_event.append(u'[[%s|%s]]' % (self.ereignisLinkC[eventKey], eventKey))
                 else:
                     orig_event.append(eventKey)
-            if len(cat_event) != 0:
+            if cat_event:
                 data[u'cat_event'] = cat_event
-            if len(orig_event) != 0:
+            if orig_event:
                 data[u'orig_event'] = orig_event
 
         # ObjMul
-        if len(mulId) > 0:
-            MakeInfo.multiCruncher(self, mulId, data, cat_meta)
+        if mulId:
+            self.multiCruncher(mulId, data, cat_meta)
 
         # ObjMass
-        if len(dimensions) > 0:
+        if dimensions:
             dims = []
             for d in dimensions:
                 dType = self.massD[d][u'ObmTypMasseS']
@@ -486,15 +486,15 @@ class MakeInfo:
                 dValue = self.massD[d][u'ObmMasseS']
                 dims.append((dType, dValue))
                 # dims.append(u'%s: %s' % (dType, dValue))  # temporary solution
-            dims = MakeInfo.dimensionCruncher(self, dims, cat_meta)  # takes a list of tuples and returns a list of strings
-            if len(dims) > 0:
+            dims = MakeInfo.dimensionCruncher(dims, cat_meta)  # takes a list of tuples and returns a list of strings
+            if dims:
                 data[u'dimensions'] = dims
 
         # objcategories from group and classification
         cat_obj = []
         # group if source == HWY
         if source == u'HWY':
-            if len(group) > 0:
+            if group:
                 if group in self.objCatC.keys() and self.objCatC[group]:
                     for sc in self.objCatC[group]:
                         cat_obj.append(sc)
@@ -502,7 +502,7 @@ class MakeInfo:
                     cat_meta.append(u'unmatched objKeyword')
         # classifiction for the others
         # note failiure for ord2 keywords containing a comma
-        if len(classification) > 0:
+        if classification:
             if u'(' not in classification:
                 if classification in self.objCatC.keys() and self.objCatC[classification]:
                     for sc in self.objCatC[classification]:
@@ -524,17 +524,17 @@ class MakeInfo:
                             cat_meta.append(u'unmatched objKeyword')
                         else:
                             ord2 = p[pos+1:].split(',')
-                            ord2 = ord2[len(ord2)-1].strip()  # keep only last word
+                            ord2 = ord2[-1].strip()  # keep only last word
                             if ord2 in self.objCatC.keys() and self.objCatC[ord2]:
                                 for sc in self.objCatC[ord2]:
                                     cat_obj.append(sc)
                             elif ord2 in self.objCatC.keys():
                                 cat_meta.append(u'unmatched objKeyword')
-        if len(cat_obj) >0:
+        if cat_obj:
             data[u'cat_obj'] = cat_obj
 
         # related
-        if len(related) > 0:
+        if related:
             relList=[]
             relDict = {}
             for r in related:
@@ -542,11 +542,11 @@ class MakeInfo:
                     continue  # skip items without images in this batch or previously batches
                 rInvNr = self.objD[r][u'ObjInventarNrS']
                 rSource = self.source[self.objD[r][u'AufAufgabeS']]
-                if len(rInvNr) == 0:
+                if not rInvNr:
                     rInvNr = self.objD[r][u'ObjTitelWeitereM']
                 rInvNr = u'%s %s' % (rSource, rInvNr)
                 relDict[r] = ([], rInvNr)
-            if len(relDict) > 0:
+            if relDict:
                 # add assoicated filenames from current batch
                 for r_pho_mull, rPhoto in self.photoD.iteritems():
                     rObjId = rPhoto[u'PhoObjId']  # only use those with an unique objId, so no need to split
@@ -558,11 +558,11 @@ class MakeInfo:
                     if rObjId in relDict.keys():
                         relDict[rObjId][0].append(r_pho_mull)
                 for r, v in relDict.iteritems():
-                    if len(v[0]) == 0:
+                    if not v[0]:
                         continue
                     for pho_mull in v[0]:
                         relList.append((pho_mull, v[1]))
-                if len(relList) > 0:
+                if relList:
                     data[u'related'] = relList
 
         # roles
@@ -573,7 +573,7 @@ class MakeInfo:
         okRoles = artistRoles+manufacturerRoles+ownerRoles+depictedRoles
         badRoleCmts = [u'av kopia']
         artist = []; manufacturer = []; owner= []; depicted = []; cat_artist = []; cat_depicted = []
-        if len(roles) > 0:
+        if roles:
             for r in roles:
                 role, roleCmt, kueId = r.split(':')
                 if roleCmt in badRoleCmts:
@@ -598,23 +598,23 @@ class MakeInfo:
                         cat_depicted.append(self.peopleCatC[kueId])
                 if role in artistRoles:
                     death_year = self.kuenstlerD[kueId][u'KudJahrBisL']
-                    if len(death_year) > 0:
+                    if death_year:
                         if data[u'death_year']:
                             death_year = max(data[u'death_year'], int(death_year))
                         data[u'death_year'] = death_year
-            if len(manufacturer) > 0:
+            if manufacturer:
                 data['manufacturer'] = manufacturer
-            if len(owner) > 0:
+            if owner:
                 data['owner'] = owner
-            if len(depicted) > 0:
+            if depicted:
                 data['depicted'] = depicted
-            if len(artist) > 0:
+            if artist:
                 data['artist'] = artist
-            if len(cat_artist) > 0:
+            if cat_artist:
                 data['cat_artist'] = cat_artist
-            if len(cat_depicted) > 0:
+            if cat_depicted:
                 data['cat_depicted'] = artist
-        if len(cat_meta) > 0:
+        if cat_meta:
             data[u'cat_meta'] = cat_meta
         return data
     # -----------------------------------------------------------------------------------------------
@@ -634,7 +634,7 @@ class MakeInfo:
             value = self.multiD[m][u'OmuInhalt01M'].strip()
             val_cmt = self.multiD[m][u'OmuBemerkungM'].strip()
             if typ in okTypes and len(value) > 0:
-                if len(val_cmt) == 0 or val_cmt == value:
+                if not val_cmt or val_cmt == value:
                     val_cmt = None
                 if typ in sigTypes:
                     if val_cmt:
@@ -676,15 +676,15 @@ class MakeInfo:
                         title_orig.add(value)
         # format and send to relevant field
         # this is were Connection-lookup shold be done add maintanance cat if lookup fails
-        if len(sign) > 0:
+        if sign:
             data[u'signature'] = list(sign)
-        if len(material_tech) > 0:
+        if material_tech:
             data[u'material_tech'] = list(material_tech)
-        if len(title_en) > 0:
+        if title_en:
             data[u'title_en'] = list(title_en)
-        if len(title_orig) > 0:
+        if title_orig:
             data[u'title_orig'] = list(title_orig)
-        if len(tOrt) > 0 and len(tLand) > 0:
+        if tOrt and tLand:
             places = set()
             if len(tOrt) == len(tLand):
                 for i in range(0, len(tLand)):
@@ -695,12 +695,13 @@ class MakeInfo:
                 tLand = '; '.join(set(tLand))
                 places.add(u'%s / %s' % (tOrt, tLand))
             data[u'place'] = list(places)
-        elif len(tOrt) > 0:
+        elif tOrt:
             data[u'place'] = list(set(tOrt))
-        elif len(tLand) > 0:
+        elif tLand:
             data[u'place'] = list(set(tLand))
 
-    def dimensionCruncher(self, dims, cat_meta, debug=''):
+    @staticmethod
+    def dimensionCruncher(dims, cat_meta, debug=''):
         '''takes a list of tuples and returns a list of strings'''
         #@toDo: make sure named parameters are used for size (incl. unit). See if "part=" was added
         # check if all are simply formatted
@@ -750,9 +751,9 @@ class MakeInfo:
                 if role == u'weight':
                     if unit not in wUnits:
                         cat_meta.append(u'dim-with weird units|%s%s in %s' % (debug, role, unit))
-                    if len(prefix) > 0:
+                    if prefix:
                         prefix = u' (%s)' % prefix
-                    if len(ca) > 0:
+                    if ca:
                         ca = u'{{circa}} '
                     returns.append(u'%s{{weight|%s|%s}}%s' % (ca, unit, num, prefix))
                 else:
@@ -762,21 +763,21 @@ class MakeInfo:
                     prefix_size = prefix
                     circa_size = ca
                     size = u'%s|%s=%s' % (size, role, num)
-            if len(size) > 0:
-                if len(prefix_size) > 0:
+            if size:
+                if prefix_size:
                     prefix_size = u' (%s)' % prefix_size
-                if len(circa_size) > 0:
+                if circa_size:
                     circa_size = u'{{circa}} '
                 returns.append(u'%s{{size|unit=%s%s}}%s' % (circa_size, unit_size, size, prefix_size))
         elif nice:
             # well formated but separate templates needed
-            if len(nice_dims) > 0:
+            if nice_dims:
                 cat_meta.append(u'dim-with multiple size templates')
             for d in nice_dims:
                 role, prefix, num, unit, ca = d
-                if len(prefix) > 0:
+                if prefix:
                     prefix = u' (%s)' % prefix
-                if len(ca) > 0:
+                if ca:
                     ca = u'{{circa}} '
                 if role == u'weight':
                     if unit not in wUnits:
@@ -791,6 +792,7 @@ class MakeInfo:
             for d in dims:
                 returns.append(u'%s: %s' % (d[0], d[1]))
         return returns
+
     # create these once - ideally they should query commonspage directly
     def makeAbbrevLicense(self):
         self.lic = {
@@ -839,13 +841,13 @@ class MakeInfo:
         land = kuenstler[u'KudLandS']
         yrke = kuenstler[u'KueFunktionS']
         years = ''
-        if len(bYear) > 0 or len(dYear) > 0:
+        if bYear or dYear:
             years = u'%s-%s' % (bYear, dYear)
         bracket = u'%s, %s' % (yrke, years)
-        if len(years) > 0 or len(yrke) > 0:
+        if years or yrke:
             bracket = u' (%s) ' % bracket.strip(', ')
         place = u'%s%s' % (ort, land)
-        if len(ort) > 0 and len(land) > 0:
+        if ort and land:
             place = u'%s, %s' % (ort, land)
         out = u'%s%s%s' % (name.strip(), bracket, place.strip())
         return out.strip()
@@ -904,7 +906,7 @@ class MakeInfo:
         else:
             text += u'%s\n' % orig_descr
         text += u'|original caption= %s' % orig_descr
-        if len(orig_stich) > 0:
+        if orig_stich:
             text += u'<br/>\n\'\'\'Nyckelord\'\'\': %s\n' % orig_stich
         else:
             text += u'\n'
@@ -1026,7 +1028,7 @@ class MakeInfo:
         printed += filenames
 
         # escape if all were dupes
-        if len(filenames) == 0:
+        if not filenames:
             return addTo, printed
 
         # output
@@ -1047,7 +1049,7 @@ class MakeInfo:
             if p in lList:
                 lList.remove(p)
         printed = printed+lList
-        if len(lList) == 0:
+        if not lList:
             return addTo, printed
         # output
         text = addTo + u'\n<!--%s-->\n' % caption

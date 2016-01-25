@@ -32,19 +32,20 @@ class Common:
 
         entryList = []
         for l in lines:
-            if len(l) == 0:
+            if not l:  # empty line
                 continue
             entry = {}
             parts = l.split(delimiter)
-            for i in range(len(header)):
-                entry[header[i]] = parts[i]
+            for i, e in enumerate(header):
+                entry[e] = parts[i]
             entryList.append(entry)
         return entryList
 
     @staticmethod
     def sortedDict(ddict):
         '''turns a dict into a sorted list'''
-        sorted_ddict = sorted(ddict.iteritems(), key=operator.itemgetter(1), reverse=True)
+        sorted_ddict = sorted(ddict.iteritems(), key=operator.itemgetter(1),
+                              reverse=True)
         return sorted_ddict
 
     @staticmethod
@@ -96,7 +97,7 @@ class Common:
         dDict = {}
         unique = True
         for l in lines:
-            if len(l) == 0:
+            if not l:  # empty line
                 continue
             col = l.split('|')
             # id can either be one column or a combination of several
@@ -144,7 +145,7 @@ class Common:
             if useCol:
                 connection = col[useCol]
             else:
-                connection = col[len(col)-1]
+                connection = col[-1]
             if keepskip and connection == u'-':
                 dDict[col[0].strip()] = connection
             elif not len(connection) == 0 and not connection == u'-':
@@ -156,7 +157,7 @@ class Common:
                     dDict[col[0].strip()] = cList
                 else:
                     dDict[col[0].strip()] = Common.makeConnectionsSub(connection, addpipe, start, end)
-            elif len(connection) == 0:
+            elif not connection:
                 dDict[col[0].strip()] = None
         if verbose:
             print u'read in %s which had %r lines. Found %r connections' % (filename, c, len(dDict))

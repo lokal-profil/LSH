@@ -79,7 +79,7 @@ def analyseYear(f, file_in):
     # AobObjId
     # AufAufgabeS
     for l in lines:
-        if len(l) == 0:
+        if not l:
             continue
         col = l.split('|')
         if col[2].strip() == '':  # ignore exhibits wihtout names
@@ -97,7 +97,7 @@ def analyseYear(f, file_in):
         lout = u'%s|%s|%s|%s' % (ExhibId, year, yfrom, ytil)
         # identify weird year formatting
         if lyear != 0:
-            if not (lyear == 4 or lyear == 9 or lyear == 7):
+            if lyear not in [4, 9, 7]:
                 # if not YYYY or YYYY-YYYY or YYYY-YY
                 data.append(u'error y1|%s' % lout)
             elif lyear == 9 and (year[4:5] != '-' and year[4:5] != ' '):
@@ -157,7 +157,7 @@ def analysePhoto(A, f, file_in):
     # PhoSystematikS
     f.write(u'<!--From: %s -->\n' % file_in)
     for l in lines:
-        if len(l) == 0:
+        if not l:
             continue
         col = l.split('|')
         lic = col[3]  # PhoAufnahmeortS
@@ -193,7 +193,7 @@ def analysePhoto(A, f, file_in):
             f.write(u'Found an incompatible license: %s\n' % l)
     if nodupes:
         f.write(u'there are NO dupes in MullId =)\n')
-    if len(dupePhoid) != 0:
+    if dupePhoid:
         f.write(u'---Duplicate phoIds with different info---\n')
         for k, v in dupePhoid.iteritems():
             f.write(u'%s: %s <> %s\n' % (v[0], k, v[1]))
@@ -222,7 +222,7 @@ def analyseMulti(f, file_in):
     # MulExtentS
     f.write(u'\n\n<!--From: %s -->\n' % file_in)
     for l in lines:
-        if len(l) == 0:
+        if not l:
             continue
         col = l.split('|')
         idd = col[1]  # MulPhoId
@@ -261,18 +261,18 @@ def analyseMulti(f, file_in):
         else:
             mm[m] = 2
             tot = tot+2
-    if len(mm) > 0:
+    if mm:
         f.write(u'===duplicates===\n')
         f.write(u'#Total: %r\n' % tot)
         f.write(u'#MulPhoId|antal\n')
         sortMults = Common.sortedDict(mm)
         for s in sortMults:
             f.write(u'%s|%r\n' % (s[0], s[1]))
-    if len(bad) > 0:
+    if bad:
         f.write(u'===BadNames===\n')
         for b in bad:
             f.write(u'%s\n' % b)
-    if len(bad) == 0 and len(mm) == 0:
+    if not bad and not mm:
         f.write(u'there are no problems with multimedia file =)')
 # done
 
@@ -287,14 +287,14 @@ def analysePhotoAll(f, file_in):
     sources = {}
 
     for l in lines:
-        if len(l) == 0:
+        if not l:
             continue
         col = l.split('|')
         source = col[8].strip()  # PhoSystematikS
         phoId = col[0]  # PhoId
         mulId = col[5]  # MulId
         phoMul = u'%s:%s' % (phoId, mulId)
-        if len(source) > 0:
+        if source:
             if '%' in source:
                 source = helpers.urldecodeUTF8(source)
             internal = helpers.external2internalLink(source,
@@ -309,11 +309,11 @@ def analysePhotoAll(f, file_in):
                 sources[internal] = phoMul
 
     f.write(u'\n\n<!--From: %s -->\n' % file_in)
-    if len(badUrls) > 0:
+    if badUrls:
         f.write(u'===BadUrls===\n')
         for b in badUrls:
             f.write(u'%s: %s\n' % b)
-    if len(dupes) > 0:
+    if dupes:
         f.write(u'===DuplicateUrls===\n')
         f.write(u'phoId:mulId|phoId:mulId|Filename\n')
         for b in dupes:
@@ -328,7 +328,7 @@ if __name__ == '__main__':
         + u'\tlog_file (optional): the log to which the analysis is ' \
         + u'written. Defaults to "%s"' % LOG_FILE
     argv = sys.argv[1:]
-    if len(argv) == 0:
+    if not argv:
         run()
     elif len(argv) == 2:
         argv[0] = argv[0].decode(sys.getfilesystemencoding())  # str to unicode

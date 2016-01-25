@@ -94,15 +94,15 @@ def makeDescriptions(photoFile, objDatenFile, logFile):
         phoId = v['PhoId']
         objIds = v['PhoObjId']
         museum = v['PhoSwdS']
-        if len(museum) == 0:
+        if not museum:
             museum = u'LSH'
         phoBes = getDescFromPhoBes(v['PhoBeschreibungM'])
 
-        if len(phoBes) == 0:  # try to get description from object
-            if len(objIds) == 1 and len(objIds[0]) > 0:
+        if not phoBes:  # try to get description from object
+            if len(objIds) == 1 and objIds[0]:
                 # exactly one object
                 phoBes = getDescFromObj(objDaten[objIds[0]])
-                if len(phoBes) == 0:
+                if not phoBes:
                     # failed to make a description from the object
                     skipLog.append(phoId)
             elif len(objIds) > 1:
@@ -112,7 +112,7 @@ def makeDescriptions(photoFile, objDatenFile, logFile):
                 # no objects
                 noHopeLog.append(phoId)
 
-        if len(phoBes) > 0:
+        if phoBes:
             filename = u'%s - %s - %s' % (phoBes, museum, phoId)
             descriptions[phoId] = {'descr': phoBes,
                                    'filename': filename}
@@ -124,13 +124,13 @@ def makeDescriptions(photoFile, objDatenFile, logFile):
                (len(uniques) - len(descriptions)))
 
     # output logs
-    if len(skipLog) > 0:
+    if skipLog:
         flog.write('* No-objectDescr and No-photoDescr (phoIds)\n')
         flog.write('%s\n' % '\n'.join(skipLog))
-    if len(manyLog) > 0:
+    if manyLog:
         flog.write('* Many objects and No-photoDescr (phoIds)\n')
         flog.write('%s\n' % '\n'.join(manyLog))
-    if len(noHopeLog) > 0:
+    if noHopeLog:
         flog.write('* No-objects and No-photoDescr (phoIds)\n')
         flog.write('%s\n' % '\n'.join(noHopeLog))
 
@@ -180,12 +180,12 @@ def getDescFromPhoBes(text):
                         pos3 = text.find(',', pos2 + len(sep))
                         if pos3 > 0:
                             bit = text[pos2 + len(sep):pos3]
-                            if len(bit.strip('0123456789-,. ')) == 0:
+                            if not bit.strip('0123456789-,. '):
                                 pos2 = pos3 + len(',') - len(sep)
                                 continue
                         else:
                             bit = text[pos2 + len(sep):]
-                            if len(bit.strip('0123456789-,. ')) == 0:
+                            if not bit.strip('0123456789-,. '):
                                 pos2 = pos2 + len(bit)
                         break
                     text = u'%s%s %s' % (text[:pos].strip(badchar),
@@ -198,7 +198,7 @@ def getDescFromPhoBes(text):
     text = text.strip(badchar)
     text = cleanName(text)
     text = cleanString(text)
-    if len(text.strip('0123456789,.- ')) == 0:
+    if not text.strip('0123456789,.- '):
         # if no relevant info left
         text = ''
     else:
@@ -234,9 +234,9 @@ def getDescFromObj(obj):
     kort = kort.strip(badchar)
 
     # if only numbers (left)
-    if len(orig.strip('0123456789,.- ')) == 0:
+    if not orig.strip('0123456789,.- '):
         orig = ''
-    if len(kort.strip('0123456789,.- ')) == 0:
+    if not kort.strip('0123456789,.- '):
         kort = ''
 
     # decision time, pick longer or rely on collection
@@ -245,7 +245,7 @@ def getDescFromObj(obj):
         descr = kort
     elif kort.lower() in orig.lower():
         descr = orig
-    elif len(kort) == 0 and len(orig) == 0:
+    elif not kort and not orig:
         descr = ''
     else:
         samling = obj[u'AufAufgabeS']
@@ -459,7 +459,7 @@ if __name__ == '__main__':
     import sys
     usage = u'Usage:\tpython py_filenames.py\n'
     argv = sys.argv[1:]
-    if len(argv) == 0:
+    if not argv:
         run()
     else:
         print usage

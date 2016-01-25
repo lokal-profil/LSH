@@ -120,7 +120,7 @@ def fixLinebreak(file_in, file_out, encoding):
     # and count until the right number of cells are reached
     prevline = u''
     for line in lines:
-        if len(line.strip()) == 0:
+        if not line.strip():
             # skip empties
             continue
         if (prevline == u'') and (len(line.split('|')) == 1):
@@ -155,7 +155,7 @@ if __name__ == '__main__':
         u'\tEither provide both or leave them out ' \
         u'(thus defaulting to "%s", "%s")' % (CSV_DIR_ORIG, CSV_DIR_CLEAN)
     argv = sys.argv[1:]
-    if len(argv) == 0:
+    if not argv:
         fixFiles()
     elif len(argv) == 2:
         fixFiles(in_path=argv[0], out_path=argv[1])

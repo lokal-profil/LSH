@@ -135,7 +135,7 @@ def makeAndRename(path, dataDir=DATA_DIR, connectionsDir=CONNECTIONS_DIR,
     # require batchCat to be of some length
     if batchCat is not None:
         batchCat = batchCat.strip()
-        if len(batchCat) == 0:
+        if not batchCat:
             batchCat = None
         else:
             batchCat = u'[[Category:Media contributed by LSH: %s]]' % batchCat
@@ -348,7 +348,7 @@ def removeEmptyDirectories(path, top=True):
     # re-read and delete directory if empty,
     files = os.listdir(path)
     if not top:
-        if len(files) == 0:
+        if not files:
             os.rmdir(path)
         else:
             output('Not removing non-empty directory: %s' % path)

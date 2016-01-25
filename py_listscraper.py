@@ -62,7 +62,7 @@ def parseEntries(contents):
                     pos = part.find(u'=')
                     key = part[:pos].strip()
                     value = part[pos+1:].strip()
-                    if len(value) > 0:
+                    if value:
                         if (key) in params.keys():
                             params[key] = value.split(u'/')
                         else:
@@ -158,7 +158,7 @@ def parseFilenameEntries(contents):
             parts = line.split(u'||')
             phoId = parts[0][len(u'| '):].strip()
             allEntries.append(phoId)
-            if len(parts[2].strip()) > 0:  # if filename was improved
+            if parts[2].strip():  # if filename was improved
                 generated = parts[1].replace(u'<span style="color:red">', u'') \
                                     .replace(u'</span>', u'') \
                                     .strip()
@@ -207,7 +207,7 @@ def run(outPath=OUT_PATH, dataPath=DATA_PATH, mappingsPath=MAPPING_FOLDER,
 
     # identify changes
     units, allEntries = parseFilenameEntries(contents[comPage])
-    if len(units) > 0:
+    if units:
         # load old filenames
         filenamesHeader = 'PhoId|MulId|MulPfadS|MulDateiS|filename|ext'
         filenamesFile = os.path.join(dataPath, u'filenames.csv')
@@ -267,7 +267,7 @@ if __name__ == '__main__':
             u'\tdata_path (optional):the relative pathname to the data ' \
             u'directory. Defaults to "%s"' % (OUT_PATH, DATA_PATH)
     argv = sys.argv[1:]
-    if len(argv) == 0:
+    if not argv:
         run()
     elif len(argv) == 2:
         argv[0] = helpers.convertFromCommandline(argv[0])

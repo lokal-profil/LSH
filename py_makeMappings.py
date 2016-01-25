@@ -48,7 +48,7 @@ def run(in_path=IN_PATH, out_path=OUT_PATH, data_path=DATA_PATH):
     oDict = {}
     for k, v in A.photoD.iteritems():
         objIds = v[u'PhoObjId']
-        if len(objIds) > 0:
+        if objIds:
             objIds = objIds.split(';')
             for o in objIds:
                 if o in oDict.keys():
@@ -111,13 +111,13 @@ def makePlaceAndMaterial(A, oDict):
     landType = u'tillverkningsland'
     for k, v in oDict.iteritems():
         mul = A.objD[k][u'mulId']
-        if len(mul) > 0:
+        if mul:
             mul = mul.split(';')
             for m in mul:
                 typ = A.multiD[m][u'OmuTypS'].lower()
                 value = A.multiD[m][u'OmuInhalt01M']
                 # val_cmt = A.multiD[m][u'OmuBemerkungM']
-                if len(value) == 0:
+                if not value:
                     continue
                 elif typ in mat_techTypes:
                     value = value.lower()
@@ -194,7 +194,7 @@ def makeObjKeywords(A, oDict):
         # ord1 OR
         # ord1 (ord2, ord3) OR
         # ord1.1 (ord2.1, ord3.1), ord1.2 (ord2.2, ord3.2)
-        if len(classification) > 0:
+        if classification:
             if u'(' not in classification:
                 if classification in ord1Dict.keys():
                     ord1Dict[classification] += 1
@@ -213,7 +213,7 @@ def makeObjKeywords(A, oDict):
                         pos = d.find('(')
                         ord1 = d[:pos].strip(', ')
                         ord2s = d[pos+1:].split(',')
-                        ord2 = ord2s[len(ord2s)-1].strip()  # keep last word only
+                        ord2 = ord2s[-1].strip()  # keep last word only
                         if ord1 in ord1Dict.keys():
                             ord1Dict[ord1] += 1
                         else:
@@ -339,7 +339,7 @@ def makeKeywords(A):
         k = k.split(':')[0]
         if k in phoIds:
             phoIds.remove(k)
-    if len(phoIds) != 0:
+    if phoIds:
         output(u'Stichwort_trim still contains unused phoIds')
     return keywords
 
@@ -413,7 +413,7 @@ def makeExhibitPlaces(A, oDict):
     exhibits = {}
     for k, v in oDict.iteritems():
         ausIds = A.objD[k][u'ausId']
-        if len(ausIds) != 0:
+        if ausIds:
             ausIds = ausIds.split(';')
             for a in ausIds:
                 if a in exhibits.keys():
@@ -446,7 +446,7 @@ def makeEvents(A, oDict):
     eventFreq = {}
     for k, v in oDict.iteritems():
         ergIds = A.objD[k][u'ergId']
-        if len(ergIds) != 0:
+        if ergIds:
             ergIds = ergIds.split(';')
             for e in ergIds:
                 if e in eventFreq.keys():
@@ -487,7 +487,7 @@ def combineEvents(oldCatDict, oldLinkDict, newDict):
                 newlink = newDict[k][u'link'].replace('_', ' ').strip(u'[]')
                 if oldlink != newlink:
                     # check if the same, otherwise use old
-                    if len(newlink) != 0:
+                    if newlink:
                         output(u'Eregnis: replaced %s by %s' % (newlink, oldlink))
                     newlink = oldlink
                 newDict[k][u'link'] = newlink  # reformated and possibly replaced
@@ -563,7 +563,7 @@ def makePeople(A, oDict):
     personFreq = {}
     for k, v in oDict.iteritems():
         personIds = A.objD[k][u'role:roleCmt:kueId']
-        if len(personIds) != 0:
+        if personIds:
             personIds = personIds.split(u';')
             for p in personIds:
                 role, roleCmt, kueId = p.split(u':')
@@ -592,7 +592,7 @@ def makePeople(A, oDict):
             dates = u''
         place = (u'%s, %s' % (info[u'place'], info[u'land'])).strip(u' ,')
         dateJob = (u'%s, %s' % (info[u'job'], dates)).strip(u' ,')
-        if len(dateJob) > 0:
+        if dateJob:
             dateJob = u'(%s) ' % dateJob
         descr = (u'%s %s%s' % (name, dateJob, place)).strip()
         people[k] = {u'freq': v, u'descr': descr}
@@ -835,7 +835,7 @@ if __name__ == '__main__':
         + u'\tout_path (optional):the relative pathname to the target ' \
         + u'directory. Defaults to "%s"' % OUT_PATH
     argv = sys.argv[1:]
-    if len(argv) == 0:
+    if not argv:
         run()
     elif len(argv) == 2:
         argv[0] = argv[0].decode(sys.getfilesystemencoding())  # str to unicode

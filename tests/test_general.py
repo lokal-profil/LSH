@@ -55,10 +55,10 @@ def areEqualUpToOrderWithLists(a, b):
     """
     diff_old = list(set(a) - set(b))
     diff_new = list(set(b) - set(a))
-    for i in range(len(diff_old)):
-        diff_old[i] = sortAnythingListlike(diff_old[i])
-    for i in range(len(diff_new)):
-        diff_new[i] = sortAnythingListlike(diff_new[i])
+    for i, e in enumerate(diff_old):
+        diff_old[i] = sortAnythingListlike(e)
+    for i, e in enumerate(diff_new):
+        diff_new[i] = sortAnythingListlike(e)
     return areEqualUpToOrder(diff_new, diff_old)
 
 
@@ -71,8 +71,8 @@ def sortAnythingListlike(row, colDelimiter='|', listDelimiter=';'):
     :return: str
     """
     parts = row.split(colDelimiter)
-    for i in range(len(parts)):
-        components = parts[i].split(listDelimiter)
+    for i, e in enumerate(parts):
+        components = e.split(listDelimiter)
         parts[i] = listDelimiter.join(sorted(components))
     return colDelimiter.join(parts)
 

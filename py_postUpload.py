@@ -92,10 +92,10 @@ def fixRenamedFiles(filename=BROKEN_LINKS_FILE, configPath=u'config.json'):
 
     changed = []
     for l in lines:
-        if len(l) == 0:
+        if not l:
             continue
         oldName, newName = l.split('|')
-        if len(newName.strip()) > 0:
+        if newName.strip():
             # if a rename was specified
             changed.append({'new': u'%s' % newName,
                             'old': oldName[len('File:'):]})  # strip prefix

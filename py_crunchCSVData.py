@@ -255,7 +255,7 @@ def makePhotoAll(photoAllFile, photo_multi, logFile):
         link = v['PhoSystematikS']
 
         # drop any entries without files
-        if len(link) == 0:
+        if not link:
             del photoAll[k]
             continue
 
@@ -274,7 +274,7 @@ def makePhotoAll(photoAllFile, photo_multi, logFile):
         phoMul = u'%s:%s' % (phoId, photo_multi[phoId]['MulId'])
         if phoMul in photoAll.keys():
             dupes.append(phoMul)
-    if len(dupes) > 0:
+    if dupes:
         output(u'Found duplicates between photoAll and photo_multi. '
                u'This will most likely mess things up. Check the log at '
                u'%s for details.' % logFile)
@@ -320,7 +320,7 @@ def photo_ObjDaten(photo_multi, photoAll, photoObjDatenFile,
     for k, v in objDaten.iteritems():
         objId = v['ObjId']
         objInvNr = v['ObjInventarNrS']
-        if len(objInvNr) == 0:
+        if not objInvNr:
             continue
         if objInvNr not in objInvNr2ObjId.keys():
             objInvNr2ObjId[objInvNr] = []
@@ -342,7 +342,7 @@ def photo_ObjDaten(photo_multi, photoAll, photoObjDatenFile,
     for k, v in photoObjDaten.iteritems():
         objInvNr = v['ObjInvNrS']
         phoId = v['PhoId']
-        if len(objInvNr) == 0:
+        if not objInvNr:
             continue
         if objInvNr not in objInvNr2ObjId.keys():
             skipped.append(objInvNr)
@@ -361,12 +361,12 @@ def photo_ObjDaten(photo_multi, photoAll, photoObjDatenFile,
             phoId = v['PhoId']
             objIds = []
             if phoId not in photoObjConnections.keys():
-                if len(v['PhoObjId']) > 0:
+                if v['PhoObjId']:
                     objIds.append(v['PhoObjId'])
             else:
                 # combine relevant objIds
                 objIds = photoObjConnections.pop(phoId)  # new connections
-                if len(v['PhoObjId']) > 0:
+                if v['PhoObjId']:
                     objIds.append(v['PhoObjId'])  # old connection
                 objIds = list(set(objIds))  # remove dupes
 
@@ -376,7 +376,7 @@ def photo_ObjDaten(photo_multi, photoAll, photoObjDatenFile,
             for objId in objIds:
                 if objId not in objDaten.keys():
                     badObjId.append(objId)
-            if len(badObjId) > 0:
+            if badObjId:
                 allBadObjId += badObjId
                 for badId in badObjId:
                     objIds.remove(badId)
@@ -385,7 +385,7 @@ def photo_ObjDaten(photo_multi, photoAll, photoObjDatenFile,
             v['PhoObjId'] = objIds
 
     # log any skipped ObjInvNr
-    if len(skipped) != 0:
+    if skipped:
         skipped = list(set(skipped))  # remove dupes
         output(u"\tthere were %d skipped ObjInvNr, see log (%s)" %
                (len(skipped), logFile))
@@ -394,7 +394,7 @@ def photo_ObjDaten(photo_multi, photoAll, photoObjDatenFile,
         flog.write(u'%s\n' % ', '.join(skipped))
 
     # log any bad objId
-    if len(allBadObjId) != 0:
+    if allBadObjId:
         output('\tI found some bad objIds. Check the %s' % logFile)
         allBadObjId = list(set(allBadObjId))  # remove dupes
         flog.write(u'* objIds in photo but not in objDaten\n')
@@ -590,7 +590,7 @@ def ausstellung_objDaten(austellungFile, objDaten):
         ausId = v['AusId']
         objId = v['AobObjId']
         title = v['AusTitelS']
-        if len(title) == 0 or title in dummyTitles:  # remove empty/dummy
+        if not title or title in dummyTitles:  # remove empty/dummy
             del austellung[k]
         elif ausId not in foundAusId:  # keep this entry
             foundAusId[ausId] = k
@@ -648,7 +648,7 @@ def stdAustellungYear(year, yfrom, ytil):
     :return: str
     """
     # quick sanity check on year
-    if len(year.strip('0123456789 -')) != 0:
+    if year.strip('0123456789 -'):
         return year
 
     #
@@ -726,7 +726,7 @@ def objDaten_sam(objDatenSamFile, objDaten):
                 connectedIds.remove(conId)  # remove invalid
 
         # delete or update
-        if len(connectedIds) == 0:
+        if not connectedIds:
             del objIdConnection[objId]
         else:
             objIdConnection[objId] = connectedIds
@@ -771,7 +771,7 @@ def ereignis_objDaten(ereignisFile, objDaten, logFile):
         ergId = v['ErgId']
         objId = v['EroObjId']
         title = v['ErgKurztitelS']
-        if len(title) == 0:  # remove empty
+        if not title:  # remove empty
             del ereignis[k]
         elif ergId not in foundErgId.keys():  # keep this entry
             foundErgId[ergId] = k
@@ -796,7 +796,7 @@ def ereignis_objDaten(ereignisFile, objDaten, logFile):
         # convert external links to internal
         if 'wikipedia' in url:
             url = helpers.external2internalLink(url)
-        elif len(url) > 0:
+        elif url:
             flog.write(u'weird url: %s\n' % url)
         v['ErgArtS'] = url
 
@@ -924,7 +924,7 @@ def kuenstler_objDaten(kuenstlerFile, objDaten, logFile):
 
         # take yearinfo out of name, and store in year
         lName, bYear, dYear, log = extractKuenstlerYear(lName, bYear, dYear)
-        if len(log) > 0:
+        if log:
             flog.write(log)
         v['KueNameS'] = lName
         v['KudJahrVonL'] = bYear
@@ -968,17 +968,17 @@ def extractKuenstlerYear(name, bYear, dYear):
 
     # found potential matches
     if testYears:
-        for i in range(len(testYears)):
-            testYears[i] = testYears[i].strip('*+ ')  # (*YYYY-YYYY+)
+        for i, e in enumerate(testYears):
+            testYears[i] = e.strip('*+ ')  # (*YYYY-YYYY+)
         if len(testYears) == 2 and \
-                all(len(testY) == 0 or helpers.is_int(testY)
+                all(not testY or helpers.is_int(testY)
                     for testY in testYears):
             # YYYY-YYYY
-            if len(bYear) > 0 and bYear != testYears[0]:
+            if bYear and bYear != testYears[0]:
                 log += u'bYear: %s,\t%s != %s\n' % (name, testYears[0], bYear)
-            if len(dYear) > 0 and dYear != testYears[1]:
+            if dYear and dYear != testYears[1]:
                 log += u'dYear: %s,\t%s != %s\n' % (name, testYears[1], dYear)
-            if len(log) == 0:
+            if not log:
                 name = testName.strip().rstrip(',')
                 bYear = testYears[0]
                 dYear = testYears[1]
@@ -1069,7 +1069,7 @@ if __name__ == '__main__':
         + u'\tEither provide both or leave them out ' \
         + u'(thus defaulting to "%s", "%s")' % (CSV_DIR_CLEAN, CSV_DIR_CRUNCH)
     argv = sys.argv[1:]
-    if len(argv) == 0:
+    if not argv:
         run()
     elif len(argv) == 2:
         argv[0] = helpers.convertFromCommandline(argv[0])

@@ -113,7 +113,7 @@ def csvFileToDict(filename, keyCol, headerCheck, unique=True, keep=None,
     # load to dict
     d = {}
     for l in lines:
-        if len(l) == 0:
+        if not l:
             continue
         parts = l.split(delimiter)
 

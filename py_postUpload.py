@@ -103,7 +103,7 @@ def fixRenamedFiles(filename=BROKEN_LINKS_FILE, configPath=u'config.json'):
     comApi = helpers.openConnection(configPath)
     comment = u'Fixing broken filelinks from ' \
               u'[[Commons:Batch_uploading/LSH|batch upload]]'
-    while len(changed) > 0:
+    while changed:
         active = changed.pop()
         links = comApi.getImageUsage(u'File:%s' % active['old'], iunamespace=6)
         if links:

@@ -75,11 +75,14 @@ def parseEntries(contents):
 
 
 def formatOutput(units, page):
-    #@reubuild so that this uses helpers.dictToCsvFile(filename, d, header)
-    #this then sets header and rowformat makes the dict
-    #needed:
-    ##add header (or drop header requirement in helpers.dictToCsvFile)
-    ##drop * prefix in csv (requires followup in MakeInfo, at least)
+    """
+    @TODO:
+    reubuild so that this uses helpers.dictToCsvFile(filename, d, header)
+    this then sets header and rowformat makes the dict
+    needed:
+    # add header (or drop header requirement in helpers.dictToCsvFile)
+    # drop * prefix in csv (requires followup in MakeInfo, at least)
+    """
     txt = u''
     for u in units:
         txt += u'%s\n' % rowFormat(u, page)

@@ -1,4 +1,4 @@
-# -*- coding: UTF-8  -*-
+# -*- coding: utf-8  -*-
 #
 # Methods comonly shared by the analysis files
 #
@@ -11,13 +11,17 @@ import operator  # needed by sortedDict
 class Common:
     @staticmethod
     def openFile(filename, delimiter='|', codec='utf-8'):
-        '''opens a given  pipe-separated csv file (utf-8) and returns the header row plus following lines)'''
+        '''
+        opens a given pipe-separated csv file (utf-8) and returns the header
+        row plus following lines)
+        '''
         lines = codecs.open(filename, 'r', codec).read().split('\n')
         header = lines.pop(0).split(delimiter)
         return header, lines
 
     @staticmethod
-    def openFileAsDictList(filename, delimiter='|', codec='utf-8', headerCheck=None):
+    def openFileAsDictList(filename, delimiter='|', codec='utf-8',
+                           headerCheck=None):
         '''
         opens a given pipe-separated csv file (utf-8)
         and returns a list of dicts, using header row for keys)
@@ -68,7 +72,8 @@ class Common:
     @staticmethod
     def addUniqes(dDict, key, value, dcounter):
         '''
-        for a given dictinary add key, value and return new value of duplicate counter
+        for a given dictinary add key, value and return new value of
+        duplicate counter
         '''
         if key in dDict.keys():
             if value in dDict[key]:
@@ -90,7 +95,8 @@ class Common:
     @staticmethod
     def file_to_dict(filename, idcol=0, verbose=False, careful=False):
         '''
-        reads in a file and passes it to a dict where each row is in turn a dict
+        reads in a file and passes it to a dict where each row is in
+        turn a dict
         '''
         listcols = isinstance(idcol, list)
         header, lines = Common.openFile(filename)
@@ -118,9 +124,12 @@ class Common:
             dDict[idno] = wDict
         if verbose:
             if careful:
-                print 'read %s: %r items of length %r. Uniqueness is %s' % (filename, len(dDict), len(dDict.itervalues().next()), unique)
+                print 'read %s: %r items of length %r. Uniqueness is %s' % \
+                    (filename, len(dDict), len(dDict.itervalues().next()),
+                     unique)
             else:
-                print 'read %s: %r items of length %r.' % (filename, len(dDict), len(dDict.itervalues().next()))
+                print 'read %s: %r items of length %r.' % \
+                    (filename, len(dDict), len(dDict.itervalues().next()))
         return dDict
 
     @staticmethod
@@ -160,7 +169,8 @@ class Common:
             elif not connection:
                 dDict[col[0].strip()] = None
         if verbose:
-            print u'read in %s which had %r lines. Found %r connections' % (filename, c, len(dDict))
+            print u'read in %s which had %r lines. Found %r connections' % \
+                (filename, c, len(dDict))
         return dDict
 
     @staticmethod
@@ -180,9 +190,11 @@ class Common:
 
     @staticmethod
     def stdDate(date, risky=False):
-        '''returns a standardised date in isoform or for other date template
+        '''
+        returns a standardised date in isoform or for other date template
         risky=True for additional logic
-        Note that risky has not yet been tested in full production and is never suitable as a first run
+        Note that risky has not yet been tested in full production and is never
+        suitable as a first run
         '''
         # interpret semicolon as multiple dates
         if ';' in date:
@@ -310,24 +322,25 @@ class Common:
 
     @staticmethod
     def findUnit(contents, start, end, brackets=None):
-        '''
-        Method for isolating an object in a string. Will not work with either start or end using the ¤ symbol
+        u'''
+        Method for isolating an object in a string. Will not work with either
+        start or end using the ¤ symbol
         @input:
             * content: the string to look at
-            * start: the substring indicateing the start of the object
+            * start: the substring indicating the start of the object
             * end: the substring indicating the end of the object
             * brackets: a dict of brackets used which must match within the object
         @output:
             the-object, lead-in-to-object, the-remainder-of-the-string
-            OR None,None if an error
-            OR '','' if no object is found
+            OR None, None, None if an error
+            OR '', '', '' if no object is found
         '''
         if start in contents:
             uStart = contents.find(start) + len(start)
             uEnd = contents.find(end, uStart)
             if brackets:
                 for bStart, bEnd in brackets.iteritems():
-                    dummy = u'¤'*len(bEnd)
+                    dummy = u'¤' * len(bEnd)
                     diff = contents[uStart:uEnd].count(bStart) - contents[uStart:uEnd].count(bEnd)
                     if diff < 0:
                         print 'Negative bracket missmatch for: %s <--> %s' % (bStart, bEnd)

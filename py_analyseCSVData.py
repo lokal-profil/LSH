@@ -176,12 +176,12 @@ def analysePhoto(A, f, file_in):
         # for comparing content
         if phid in phids.keys():
             # Duplicate photoids...
-            tt = '|'.join(col[1:4]+col[6:])
+            tt = '|'.join(col[1:4] + col[6:])
             if tt != phids[phid]:
                 # with different content
                 dupePhoid[tt] = (phid, phids[phid])
         else:
-            phids[phid] = '|'.join(col[1:4]+col[6:])
+            phids[phid] = '|'.join(col[1:4] + col[6:])
     # loop done
     # find incompatible licenses
     for s in sources:
@@ -230,20 +230,20 @@ def analyseMulti(f, file_in):
         # test if each filename has only one photoid
         if fullname in ndict.keys():
             if idd != ndict[fullname]:
-                ndiffCount = ndiffCount+1
+                ndiffCount += 1
                 # print idd, ndict[fullname]
         else:
             ndict[fullname] = idd
         # testing mullId/phoId duplication
         if idd in ids:
-            ccount = ccount+1
+            ccount += 1
             mults.append(idd)
             tt = '|'.join([col[2], col[3], col[4]])
             if tt != difftest[idd]:
-                diffCount = diffCount+1
+                diffCount += 1
                 # print u'>%s\n<%s\n' %(tt, difftest[idd])
             else:
-                sameCount = sameCount+1
+                sameCount += 1
         else:
             ids.append(idd)
             difftest[idd] = '|'.join([col[2], col[3], col[4]])
@@ -256,11 +256,11 @@ def analyseMulti(f, file_in):
     tot = 0
     for m in mults:
         if m in mm.keys():
-            mm[m] = mm[m]+1
-            tot = tot+1
+            mm[m] += 1
+            tot += 1
         else:
             mm[m] = 2
-            tot = tot+2
+            tot += 2
     if mm:
         f.write(u'===duplicates===\n')
         f.write(u'#Total: %r\n' % tot)

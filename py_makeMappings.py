@@ -52,7 +52,7 @@ def run(in_path=IN_PATH, out_path=OUT_PATH, data_path=DATA_PATH):
             objIds = objIds.split(';')
             for o in objIds:
                 if o in oDict.keys():
-                    oDict[o] = oDict[o]+1
+                    oDict[o] += 1
                 else:
                     oDict[o] = 1
 
@@ -212,7 +212,7 @@ def makeObjKeywords(A, oDict):
                     if '(' in d:
                         pos = d.find('(')
                         ord1 = d[:pos].strip(', ')
-                        ord2s = d[pos+1:].split(',')
+                        ord2s = d[pos + 1:].split(',')
                         ord2 = ord2s[-1].strip()  # keep last word only
                         if ord1 in ord1Dict.keys():
                             ord1Dict[ord1] += 1

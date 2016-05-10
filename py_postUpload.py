@@ -162,7 +162,7 @@ def findAllMissing(filenamesFile=FILENAME_FILE, configPath=u'config.json'):
                 'PhoId': files[name]['PhoId'],
                 'MulId': files[name]['MulId'],
                 'CommonsFile': '%s%s' % (prefix, name.replace(' ', '_'))
-                }
+            }
 
     # output files
     foundHeader = u'PhoId|MulId|CommonsFile'

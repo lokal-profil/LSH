@@ -77,7 +77,7 @@ class Common:
         '''
         if key in dDict.keys():
             if value in dDict[key]:
-                dcounter = dcounter+1
+                dcounter += 1
             else:
                 dDict[key].append(value)
         else:
@@ -287,9 +287,9 @@ class Common:
                 if date[-2:] == u'00':
                     v = u'century'
                     if len(date) == 4:
-                        return u'{{other date|%s|%r}}' % (v, int(date[:2])+1)
+                        return u'{{other date|%s|%r}}' % (v, int(date[:2]) + 1)
                     elif len(date) == 9:
-                        return u'{{other date|-|{{other date|%s|%s}}|{{other date|%s|%s}}}}' % (v, int(date[:2])+1, v, int(date[5:7])+1)
+                        return u'{{other date|-|{{other date|%s|%s}}|{{other date|%s|%s}}}}' % (v, int(date[:2]) + 1, v, int(date[5:7]) + 1)
                     else:
                         return None
                 else:
@@ -347,15 +347,15 @@ class Common:
                         return None, None, None
                     i = 0
                     while(diff > 0):
-                        i = i+1
+                        i += 1
                         uEnd = contents.replace(bEnd, dummy, i).find(end, uStart)
                         if uEnd < 0:
                             print 'Positive (final) bracket missmatch for: %s <--> %s' % (bStart, bEnd)
                             return None, None, None
                         diff = contents[uStart:uEnd].count(bStart) - contents[uStart:uEnd].count(bEnd)
             unit = contents[uStart:uEnd]
-            lead_in = contents[:uStart-len(start)]
-            remainder = contents[uEnd+len(end):]
+            lead_in = contents[:uStart - len(start)]
+            remainder = contents[uEnd + len(end):]
             return (unit, remainder, lead_in)
         else:
             return '', '', ''

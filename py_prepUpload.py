@@ -213,7 +213,7 @@ def negatives(path):
             f.close()
             count += 1
             if count % 10 == 0:
-                output(u'%d files inverted (%d)' % (count, count+skipcount))
+                output(u'%d files inverted (%d)' % (count, count + skipcount))
 
 
 def negPosInfo(infoFile, filename):

@@ -168,7 +168,7 @@ def getDescFromPhoBes(text):
                 sep = None
                 pos2 = -1
                 for separator in separators:
-                    posEnd = text.find(separator, pos+len(b))
+                    posEnd = text.find(separator, pos + len(b))
                     if posEnd > 0 and (posEnd < pos2 or pos2 < 0):
                         sep = separator.rstrip()
                         pos2 = posEnd
@@ -338,7 +338,7 @@ def shortenString(text):
                 if pos < 0:
                     # try something else
                     if len(text) > MAXLENGTH:
-                        text = u'%s...' % text[:MAXLENGTH-3]
+                        text = u'%s...' % text[:MAXLENGTH - 3]
                     return text
     return shortenString(text[:pos].strip(badchar))
 
@@ -402,7 +402,7 @@ def commonsOutput(descriptions, mappingFile, allEntries=None):
         # Add regular breaks
         counter += 1
         if counter % chunkSize == 0:
-            fOut.write(u'|}\n\n' + chunkStart % (counter, counter+chunkSize))
+            fOut.write(u'|}\n\n' + chunkStart % (counter, counter + chunkSize))
 
         # write row
         descr = descriptions[phoId]['descr']

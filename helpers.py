@@ -9,7 +9,7 @@
 import codecs
 import os
 import json  # needed by loadJsonConfig
-import urllib2  # needed by urldecodeUTF8()
+import urllib2  # needed by urldecode_utf8()
 import re  # neeeded by external2internalLink()
 import sys  # needed by convertFromCommandline()
 import locale  # needed by convertFromCommandline()
@@ -230,7 +230,7 @@ def promptManualUpdate(d, tmpFile, tmpHeader, keyCol):
     return d
 
 
-def urldecodeUTF8(url):
+def urldecode_utf8(url):
     """
     Given a utf8 unicode urlencoded url this returns the correct,
     utf8 encoded, unquoted url. E.g:

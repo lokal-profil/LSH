@@ -301,7 +301,7 @@ def analysePhotoAll(f, file_in):
         phoMul = u'%s:%s' % (phoId, mulId)
         if source:
             if '%' in source:
-                source = helpers.urldecodeUTF8(source)
+                source = helpers.urldecode_utf8(source)
             internal = helpers.external2internalLink(source,
                                                      project='wikimedia')
             if not internal.startswith('[[:commons:File:'):

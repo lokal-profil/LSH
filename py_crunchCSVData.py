@@ -265,7 +265,7 @@ def makePhotoAll(photoAllFile, photo_multi, logFile):
 
         # simplify link
         if '%' in link:
-            link = helpers.urldecodeUTF8(link)
+            link = helpers.urldecode_utf8(link)
         link = helpers.external2internalLink(link, project='wikimedia')
         link = link[len('[[:commons:File:'):-len(']]')]
         v['PhoSystematikS'] = link
@@ -796,7 +796,7 @@ def ereignis_objDaten(ereignisFile, objDaten, logFile):
 
         # handle urls
         if u'%' in url:
-            url = helpers.urldecodeUTF8(url)
+            url = helpers.urldecode_utf8(url)
         # convert external links to internal
         if 'wikipedia' in url:
             url = helpers.external2internalLink(url)

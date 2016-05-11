@@ -10,7 +10,7 @@ import codecs
 import os
 import json  # needed by loadJsonConfig
 import urllib2  # needed by urldecode_utf8()
-import re  # neeeded by external2internalLink()
+import re  # neeeded by external_2_internal_link()
 import sys  # needed by convertFromCommandline()
 import locale  # needed by convertFromCommandline()
 import WikiApi as wikiApi  # needed by openConnection()
@@ -244,7 +244,7 @@ def urldecode_utf8(url):
     return urllib2.unquote(url.encode('ascii')).decode('utf8')
 
 
-def external2internalLink(url, project='wikipedia'):
+def external_2_internal_link(url, project='wikipedia'):
     """
     Given an external link to wikipedia this returns a wikified
     interwikilink. E.g.

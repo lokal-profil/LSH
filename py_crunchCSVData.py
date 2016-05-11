@@ -266,7 +266,7 @@ def makePhotoAll(photoAllFile, photo_multi, logFile):
         # simplify link
         if '%' in link:
             link = helpers.urldecode_utf8(link)
-        link = helpers.external2internalLink(link, project='wikimedia')
+        link = helpers.external_2_internal_link(link, project='wikimedia')
         link = link[len('[[:commons:File:'):-len(']]')]
         v['PhoSystematikS'] = link
     output('PhotoAll reduced from %d to %d entries' % (originalSize,
@@ -799,7 +799,7 @@ def ereignis_objDaten(ereignisFile, objDaten, logFile):
             url = helpers.urldecode_utf8(url)
         # convert external links to internal
         if 'wikipedia' in url:
-            url = helpers.external2internalLink(url)
+            url = helpers.external_2_internal_link(url)
         elif url:
             flog.write(u'weird url: %s\n' % url)
         v['ErgArtS'] = url

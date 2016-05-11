@@ -104,7 +104,51 @@ class TestUrldecodeUtf8(unittest.TestCase):
     def test_urldecode_utf8_on_empty_string_returns_empty_string(self):
         self.assertEquals(helpers.urldecode_utf8(''), '')
 
-    def test_urldecode_utf8_iso_string(self):
+    def test_urldecode_utf8_plain_string(self):
+        input_value = u'http://Prinsessan_Eugenie_av_Sverige_och_Norge'
+        expected = u'http://Prinsessan_Eugenie_av_Sverige_och_Norge'
+        self.assertEquals(helpers.urldecode_utf8(input_value), expected)
+
+    def test_urldecode_utf8_encoded_string(self):
         input_value = u'http://Prinsessan_Eug%C3%A9nie_av_Sverige_och_Norge'
         expected = u'http://Prinsessan_Eug\xe9nie_av_Sverige_och_Norge'
         self.assertEquals(helpers.urldecode_utf8(input_value), expected)
+
+
+class TestExternal2internalLink(unittest.TestCase):
+
+    """Test external_2_internal_link()."""
+
+    def test_external_2_internal_link_on_empty_string(self):
+        self.assertEquals(helpers.external_2_internal_link(''), '')
+
+    def test_external_2_internal_link_svwiki_string(self):
+        input_value = u'http://sv.wikipedia.org/wiki/Some_title'
+        expected = u'[[:sv:Some title]]'
+        self.assertEquals(helpers.external_2_internal_link(input_value),
+                          expected)
+
+    def test_external_2_internal_link_https_svwiki_string(self):
+        input_value = u'https://sv.wikipedia.org/wiki/Some_title'
+        expected = u'[[:sv:Some title]]'
+        self.assertEquals(helpers.external_2_internal_link(input_value),
+                          expected)
+
+    def test_external_2_internal_link_non_wiki_url_string(self):
+        input_value = u'http://not.a.wiki/Some_title'
+        expected = u'http://not.a.wiki/Some_title'
+        self.assertEquals(helpers.external_2_internal_link(input_value),
+                          expected)
+
+    def test_external_2_internal_link_non_wikipedia_string(self):
+        input_value = u'http://se.wikimedia.org/wiki/Some_title'
+        expected = u'http://se.wikimedia.org/wiki/Some_title'
+        self.assertEquals(helpers.external_2_internal_link(input_value),
+                          expected)
+
+    def test_external_2_internal_link_non_wikipedia_string_with_param(self):
+        input_value = u'http://commons.wikimedia.org/wiki/Some_title'
+        expected = u'[[:commons:Some title]]'
+        result = helpers.external_2_internal_link(input_value,
+                                                  project='wikimedia')
+        self.assertEquals(result, expected)

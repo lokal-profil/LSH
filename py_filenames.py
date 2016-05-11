@@ -21,8 +21,8 @@ LOG_SUBFOLDER = u'logs'
 MAPPING_FOLDER = u'mappings'
 
 
-def run(folder=CSV_FOLDER, mapping=MAPPING_FOLDER, filenameP=PHOTO_FILE,
-        filenameO=OBJDATEN_FILE, outfolder=None):
+def run(folder=None, mapping=None, filenameP=None,
+        filenameO=None, outfolder=None):
     """
     Generates filenames from photo and object descriptions
     :param folder: the folder containing csv files
@@ -32,9 +32,12 @@ def run(folder=CSV_FOLDER, mapping=MAPPING_FOLDER, filenameP=PHOTO_FILE,
     :param outfolder: if provided output is not put in default folder
     :return: None
     """
-    # set unless overridden
-    if outfolder is None:
-        outfolder = folder
+    # set defaults unless overridden
+    folder = folder or CSV_FOLDER
+    mapping = mapping or MAPPING_FOLDER
+    filenameP = filenameP or PHOTO_FILE
+    filenameO = filenameO or OBJDATEN_FILE
+    outfolder = outfolder or folder
 
     # create target folders if they don't exist
     targetFolders = (mapping, os.path.join(outfolder, LOG_SUBFOLDER))

@@ -19,7 +19,7 @@ FILENAMES = os.path.join(DATA_DIR, u'filenames.csv')
 FILEEXTS = (u'.tif', u'.jpg', u'.tiff', u'.jpeg')
 
 
-def moveFiles(target, tree, nameToPho, path=u'.', fileExts=FILEEXTS):
+def moveFiles(target, tree, nameToPho, path=u'.', fileExts=None):
     """
     Move all files in the given dir and subdirs of the specified
     filetypes to the target dir.
@@ -31,6 +31,9 @@ def moveFiles(target, tree, nameToPho, path=u'.', fileExts=FILEEXTS):
     :param filetypes: tuple of allowed file extensions (defaults to FILEEXTS)
     :return: int, int (moved files, total files)
     """
+    # set defaults unless overridden
+    fileExts = fileExts or FILEEXTS
+
     baseDir, subdir = os.path.split(path)
     # create target if it doesn't exist
     if not os.path.isdir(target):
@@ -50,7 +53,7 @@ def moveFiles(target, tree, nameToPho, path=u'.', fileExts=FILEEXTS):
     return (counter, len(files))
 
 
-def makeHitlist(filenamesFile=FILENAMES):
+def makeHitlist(filenamesFile=None):
     """
     Goes through the allowed filenames and builds up a treestructure
     {directory: [filenames]} as well as a look-up dictionary for filenames
@@ -58,6 +61,9 @@ def makeHitlist(filenamesFile=FILENAMES):
     :param filenamesFile: filenames data file
     :return: dict, dict
     """
+    # set defaults unless overridden
+    filenamesFile = filenamesFile or FILENAMES
+
     # load filenames file
     filenamesHeader = 'PhoId|MulId|MulPfadS|MulDateiS|filename|ext'
     filenames = helpers.csvFileToDict(filenamesFile, 'PhoId', filenamesHeader)
@@ -76,7 +82,7 @@ def makeHitlist(filenamesFile=FILENAMES):
     return (tree, nameToPho)
 
 
-def moveHits(path, filenamesFile=FILENAMES):
+def moveHits(path, filenamesFile=None):
     """
     Goes through the root export directory to find any matching file and
     moves these to a lower case version of the directory. This flattens
@@ -86,6 +92,9 @@ def moveHits(path, filenamesFile=FILENAMES):
     :param filenamesFile: filenames data file
     :return: None
     """
+    # set defaults unless overridden
+    filenamesFile = filenamesFile or FILENAMES
+
     # Find and move all relevant files
     tree, nameToPho = makeHitlist(filenamesFile)
     subdirs = []
@@ -118,8 +127,8 @@ def moveHits(path, filenamesFile=FILENAMES):
         removeEmptyDirectories(subdir, top=False)
 
 
-def makeAndRename(path, dataDir=DATA_DIR, connectionsDir=CONNECTIONS_DIR,
-                  filenameFile=FILENAMES, batchCat=None):
+def makeAndRename(path, dataDir=None, connectionsDir=None,
+                  filenameFile=None, batchCat=None):
     """
     Create info file and rename image file
     :param path: relative path to the directory in which to process files
@@ -128,6 +137,11 @@ def makeAndRename(path, dataDir=DATA_DIR, connectionsDir=CONNECTIONS_DIR,
                      to all files.
     :return: None
     """
+    # set defaults unless overridden
+    dataDir = dataDir or DATA_DIR
+    connectionsDir = connectionsDir or CONNECTIONS_DIR
+    filenameFile = filenameFile or FILENAMES
+
     # logfile
     logfile = os.path.join(path, u'¤generator.log')
     flog = codecs.open(logfile, 'a', 'utf-8')

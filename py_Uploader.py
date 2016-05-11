@@ -14,7 +14,7 @@ FILEEXTS = (u'.tif', u'.jpg', u'.tiff', u'.jpeg')
 
 
 def upFiles(inPath, cutoff=None, target=u'Uploaded', configPath=u'config.json',
-            fileExts=FILEEXTS, test=False):
+            fileExts=None, test=False):
     """
     Upload all matched files in the supplied directory to Commons and
     moves any processed files to the target folder.
@@ -26,6 +26,9 @@ def upFiles(inPath, cutoff=None, target=u'Uploaded', configPath=u'config.json',
     :param test: set to True to test but not upload
     :return: None
     """
+    # set defaults unless overridden
+    fileExts = fileExts or FILEEXTS
+
     comApi = helpers.openConnection(configPath, apiClass=wikiApi.CommonsApi,
                                     verbose=True)
 

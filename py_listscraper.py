@@ -173,11 +173,19 @@ def parseFilenameEntries(contents):
     return units, allEntries
 
 
-def run(outPath=OUT_PATH, dataPath=DATA_PATH, mappingsPath=MAPPING_FOLDER,
-        commonsPrefix=COMMONS_PREFIX, configPath=u'config.json'):
-    # Define a list of pages and output files
-    # where page has the format Commons:Batch uploading/LSH/*
-    # and outputfile the format: commons-*.csv
+def run(outPath=None, dataPath=None, mappingsPath=None,
+        commonsPrefix=None, configPath=u'config.json'):
+    """
+    Define a list of pages and output files
+    where page has the format Commons:Batch uploading/LSH/*
+    and outputfile the format: commons-*.csv
+    """
+    # set defaults unless overridden
+    outPath = outPath or OUT_PATH
+    dataPath = dataPath or DATA_PATH
+    mappingsPath = mappingsPath or MAPPING_FOLDER
+    commonsPrefix = commonsPrefix or COMMONS_PREFIX
+
     pages = {u'People': u'People',
              u'Events': u'Events',
              u'ObjKeywords': u'ObjKeywords',

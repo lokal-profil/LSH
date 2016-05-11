@@ -20,6 +20,7 @@ fixFiles() - converts orignal csv to cleaned up csv, run from main folder
 import codecs
 import os
 import json
+import helpers
 import re  # only needed for hackfix
 
 CSV_DIR_ORIG = u'original_csv'
@@ -27,7 +28,7 @@ CSV_DIR_CLEAN = u'clean_csv'
 CSV_CONFIG = u'csv_config.json'
 
 
-def fixFiles(in_path=CSV_DIR_ORIG, out_path=CSV_DIR_CLEAN, encoding='utf-16'):
+def fixFiles(in_path=None, out_path=None, encoding='utf-16'):
     """
     Checks that the required files are present, converts them from utf-16,
     replaces \r\n linbreaks, replaces in-cell linebreaks with <!>,
@@ -38,14 +39,20 @@ def fixFiles(in_path=CSV_DIR_ORIG, out_path=CSV_DIR_CLEAN, encoding='utf-16'):
     :param encoding: encoding of the original files (optional)
     :return: None
     """
+    # set defaults unless overridden
+    in_path = in_path or CSV_DIR_ORIG
+    out_path = out_path or CSV_DIR_CLEAN
+
     # convert to unicode if not the case
     if type(in_path) == str:
         in_path = unicode(in_path)
     if type(out_path) == str:
         out_path = unicode(out_path)
+
     # check that path is a directory and all files are present
     if not os.path.isdir(in_path):
-        print u"Given path \"%s\" is not a directory" % in_path
+        raise Exception(u"The provided path \"%s\" is not a directory"
+                        % in_path)
 
     # read csv files from config
     f = codecs.open(CSV_CONFIG, 'r', 'utf-8')
@@ -54,8 +61,8 @@ def fixFiles(in_path=CSV_DIR_ORIG, out_path=CSV_DIR_CLEAN, encoding='utf-16'):
 
     for k, v in csvFiles.iteritems():
         if v not in os.listdir(in_path):
-            print u"Required file \"%s\" is not present in " \
-                  u"\"%s\"" % (v, in_path)
+            raise Exception(u"Required file \"%s\" is not present in "
+                            u"\"%s\"" % (v, in_path))
     # create target if it doesn't exist
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
@@ -158,7 +165,9 @@ if __name__ == '__main__':
     if not argv:
         fixFiles()
     elif len(argv) == 2:
-        fixFiles(in_path=argv[0], out_path=argv[1])
+        in_path = helpers.convertFromCommandline(argv[0])
+        out_path = helpers.convertFromCommandline(argv[1])
+        fixFiles(in_path=in_path, out_path=out_path)
     else:
         print usage
 # EoF

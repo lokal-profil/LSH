@@ -18,12 +18,16 @@ CSV_DIR_CLEAN = u'clean_csv'
 CSV_DIR_CRUNCH = u'data'
 
 
-def run(in_path=CSV_DIR_CLEAN, out_path=CSV_DIR_CRUNCH):
+def run(in_path=None, out_path=None):
     """
     main process for crunching all of the files
     :param in_path: path to directory containing clean csv files
     :param out_path: path to direcotry in whihc to store output
     """
+    # set defaults unless overridden
+    in_path = in_path or CSV_DIR_CLEAN
+    out_path = out_path or CSV_DIR_CRUNCH
+
     # convert to unicode if not the case
     if type(in_path) == str:
         in_path = unicode(in_path)

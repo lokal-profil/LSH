@@ -44,11 +44,25 @@ def openConnection(configPath, apiClass=wikiApi.WikiApi, verbose=None):
     return wApi
 
 
+def open_csv_file(filename, delimiter='|', codec='utf-8'):
+    """
+    Open a csv file and returns the header row plus following lines.
+
+    :param filename: the file to open
+    :param delimiter: the used delimiter (defaults to "|")
+    :param codec: the used encoding (defaults to "utf-8")
+    :return: tuple(array(str), array(str))
+    """
+    lines = codecs.open(filename, 'r', codec).read().split('\n')
+    header = lines.pop(0).split(delimiter)
+    return header, lines
+
+
 def csvFileToDict(filename, keyCol, headerCheck, unique=True, keep=None,
                   lists=None, delimiter='|', listDelimiter=';', codec='utf-8'):
     """
-    Opens a given encoded csv file and returns a dict of dicts, using
-    the header row for keys
+    Open a csv file and returns a dict of dicts, using the header row for keys.
+
     :param filename: the file to open
     :param keyCol: the (label of the) column to use as a key in the dict
                    str or tuple of strs to combine (with a ":")
@@ -68,12 +82,12 @@ def csvFileToDict(filename, keyCol, headerCheck, unique=True, keep=None,
         raise MyError('keyCol must be tuple or str')
 
     # load and parse file
-    lines = codecs.open(filename, 'r', codec).read().split('\n')
-    header = lines.pop(0).split(delimiter)
+    header, lines = open_csv_file(filename, delimiter=delimiter, codec=codec)
 
     # verify header == headerCheck (including order)
     if headerCheck.split(delimiter) != header:
-        raise MyError("Header missmatch")
+        raise MyError("Header missmatch.\nExpected: %s\nFound:%s"
+                      % (headerCheck, delimiter.join(header)))
 
     # convert txt key to numeric key
     try:
@@ -144,7 +158,8 @@ def csvFileToDict(filename, keyCol, headerCheck, unique=True, keep=None,
 def dictToCsvFile(filename, d, header, delimiter='|', listDelimiter=';',
                   codec='utf-8'):
     """
-    Saves a dict as csv file given a header string encoding the columns
+    Save a dict as csv file given a header string encoding the columns.
+
     :param filename: the target file
     :param d: the dictionary to convert
     :param header: a string giving parameters to output and their order

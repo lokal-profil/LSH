@@ -30,7 +30,12 @@ OUT_PATH = u'mappings'
 CSV_FILES = None
 
 
-def run(in_path=IN_PATH, out_path=OUT_PATH, data_path=DATA_PATH):
+def run(in_path=None, out_path=None, data_path=None):
+    # set defaults unless overridden
+    in_path = in_path or IN_PATH
+    out_path = out_path or OUT_PATH
+    data_path = data_path or DATA_PATH
+
     # Load all relevant files
     A = MakeInfo()
     A.readInLibraries(folder=data_path)

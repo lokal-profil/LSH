@@ -5,20 +5,11 @@
 # TODO: Reuse the common common.py and split off anything LSH specific
 #
 import codecs
+import helpers
 import operator  # needed by sortedDict
 
 
 class Common:
-    @staticmethod
-    def openFile(filename, delimiter='|', codec='utf-8'):
-        '''
-        opens a given pipe-separated csv file (utf-8) and returns the header
-        row plus following lines)
-        '''
-        lines = codecs.open(filename, 'r', codec).read().split('\n')
-        header = lines.pop(0).split(delimiter)
-        return header, lines
-
     @staticmethod
     def openFileAsDictList(filename, delimiter='|', codec='utf-8',
                            headerCheck=None):
@@ -26,8 +17,8 @@ class Common:
         opens a given pipe-separated csv file (utf-8)
         and returns a list of dicts, using header row for keys)
         '''
-        lines = codecs.open(filename, 'r', codec).read().split('\n')
-        header = lines.pop(0).split(delimiter)
+        header, lines = helpers.open_csv_file(
+            filename, delimiter=delimiter, codec=codec)
 
         # verify header works
         if headerCheck is not None and headerCheck != header:
@@ -99,7 +90,7 @@ class Common:
         turn a dict
         '''
         listcols = isinstance(idcol, list)
-        header, lines = Common.openFile(filename)
+        header, lines = helpers.open_csv_file(filename)
         dDict = {}
         unique = True
         for l in lines:

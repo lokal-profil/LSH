@@ -34,7 +34,12 @@ CSV_DIR_CLEAN = u'clean_csv'
 LOG_FILE = u'¤csv_analys.log'
 
 
-def run(in_path=CSV_DIR_CLEAN, log_file=LOG_FILE):
+def run(in_path=None, log_file=None):
+
+    # set defaults unless overridden
+    in_path = in_path or CSV_DIR_CLEAN
+    log_file = log_file or LOG_FILE
+
     # stop if in_path doesn't exist
     if not os.path.isdir(in_path):
         print u'%s is not a valid path' % in_path
@@ -66,7 +71,7 @@ def analyseYear(f, file_in):
     verifies that the year can be interpreted
     @todo: become stricter. Disallow space as year separator
     '''
-    header, lines = Common.openFile(file_in)
+    header, lines = helpers.open_csv_file(file_in)
     data = []
     exhibits = []
     # AobId
@@ -139,7 +144,7 @@ def analysePhoto(A, f, file_in):
     Verifies that all licenses and sources can be parsed correctly and
     that there are no duplicates
     '''
-    header, lines = Common.openFile(file_in)
+    header, lines = helpers.open_csv_file(file_in)
     licenses = []
     sources = []
     mulls = []
@@ -205,7 +210,7 @@ def analyseMulti(f, file_in):
     Identifies dupes
     identifies images with filetype in the filename
     '''
-    header, lines = Common.openFile(file_in)
+    header, lines = helpers.open_csv_file(file_in)
     ids = []
     mults = []
     bad = []
@@ -281,7 +286,7 @@ def analysePhotoAll(f, file_in):
     """
     Check that all PhoSystematikS are commonsfiles and each is unique
     """
-    header, lines = Common.openFile(file_in)
+    header, lines = helpers.open_csv_file(file_in)
     badUrls = []
     dupes = []
     sources = {}

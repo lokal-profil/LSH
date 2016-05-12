@@ -424,7 +424,8 @@ def insufficient(text):
     :param text: test string
     :return: str
     """
-    badStrings = [u'Detalj', u'Helbild', u'Målning', u'Reprofoto', u'Ritning']
+    badStrings = [u'Detalj', u'Helbild', u'Målning', u'Reprofoto',
+                  u'Ritning', u'Bok']
     if text in badStrings:
         text = u'<span style="color:red">%s</span>' % text
     return text

@@ -1,0 +1,14 @@
+{
+    "ausstellung": "Ausstellung X.0.csv",
+    "kuenstler": "kuenstler X.0.csv",
+    "objDaten": "ObjDaten X.0.csv",
+    "objMass": "ObjMass X.0.csv",
+    "photo": "photo X.0.csv",
+    "stichwort": "Photo_stichwort X.0.csv",
+    "ereignis": "Ereignis X.0.csv",
+    "multimedia": "Multimedia X.0.csv",
+    "objDatenSam": "ObjDaten - samhörande nr X.0.csv",
+    "objMultiple": "ObjMultiple X.0.csv",
+    "photoObjDaten": "Photo - ObjDaten X.0.csv",
+    "photoAll": "Photo X.0 - ej filtrerad.csv"
+}

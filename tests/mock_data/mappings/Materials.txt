@@ -1,4 +1,4 @@
-<!--From: ObjMultiple 3.0.csv -->
+<!--From: ObjMultiple X.0.csv -->
 commonsconnection is the relevant parameter for {{tl|technique}}. Don't forget to add a translation in Swedish at [[Template:Technique/sv]]
 
 Set commonsconnection of irrelevant technique/material to "-".

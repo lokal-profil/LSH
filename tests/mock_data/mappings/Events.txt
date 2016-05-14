@@ -1,4 +1,4 @@
-<!--From: Ereignis 3.0.csv -->''wikipedia-link'' are used for descriptive texts whereas ''commonsconnection'' is a relevant category on commons.
+<!--From: Ereignis X.0.csv -->''wikipedia-link'' are used for descriptive texts whereas ''commonsconnection'' is a relevant category on commons.
 
 Set commonsconnection of irrelevant events to "-"
 

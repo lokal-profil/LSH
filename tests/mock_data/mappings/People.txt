@@ -1,4 +1,4 @@
-<!--From: kuenstler 3.0.csv -->
+<!--From: kuenstler X.0.csv -->
 ''wikipedia-link'' is used for descriptive texts whereas creator is a creator template on commons and ''commoncat'' is a relevant category on commons.
 
 Set commonsconnection of irrelevant events to "-". Note that creator is only relevant for artists.

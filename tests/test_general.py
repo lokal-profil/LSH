@@ -1,11 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8  -*-
 #
-# A testing suite for the general steps involved in the upload preparation
-# This only tests the big overall functions rather than any individual ones.
-# Furthermore it is primarily intended to check if a code change leads to
-# a change in the output, rather than if the output is actually correct.
-#
 import codecs
 import os
 import py_crunchCSVData as Crunch
@@ -14,7 +9,8 @@ import py_filenames as Filenames
 import py_prepUpload as Prep
 import py_listscraper as Listscraper
 import shutil
-import helpers
+import unittest
+CSV_CONFIG = u'tests/mock_data/csv_config.json'
 DIR_CLEAN = u'tests/mock_data/clean_csv'
 DIR_DATA = u'tests/mock_data/data'
 DIR_MAPPINGS = u'tests/mock_data/mappings'
@@ -30,36 +26,6 @@ DIR_NEGATIVES_INPUT = u'tests/mock_data/negatives/input/'
 DIR_NEGATIVES_OUTPUT = u'tests/mock_data/negatives/output/'
 COMMONS_PREFIX = u'User:LSHuploadBot/testdata'
 DIR_TMP = u'tests/tmp'
-
-
-def areEqualUpToOrder(a, b):
-    """
-    compares two lists and checks that they are equal, up to the order
-    of the lines
-    :param a: a list
-    :param b: a list
-    :return: bool
-    """
-    diff1 = set(a) - set(b)
-    diff2 = set(b) - set(a)
-    return (len(diff1) + len(diff2)) == 0
-
-
-def areEqualUpToOrderWithLists(a, b):
-    """
-    compares two lists and checks that they are equal, up to the order
-    of the lines, and the order of any lists
-    :param a: a list
-    :param b: a list
-    :return: bool
-    """
-    diff_old = list(set(a) - set(b))
-    diff_new = list(set(b) - set(a))
-    for i, e in enumerate(diff_old):
-        diff_old[i] = sortAnythingListlike(e)
-    for i, e in enumerate(diff_new):
-        diff_new[i] = sortAnythingListlike(e)
-    return areEqualUpToOrder(diff_new, diff_old)
 
 
 def sortAnythingListlike(row, colDelimiter='|', listDelimiter=';'):
@@ -129,195 +95,217 @@ def getFiles(path, fileExts):
     return requestedFiles
 
 
-def test_crunch(func):
-    """
-    Check that crunching the files gives the right results
-    """
-    files = ('photo_multimedia_etc.csv', 'stichwort_trim.csv',
-             'objMass_trim.csv', 'objMultiple_trim.csv', 'objDaten_etc.csv',
-             'ausstellung_trim.csv', 'ereignis_trim.csv', 'kuenstler_trim.csv',
-             'photoAll.csv')
-    func(in_path=DIR_CLEAN, out_path=DIR_TMP)
-    for f in files:
-        expected = getLines(f, DIR_DATA)
-        actual = getLines(f, DIR_TMP)
-        if not areEqualUpToOrderWithLists(expected, actual):
-            print u'test_crunch failed for %s' % f
+class TestGeneral(unittest.TestCase):
 
-    # clean up
-    shutil.rmtree(DIR_TMP)
-
-
-def test_mappings(func):
     """
-    Checks that creating the mappings gives the right results
+    Testing suite for the general steps involved in the upload preparation.
+
+    This only tests the big overall functions rather than any individual ones.
+    Furthermore it is primarily intended to check if a code change leads to
+    a change in the output, rather than if the output is actually correct.
     """
-    files = ('Events.txt', 'Keywords.txt', 'Materials.txt', 'ObjKeywords.txt',
-             'People.txt', 'Photographers.txt', 'Places.txt')
-    func(in_path=DIR_OLD_CONNECTIONS, out_path=DIR_TMP, data_path=DIR_DATA)
-    for f in files:
+
+    def assertEqualUpToOrder(self, a, b):
+        """
+        compares two lists and checks that they are equal, up to the order
+        of the lines
+        :param a: a list
+        :param b: a list
+        """
+        diff1 = set(a) - set(b)
+        diff2 = set(b) - set(a)
+        num = len(diff1) + len(diff2)
+        if num != 0:
+            raise AssertionError("Lists differ by %d entries" % num)
+
+    def assertEqualUpToOrderWithLists(self, a, b):
+        """
+        compares two lists and checks that they are equal, up to the order
+        of the lines, and the order of any lists
+        :param a: a list
+        :param b: a list
+        """
+        diff_old = list(set(a) - set(b))
+        diff_new = list(set(b) - set(a))
+        for i, e in enumerate(diff_old):
+            diff_old[i] = sortAnythingListlike(e)
+        for i, e in enumerate(diff_new):
+            diff_new[i] = sortAnythingListlike(e)
+        self.assertEqualUpToOrder(diff_new, diff_old)
+
+    def assertFileStructure(self, expected_dir, temp_dir):
+        """Compare the file strucuture of two directories."""
+        expected = getCleanFileTree(expected_dir)
+        actual = getCleanFileTree(temp_dir)
+        try:
+            self.assertEquals(expected, actual)
+        except AssertionError as e:
+            e.message = "Tree structure differs: %s" % e.message
+            raise
+
+    def assertFileContents(self, expected_dir, temp_dir, exts):
+        """Compare file contents for all files in two directories.
+        :param exts: file ending string or tuple of such
+        """
+        # check info file contents
+        files = getFiles(expected_dir, exts)
+        for f in files:
+            expected = getContents(f, expected_dir)
+            actual = getContents(f, temp_dir)
+            try:
+                self.assertEquals(expected, actual)
+            except AssertionError as e:
+                e.message = "File contents differ for %s: %s" % (f, e.message)
+                raise
+
+    def tearDown(self):
+        # clean up
+        shutil.rmtree(DIR_TMP)
+
+    def test_crunch(self):
+        """Check that crunching the files gives the right results."""
+        files = (
+            'photo_multimedia_etc.csv', 'stichwort_trim.csv',
+            'objMass_trim.csv', 'objMultiple_trim.csv', 'objDaten_etc.csv',
+            'ausstellung_trim.csv', 'ereignis_trim.csv', 'kuenstler_trim.csv',
+            'photoAll.csv')
+        Crunch.helpers.VERBOSE = False  # otherwise crunch stops at prompt
+        Crunch.run(in_path=DIR_CLEAN, out_path=DIR_TMP)
+        for f in files:
+            expected = getLines(f, DIR_DATA)
+            actual = getLines(f, DIR_TMP)
+            try:
+                self.assertEqualUpToOrderWithLists(expected, actual)
+            except AssertionError:
+                print u'test_crunch failed for %s' % f
+                raise
+
+    def test_mappings(self):
+        """
+        Checks that creating the mappings gives the right results
+        """
+        files = (
+            'Events.txt', 'Keywords.txt', 'Materials.txt', 'ObjKeywords.txt',
+            'People.txt', 'Photographers.txt', 'Places.txt')
+        Mappings.CSV_CONFIG = CSV_CONFIG  # override default in a dirty way
+        Mappings.run(in_path=DIR_OLD_CONNECTIONS,
+                     out_path=DIR_TMP, data_path=DIR_DATA)
+        for f in files:
+            expected = getLines(f, DIR_MAPPINGS)
+            actual = getLines(f, DIR_TMP)
+            try:
+                self.assertEqualUpToOrderWithLists(expected, actual)
+            except AssertionError:
+                print u'test_mappings failed for %s' % f
+                raise
+
+    def test_filenames(self):
+        """
+        Checks that creating filenames gives the right results
+        @toDO: Add something triggering <span>
+        """
+        Filenames.run(folder=DIR_DATA, mapping=DIR_TMP, outfolder=DIR_TMP)
+
+        # test mapping
+        f = 'Filenames.txt'
         expected = getLines(f, DIR_MAPPINGS)
         actual = getLines(f, DIR_TMP)
-        if not areEqualUpToOrderWithLists(expected, actual):
-            print u'test_mappings failed for %s' % f
+        try:
+            self.assertEqualUpToOrder(expected, actual)
+        except AssertionError:
+            print u'test_filenames failed for %s' % f
+            raise
 
-    # clean up
-    shutil.rmtree(DIR_TMP)
+        # test data
+        f = u'filenames.csv'
+        expected = getLines(f, DIR_DATA)
+        actual = getLines(f, DIR_TMP)
+        try:
+            self.assertEqualUpToOrder(expected, actual)
+        except AssertionError:
+            print u'test_filenames failed for %s' % f
+            raise
 
+    def test_listscraper(self):
+        """
+        Checks that scraping lists gives the right results
+        """
+        # copy mock files to temporary folder since these are changed
+        shutil.copytree(DIR_LISTSCRAPE_INPUT, DIR_TMP)
 
-def test_filenames(func):
-    """
-    Checks that creating filenames gives the right results
-    @toDO: Add something triggering <span>
-    """
-    func(folder=DIR_DATA, mapping=DIR_TMP, outfolder=DIR_TMP)
+        # run test
+        Listscraper.run(outPath=DIR_TMP, dataPath=DIR_TMP,
+                        mappingsPath=DIR_TMP, commonsPrefix=COMMONS_PREFIX)
 
-    # test mapping
-    f = 'Filenames.txt'
-    expected = getLines(f, DIR_MAPPINGS)
-    actual = getLines(f, DIR_TMP)
-    if not areEqualUpToOrder(expected, actual):
-        print u'test_filenames failed for %s' % f
+        # check file structure
+        self.assertFileStructure(DIR_LISTSCRAPE_OUTPUT, DIR_TMP)
 
-    # test data
-    f = u'filenames.csv'
-    expected = getLines(f, DIR_DATA)
-    actual = getLines(f, DIR_TMP)
-    if not areEqualUpToOrder(expected, actual):
-        print u'test_filenames failed for %s' % f
+        # check info file contents
+        self.assertFileContents(DIR_LISTSCRAPE_OUTPUT, DIR_TMP,
+                                ('.csv', '.txt'))
 
-    # clean up
-    shutil.rmtree(DIR_TMP)
+    def test_moveHits(self):
+        """
+        Checks that finding and moving images gives the right results
+        """
+        # copy mock files to temporary folder since these are changed
+        shutil.copytree(DIR_IMAGES_FOLDERS_INPUT, DIR_TMP)
+        shutil.copyfile(os.path.join(DIR_DATA, u'filenames.noExts.csv'),
+                        os.path.join(DIR_TMP, u'filenames.csv'))
 
+        # run test
+        filenameFile = os.path.join(DIR_TMP, u'filenames.csv')
+        Prep.moveHits(DIR_TMP, filenameFile)
 
-def test_listscraper(func):
-    """
-    Checks that scraping lists gives the right results
-    """
-    # copy mock files to temporary folder since these are changed
-    shutil.copytree(DIR_LISTSCRAPE_INPUT, DIR_TMP)
+        # check file structure
+        self.assertFileStructure(DIR_IMAGES_FOLDERS_OUTPUT, DIR_TMP)
 
-    # run test
-    func(outPath=DIR_TMP, dataPath=DIR_TMP, mappingsPath=DIR_TMP,
-         commonsPrefix=COMMONS_PREFIX)
+        # test extension data
+        expected = getLines(u'filenames.Exts.csv', DIR_DATA)
+        actual = getLines(u'filenames.csv', DIR_TMP)
+        try:
+            self.assertEqualUpToOrder(expected, actual)
+        except AssertionError:
+            print u'test_moveHits failed for filenames.csv'
+            raise
 
-    # check file structure
-    expected = getCleanFileTree(DIR_LISTSCRAPE_OUTPUT)
-    actual = getCleanFileTree(DIR_TMP)
-    if not expected == actual:
-        print u'test_listscraper failed for tree'
+    def test_makeInfoAndRename(self):
+        """
+        Checks that creating filenames gives the right results
+        """
+        # copy with Exts filename file to filenames.csv
+        shutil.copyfile(os.path.join(DIR_DATA, u'filenames.Exts.csv'),
+                        os.path.join(DIR_DATA, u'filenames.csv'))
 
-    # check info file contents
-    files = getFiles(DIR_LISTSCRAPE_OUTPUT, ('.csv', '.txt'))
-    for f in files:
-        expected = getContents(f, DIR_LISTSCRAPE_OUTPUT)
-        actual = getContents(f, DIR_TMP)
-        if not expected == actual:
-            print u'test_listscraper failed for %s' % f
+        # copy mock files to temporary folder since these are changed
+        shutil.copytree(DIR_IMAGES, DIR_TMP)
 
-    # clean up
-    shutil.rmtree(DIR_TMP)
+        # run test
+        filenameFile = os.path.join(DIR_DATA, u'filenames.csv')
+        Prep.makeAndRename(DIR_TMP, dataDir=DIR_DATA,
+                           connectionsDir=DIR_CONNECTIONS,
+                           filenameFile=filenameFile, batchCat=u'2015-11')
 
+        # check file structure
+        self.assertFileStructure(DIR_IMAGES_INFO, DIR_TMP)
+        # check info file contents
+        self.assertFileContents(DIR_IMAGES_INFO, DIR_TMP, '.txt')
 
-def test_moveHits(func):
-    """
-    Checks that finding and moving images gives the right results
-    """
-    # copy mock files to temporary folder since these are changed
-    shutil.copytree(DIR_IMAGES_FOLDERS_INPUT, DIR_TMP)
-    shutil.copyfile(os.path.join(DIR_DATA, u'filenames.noExts.csv'),
-                    os.path.join(DIR_TMP, u'filenames.csv'))
+        # clean up
+        # copy with NoExts filename file back
+        shutil.copyfile(os.path.join(DIR_DATA, u'filenames.noExts.csv'),
+                        os.path.join(DIR_DATA, u'filenames.csv'))
 
-    # run test
-    filenameFile = os.path.join(DIR_TMP, u'filenames.csv')
-    func(DIR_TMP, filenameFile)
+    def test_makeNegatives(self):
+        """
+        Checks that creating negatives gives the right results
+        """
+        # copy mock files to temporary folder since these are changed
+        shutil.copytree(DIR_NEGATIVES_INPUT, DIR_TMP)
 
-    expected = getCleanFileTree(DIR_IMAGES_FOLDERS_OUTPUT)
-    actual = getCleanFileTree(DIR_TMP)
-    if not expected == actual:
-        print u'test_moveHits failed for tree'
-
-    # test extension data
-    expected = getLines(u'filenames.Exts.csv', DIR_DATA)
-    actual = getLines(u'filenames.csv', DIR_TMP)
-    if not areEqualUpToOrder(expected, actual):
-        print u'test_moveHits failed for filenames.csv'
-
-    # clean up
-    shutil.rmtree(DIR_TMP)
-
-
-def test_makeInfoAndRename(func):
-    """
-    Checks that creating filenames gives the right results
-    """
-    # copy with Exts filename file to filenames.csv
-    shutil.copyfile(os.path.join(DIR_DATA, u'filenames.Exts.csv'),
-                    os.path.join(DIR_DATA, u'filenames.csv'))
-
-    # copy mock files to temporary folder since these are changed
-    shutil.copytree(DIR_IMAGES, DIR_TMP)
-
-    # run test
-    filenameFile = os.path.join(DIR_DATA, u'filenames.csv')
-    func(DIR_TMP, dataDir=DIR_DATA, connectionsDir=DIR_CONNECTIONS,
-         filenameFile=filenameFile, batchCat=u'2015-11')
-
-    # check file structure
-    expected = getCleanFileTree(DIR_IMAGES_INFO)
-    actual = getCleanFileTree(DIR_TMP)
-    if not expected == actual:
-        print u'test_makeInfoAndRename failed for tree'
-
-    # check info file contents
-    files = getFiles(DIR_IMAGES_INFO, '.txt')
-    for f in files:
-        expected = getContents(f, DIR_IMAGES_INFO)
-        actual = getContents(f, DIR_TMP)
-        if not expected == actual:
-            print u'test_makeInfoAndRename failed for %s' % f
-
-    # clean up
-    # copy with NoExts filename file back
-    shutil.copyfile(os.path.join(DIR_DATA, u'filenames.noExts.csv'),
-                    os.path.join(DIR_DATA, u'filenames.csv'))
-    shutil.rmtree(DIR_TMP)
-
-
-def test_makeNegatives(func):
-    """
-    Checks that creating negatives gives the right results
-    """
-    # copy mock files to temporary folder since these are changed
-    shutil.copytree(DIR_NEGATIVES_INPUT, DIR_TMP)
-
-    # run test
-    func(DIR_TMP)
-
-    # check file structure
-    expected = getCleanFileTree(DIR_NEGATIVES_OUTPUT)
-    actual = getCleanFileTree(DIR_TMP)
-    if not expected == actual:
-        print u'test_makeNegatives failed for tree'
-
-    # check info file contents
-    files = getFiles(DIR_NEGATIVES_OUTPUT, '.txt')
-    for f in files:
-        expected = getContents(f, DIR_NEGATIVES_OUTPUT)
-        actual = getContents(f, DIR_TMP)
-        if not expected == actual:
-            print u'test_makeNegatives failed for %s' % f
-
-    # clean up
-    shutil.rmtree(DIR_TMP)
-
-
-# run tests
-helpers.VERBOSE = False
-test_crunch(Crunch.run)
-test_mappings(Mappings.run)
-test_filenames(Filenames.run)
-test_listscraper(Listscraper.run)
-test_moveHits(Prep.moveHits)
-test_makeInfoAndRename(Prep.makeAndRename)
-test_makeNegatives(Prep.negatives)
+        # run test
+        Prep.negatives(DIR_TMP)
+        # check file structure
+        self.assertFileStructure(DIR_NEGATIVES_OUTPUT, DIR_TMP)
+        # check info file contents
+        self.assertFileContents(DIR_NEGATIVES_OUTPUT, DIR_TMP, '.txt')

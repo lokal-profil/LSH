@@ -1,4 +1,4 @@
-<!--From: Photo_stichwort 3.0.csv -->
+<!--From: Photo_stichwort X.0.csv -->
 Set commonsconnection of irrelevant keywords to "-"
 
 Multiple categories are separated by "/"

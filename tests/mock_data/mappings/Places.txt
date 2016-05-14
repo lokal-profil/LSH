@@ -1,6 +1,6 @@
-<!--From: Ausstellung 3.0.csv - col: ausOrt-->
-<!--From: ObjMultiple 3.0.csv for OmuTypS = Tillverkningsland -->
-<!--From: ObjMultiple 3.0.csv for OmuTypS = Tillverkningsort-->
+<!--From: Ausstellung X.0.csv - col: ausOrt-->
+<!--From: ObjMultiple X.0.csv for OmuTypS = Tillverkningsland -->
+<!--From: ObjMultiple X.0.csv for OmuTypS = Tillverkningsort-->
 The preffered order of making connections are: Institution, page, category(where the category is prefixed by a ":").
 
 Set commonsconnection of irrelevant places to "-"

@@ -1,4 +1,4 @@
-<!--From: ObjDaten 3.0.csv -->
+<!--From: ObjDaten X.0.csv -->
 These are the keywords used to describe the objects themselves. Classification is used for all items whereas group is only used at HWY.
 
 when possible ord1 will be used instead of the more generic ord2.

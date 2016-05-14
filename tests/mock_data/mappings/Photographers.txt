@@ -1,4 +1,4 @@
-<!--From: photo 3.0.csv -->
+<!--From: photo X.0.csv -->
 
 ===Photographers===
 {{user:Lokal Profil/LSH2|name=Photographer|creator=|category=}}

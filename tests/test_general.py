@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: UTF-8  -*-
 #
+# Should ideally beexcluded from contributing to coverage.
+#
 import codecs
 import os
 import py_crunchCSVData as Crunch
@@ -28,24 +30,26 @@ COMMONS_PREFIX = u'User:LSHuploadBot/testdata'
 DIR_TMP = u'tests/tmp'
 
 
-def sortAnythingListlike(row, colDelimiter='|', listDelimiter=';'):
+def sort_anything_list_like(row, col_delim='|', list_delim=';'):
     """
-    Given a csv row. Look for list-like things and sort them
+    Look for list-like things and sort them given a csv.
+
     :param row: text to parse
-    :param colDelimiter: delimiter for separating columns
-    :param listDelimiter: delimiter used in lists
+    :param col_delim: delimiter for separating columns
+    :param list_delim: delimiter used in lists
     :return: str
     """
-    parts = row.split(colDelimiter)
+    parts = row.split(col_delim)
     for i, e in enumerate(parts):
-        components = e.split(listDelimiter)
-        parts[i] = listDelimiter.join(sorted(components))
-    return colDelimiter.join(parts)
+        components = e.split(list_delim)
+        parts[i] = list_delim.join(sorted(components))
+    return col_delim.join(parts)
 
 
-def getContents(filename, path):
+def get_contents(filename, path):
     """
-    Opens a file and returns the contents
+    Open a file and returns the contents.
+
     :param filename: the filename to open
     :param path: path to the filename
     :return: str
@@ -55,19 +59,21 @@ def getContents(filename, path):
     return f.read()
 
 
-def getLines(filename, path):
+def get_lines(filename, path):
     """
-    Opens a file and returns the containing lines
+    Open a file and returns the containing lines.
+
     :param filename: the filename to open
     :param path: path to the filename
     :return: list
     """
-    return getContents(filename, path).split('\n')
+    return get_contents(filename, path).split('\n')
 
 
 def getCleanFileTree(startpath):
     """
-    Returns os.walk but with the root scrubbed from the output
+    Return os.walk but with the root scrubbed from the output.
+
     :param startpath: path to start walk at
     :return: list
     """
@@ -78,21 +84,22 @@ def getCleanFileTree(startpath):
     return tree
 
 
-def getFiles(path, fileExts):
+def get_files(path, file_exts):
     """
-    Returns all filenames in a directory with a given extension(s)
+    Return all filenames in a directory with a given extension(s).
+
     :param path: path to directory to llok in
     :param fileExts: str|tuple of file endings (incl. ".")
     :return: list
     """
-    if isinstance(fileExts, (str, unicode)):
-        fileExts = (fileExts, )
+    if isinstance(file_exts, (str, unicode)):
+        file_exts = (file_exts, )
 
-    requestedFiles = []
+    requested_files = []
     for filename in os.listdir(path):
-        if os.path.splitext(filename)[1].lower() in fileExts:
-            requestedFiles.append(filename)
-    return requestedFiles
+        if os.path.splitext(filename)[1].lower() in file_exts:
+            requested_files.append(filename)
+    return requested_files
 
 
 class TestGeneral(unittest.TestCase):
@@ -105,20 +112,7 @@ class TestGeneral(unittest.TestCase):
     a change in the output, rather than if the output is actually correct.
     """
 
-    def assertEqualUpToOrder(self, a, b):
-        """
-        compares two lists and checks that they are equal, up to the order
-        of the lines
-        :param a: a list
-        :param b: a list
-        """
-        diff1 = set(a) - set(b)
-        diff2 = set(b) - set(a)
-        num = len(diff1) + len(diff2)
-        if num != 0:
-            raise AssertionError("Lists differ by %d entries" % num)
-
-    def assertEqualUpToOrderWithLists(self, a, b):
+    def assert_items_equal_with_lists(self, a, b):
         """
         compares two lists and checks that they are equal, up to the order
         of the lines, and the order of any lists
@@ -128,35 +122,31 @@ class TestGeneral(unittest.TestCase):
         diff_old = list(set(a) - set(b))
         diff_new = list(set(b) - set(a))
         for i, e in enumerate(diff_old):
-            diff_old[i] = sortAnythingListlike(e)
+            diff_old[i] = sort_anything_list_like(e)
         for i, e in enumerate(diff_new):
-            diff_new[i] = sortAnythingListlike(e)
-        self.assertEqualUpToOrder(diff_new, diff_old)
+            diff_new[i] = sort_anything_list_like(e)
+        self.assertItemsEqual(diff_new, diff_old)
 
-    def assertFileStructure(self, expected_dir, temp_dir):
+    def assert_file_structure_equal(self, expected_dir, temp_dir):
         """Compare the file strucuture of two directories."""
         expected = getCleanFileTree(expected_dir)
         actual = getCleanFileTree(temp_dir)
-        try:
-            self.assertEquals(expected, actual)
-        except AssertionError as e:
-            e.message = "Tree structure differs: %s" % e.message
-            raise
+        self.longMessage = True
+        self.assertEquals(expected, actual, msg="File structure differs")
 
-    def assertFileContents(self, expected_dir, temp_dir, exts):
+    def assert_file_contents_equal(self, expected_dir, temp_dir, exts):
         """Compare file contents for all files in two directories.
+
         :param exts: file ending string or tuple of such
         """
         # check info file contents
-        files = getFiles(expected_dir, exts)
+        files = get_files(expected_dir, exts)
+        self.maxDiff = None
         for f in files:
-            expected = getContents(f, expected_dir)
-            actual = getContents(f, temp_dir)
-            try:
-                self.assertEquals(expected, actual)
-            except AssertionError as e:
-                e.message = "File contents differ for %s: %s" % (f, e.message)
-                raise
+            expected = get_contents(f, expected_dir)
+            actual = get_contents(f, temp_dir)
+            self.assertEquals(expected, actual,
+                              msg="File contents differ for %s" % f)
 
     def tearDown(self):
         # clean up
@@ -172,18 +162,16 @@ class TestGeneral(unittest.TestCase):
         Crunch.helpers.VERBOSE = False  # otherwise crunch stops at prompt
         Crunch.run(in_path=DIR_CLEAN, out_path=DIR_TMP)
         for f in files:
-            expected = getLines(f, DIR_DATA)
-            actual = getLines(f, DIR_TMP)
+            expected = get_lines(f, DIR_DATA)
+            actual = get_lines(f, DIR_TMP)
             try:
-                self.assertEqualUpToOrderWithLists(expected, actual)
+                self.assert_items_equal_with_lists(expected, actual)
             except AssertionError:
                 print u'test_crunch failed for %s' % f
                 raise
 
     def test_mappings(self):
-        """
-        Checks that creating the mappings gives the right results
-        """
+        """Check that creating the mappings gives the right results."""
         files = (
             'Events.txt', 'Keywords.txt', 'Materials.txt', 'ObjKeywords.txt',
             'People.txt', 'Photographers.txt', 'Places.txt')
@@ -191,45 +179,44 @@ class TestGeneral(unittest.TestCase):
         Mappings.run(in_path=DIR_OLD_CONNECTIONS,
                      out_path=DIR_TMP, data_path=DIR_DATA)
         for f in files:
-            expected = getLines(f, DIR_MAPPINGS)
-            actual = getLines(f, DIR_TMP)
+            expected = get_lines(f, DIR_MAPPINGS)
+            actual = get_lines(f, DIR_TMP)
             try:
-                self.assertEqualUpToOrderWithLists(expected, actual)
+                self.assert_items_equal_with_lists(expected, actual)
             except AssertionError:
                 print u'test_mappings failed for %s' % f
                 raise
 
     def test_filenames(self):
         """
-        Checks that creating filenames gives the right results
+        Check that creating filenames gives the right results.
+
         @toDO: Add something triggering <span>
         """
         Filenames.run(folder=DIR_DATA, mapping=DIR_TMP, outfolder=DIR_TMP)
 
         # test mapping
         f = 'Filenames.txt'
-        expected = getLines(f, DIR_MAPPINGS)
-        actual = getLines(f, DIR_TMP)
+        expected = get_lines(f, DIR_MAPPINGS)
+        actual = get_lines(f, DIR_TMP)
         try:
-            self.assertEqualUpToOrder(expected, actual)
+            self.assertItemsEqual(expected, actual)
         except AssertionError:
             print u'test_filenames failed for %s' % f
             raise
 
         # test data
         f = u'filenames.csv'
-        expected = getLines(f, DIR_DATA)
-        actual = getLines(f, DIR_TMP)
+        expected = get_lines(f, DIR_DATA)
+        actual = get_lines(f, DIR_TMP)
         try:
-            self.assertEqualUpToOrder(expected, actual)
+            self.assertItemsEqual(expected, actual)
         except AssertionError:
             print u'test_filenames failed for %s' % f
             raise
 
     def test_listscraper(self):
-        """
-        Checks that scraping lists gives the right results
-        """
+        """Check that scraping lists gives the right results."""
         # copy mock files to temporary folder since these are changed
         shutil.copytree(DIR_LISTSCRAPE_INPUT, DIR_TMP)
 
@@ -238,16 +225,14 @@ class TestGeneral(unittest.TestCase):
                         mappingsPath=DIR_TMP, commonsPrefix=COMMONS_PREFIX)
 
         # check file structure
-        self.assertFileStructure(DIR_LISTSCRAPE_OUTPUT, DIR_TMP)
+        self.assert_file_structure_equal(DIR_LISTSCRAPE_OUTPUT, DIR_TMP)
 
         # check info file contents
-        self.assertFileContents(DIR_LISTSCRAPE_OUTPUT, DIR_TMP,
-                                ('.csv', '.txt'))
+        self.assert_file_contents_equal(DIR_LISTSCRAPE_OUTPUT, DIR_TMP,
+                                        ('.csv', '.txt'))
 
     def test_moveHits(self):
-        """
-        Checks that finding and moving images gives the right results
-        """
+        """Check that finding and moving images gives the right results."""
         # copy mock files to temporary folder since these are changed
         shutil.copytree(DIR_IMAGES_FOLDERS_INPUT, DIR_TMP)
         shutil.copyfile(os.path.join(DIR_DATA, u'filenames.noExts.csv'),
@@ -258,21 +243,19 @@ class TestGeneral(unittest.TestCase):
         Prep.moveHits(DIR_TMP, filenameFile)
 
         # check file structure
-        self.assertFileStructure(DIR_IMAGES_FOLDERS_OUTPUT, DIR_TMP)
+        self.assert_file_structure_equal(DIR_IMAGES_FOLDERS_OUTPUT, DIR_TMP)
 
         # test extension data
-        expected = getLines(u'filenames.Exts.csv', DIR_DATA)
-        actual = getLines(u'filenames.csv', DIR_TMP)
+        expected = get_lines(u'filenames.Exts.csv', DIR_DATA)
+        actual = get_lines(u'filenames.csv', DIR_TMP)
         try:
-            self.assertEqualUpToOrder(expected, actual)
+            self.assertItemsEqual(expected, actual)
         except AssertionError:
             print u'test_moveHits failed for filenames.csv'
             raise
 
     def test_makeInfoAndRename(self):
-        """
-        Checks that creating filenames gives the right results
-        """
+        """Check that creating filenames gives the right results."""
         # copy with Exts filename file to filenames.csv
         shutil.copyfile(os.path.join(DIR_DATA, u'filenames.Exts.csv'),
                         os.path.join(DIR_DATA, u'filenames.csv'))
@@ -287,9 +270,9 @@ class TestGeneral(unittest.TestCase):
                            filenameFile=filenameFile, batchCat=u'2015-11')
 
         # check file structure
-        self.assertFileStructure(DIR_IMAGES_INFO, DIR_TMP)
+        self.assert_file_structure_equal(DIR_IMAGES_INFO, DIR_TMP)
         # check info file contents
-        self.assertFileContents(DIR_IMAGES_INFO, DIR_TMP, '.txt')
+        self.assert_file_contents_equal(DIR_IMAGES_INFO, DIR_TMP, '.txt')
 
         # clean up
         # copy with NoExts filename file back
@@ -297,15 +280,13 @@ class TestGeneral(unittest.TestCase):
                         os.path.join(DIR_DATA, u'filenames.csv'))
 
     def test_makeNegatives(self):
-        """
-        Checks that creating negatives gives the right results
-        """
+        """Check that creating negatives gives the right results."""
         # copy mock files to temporary folder since these are changed
         shutil.copytree(DIR_NEGATIVES_INPUT, DIR_TMP)
 
         # run test
         Prep.negatives(DIR_TMP)
         # check file structure
-        self.assertFileStructure(DIR_NEGATIVES_OUTPUT, DIR_TMP)
+        self.assert_file_structure_equal(DIR_NEGATIVES_OUTPUT, DIR_TMP)
         # check info file contents
-        self.assertFileContents(DIR_NEGATIVES_OUTPUT, DIR_TMP, '.txt')
+        self.assert_file_contents_equal(DIR_NEGATIVES_OUTPUT, DIR_TMP, '.txt')

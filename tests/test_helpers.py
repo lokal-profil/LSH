@@ -114,6 +114,11 @@ class TestUrldecodeUtf8(unittest.TestCase):
         expected = u'http://Prinsessan_Eug\xe9nie_av_Sverige_och_Norge'
         self.assertEquals(helpers.urldecode_utf8(input_value), expected)
 
+    def test_urldecode_utf8_encoded_https_string(self):
+        input_value = u'https://Prinsessan_Eug%C3%A9nie_av_Sverige_och_Norge'
+        expected = u'https://Prinsessan_Eug\xe9nie_av_Sverige_och_Norge'
+        self.assertEquals(helpers.urldecode_utf8(input_value), expected)
+
 
 class TestExternal2internalLink(unittest.TestCase):
 
@@ -151,4 +156,27 @@ class TestExternal2internalLink(unittest.TestCase):
         expected = u'[[:commons:Some title]]'
         result = helpers.external_2_internal_link(input_value,
                                                   project='wikimedia')
+        self.assertEquals(result, expected)
+
+
+class TestSplitMultiValuedString(unittest.TestCase):
+
+    def test_split_multi_value_none_gives_none(self):
+        self.assertEquals(helpers.split_multi_valued(None),
+                          None)
+
+    def test_split_multi_value_empty_gives_empty(self):
+        self.assertEquals(helpers.split_multi_valued(''),
+                          '')
+
+    def test_split_multi_value_multi_valued_gives_list(self):
+        input_value = u'1;2;five'
+        expected = [u'1', u'2', u'five']
+        self.assertEquals(helpers.split_multi_valued(input_value),
+                          expected)
+
+    def test_split_multi_value_different_delimiter(self):
+        input_value = u'1|2|five'
+        expected = [u'1', u'2', u'five']
+        result = helpers.split_multi_valued(input_value, delimiter='|')
         self.assertEquals(result, expected)

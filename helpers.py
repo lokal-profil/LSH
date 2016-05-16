@@ -261,6 +261,13 @@ def external_2_internal_link(url, project='wikipedia'):
     return url
 
 
+def split_multi_valued(value, delimiter=';'):
+    """Split value if not empty."""
+    if value:
+        value = value.split(delimiter)
+    return value
+
+
 def is_int(s):
     """
     Tests if a string is an integer

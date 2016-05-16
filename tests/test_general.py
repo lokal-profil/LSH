@@ -70,7 +70,7 @@ def get_lines(filename, path):
     return get_contents(filename, path).split('\n')
 
 
-def getCleanFileTree(startpath):
+def get_clean_file_tree(startpath):
     """
     Return os.walk but with the root scrubbed from the output.
 
@@ -129,8 +129,8 @@ class TestGeneral(unittest.TestCase):
 
     def assert_file_structure_equal(self, expected_dir, temp_dir):
         """Compare the file strucuture of two directories."""
-        expected = getCleanFileTree(expected_dir)
-        actual = getCleanFileTree(temp_dir)
+        expected = get_clean_file_tree(expected_dir)
+        actual = get_clean_file_tree(temp_dir)
         self.longMessage = True
         self.assertEquals(expected, actual, msg="File structure differs")
 
@@ -141,7 +141,6 @@ class TestGeneral(unittest.TestCase):
         """
         # check info file contents
         files = get_files(expected_dir, exts)
-        self.maxDiff = None
         for f in files:
             expected = get_contents(f, expected_dir)
             actual = get_contents(f, temp_dir)

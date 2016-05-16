@@ -238,8 +238,8 @@ class TestGeneral(unittest.TestCase):
                         os.path.join(DIR_TMP, u'filenames.csv'))
 
         # run test
-        filenameFile = os.path.join(DIR_TMP, u'filenames.csv')
-        Prep.moveHits(DIR_TMP, filenameFile)
+        filename_file = os.path.join(DIR_TMP, u'filenames.csv')
+        Prep.moveHits(DIR_TMP, filename_file)
 
         # check file structure
         self.assert_file_structure_equal(DIR_IMAGES_FOLDERS_OUTPUT, DIR_TMP)

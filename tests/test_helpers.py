@@ -161,6 +161,8 @@ class TestExternal2internalLink(unittest.TestCase):
 
 class TestSplitMultiValuedString(unittest.TestCase):
 
+    """Test split_multi_valued()."""
+
     def test_split_multi_value_none_gives_none(self):
         self.assertEquals(helpers.split_multi_valued(None),
                           None)

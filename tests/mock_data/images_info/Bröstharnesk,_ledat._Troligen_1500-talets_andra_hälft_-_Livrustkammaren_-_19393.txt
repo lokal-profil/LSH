@@ -5,7 +5,7 @@
 |original caption= 
 |date= {{other date|2half|{{other date|century|16}}}}
 |medium= {{technique|steel}} - {{technique|leather}}
-|dimensions= *  {{weight|g|7653}}
+|dimensions= * {{weight|g|7653}}
 * {{size|unit=mm|width=377|depth=205|height=385}}
 |source= LRK
 |provenance= 

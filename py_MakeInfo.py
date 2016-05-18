@@ -16,6 +16,166 @@ import helpers
 from common import Common
 
 
+class ImageInfo(object):
+
+    """Structured store of the processed info of an image."""
+
+    def __init__(self):
+        """Initialise the image info store with the appropriate fields."""
+        self.wikiname = None
+        self.orig_file = None
+        self.photo_license = None
+        self.photo_id = None
+        self.source = None
+        self.orig_descr = None
+        self.photographer = None
+        self.orig_stich = None
+        self.obj_ids = None
+        self.see_also = None
+        self.categories = None
+        self.obj_data = ImageInfo.make_empty_obj_data()
+
+    @staticmethod
+    def make_empty_obj_data():
+        """Make obj_data dict with all values initialised to None or False."""
+        return {
+            u'invNr': None,
+            u'title': None,
+            u'description': None,
+            u'date': None,
+            u'source': None,
+            u'artist': None,
+            u'manufacturer': None,
+            u'owner': None,
+            u'depicted': None,
+            u'death_year': None,
+            u'exhibits': None,
+            u'orig_event': None,
+            u'place': None,
+            u'title_orig': None,
+            u'title_en': None,
+            u'material_tech': None,
+            u'signature': None,
+            u'dimensions': None,
+            u'related': None,
+            u'cat_meta': None,
+            u'cat_event': None,
+            u'cat_artist': None,
+            u'cat_depicted': None,
+            u'cat_obj': None,
+            u'multiple': False
+        }
+
+    def make_template(self, preview=False):
+        """Output a {{LSH artwork}} for the current ImageInfo object."""
+        # event (orig_event)
+        text = u''
+        if preview:
+            text += u'%s\n' % self.wikiname
+        text += u'{{LSH artwork\n'
+        text += ImageInfo.format_multi_value_template_parameter('artist', self.obj_data['artist'])
+        if self.obj_data['manufacturer']:
+            text += ImageInfo.format_multi_value_template_parameter('manufacturer', self.obj_data['manufacturer'])
+        text += u'|title= '
+        if self.obj_data['title_orig'] or self.obj_data['title_en']:
+            titlar = u'{{Title\n'
+            if self.obj_data['title_orig']:
+                titlar += u'|%s\n' % self.obj_data['title_orig'][0]
+            if self.obj_data['title_en']:
+                titlar += u'|en = %s\n' % self.obj_data['title_en'][0]
+            if self.obj_data['title']:
+                titlar += u'|sv = %s\n' % self.obj_data['title']
+            text += titlar + u'}}\n'
+        elif self.obj_data['title']:
+            text += u'{{Title|%s}}\n' % self.obj_data['title']
+        # if title_orig or title_en:
+        #     if title_orig: text += u'%s\n' % title_orig[0]
+        #     if title: text += u'{{sv|%s}}\n' % title
+        #     if title_en: text += u'{{en|%s}}\n' % title_en[0]
+        # elif title: text += u'%s\n' % title
+        else:
+            text += u'\n'
+        text += u'|description= '
+        if self.obj_data['depicted']:
+            if self.obj_data['multiple']:
+                for dep in self.obj_data['depicted']:
+                    invNrDep = dep[0]
+                    # depList = dep[1]
+                    text += MakeInfo.depictedFormater(self.obj_data['depicted'], invNr=invNrDep)
+            else:
+                text += MakeInfo.depictedFormater(self.obj_data['depicted'])
+        if self.obj_data['description']:
+            text += u'{{sv|1=%s}}\n' % self.obj_data['description']
+        else:
+            text += u'%s\n' % self.orig_descr
+        text += u'|original caption= %s' % self.orig_descr
+        if self.orig_stich:
+            text += u'<br/>\n\'\'\'Nyckelord\'\'\': %s\n' % self.orig_stich
+        else:
+            text += u'\n'
+        if self.obj_data['orig_event']:
+            text += ImageInfo.format_multi_value_template_parameter('event', self.obj_data['orig_event'])
+        text += u'|date= '
+        if self.obj_data['multiple'] and self.obj_data['date']:
+            text += u'\n* %s\n' % '\n* '.join(self.obj_data['date'])
+        elif self.obj_data['date']:
+            text += u'%s\n' % self.obj_data['date']
+        else:
+            text += u'\n'
+        text += u'|medium= '
+        if self.obj_data['material_tech']:
+            text += u'%s\n' % u' - '.join(self.obj_data['material_tech'])
+        else:
+            text += u'\n'
+        text += ImageInfo.format_multi_value_template_parameter('dimensions', self.obj_data['dimensions'])
+        text += u'|source= %s\n' % self.source
+        text += ImageInfo.format_multi_value_template_parameter('provenance', self.obj_data['owner'])
+        text += ImageInfo.format_multi_value_template_parameter('exhibition', self.obj_data['exhibits'])
+        text += ImageInfo.format_multi_value_template_parameter('inscriptions', self.obj_data['signature'])
+        text += ImageInfo.format_multi_value_template_parameter('place of origin', self.obj_data['place'])
+        text += u'|original filename= %s\n' % self.orig_file
+        if self.obj_data['multiple']:
+            text += u'|object-multiple= \n* %s\n' % '\n* '.join(self.obj_data['invNr'])
+        else:
+            text += u'|object-id= %s\n' % self.obj_ids
+            text += u'|inventory number= %s\n' % self.obj_data['invNr']
+        text += u'|photo-id= %s\n' % self.photo_id
+        text += u'|photo-license= %s\n' % self.photo_license
+        text += u'|photographer= %s\n' % self.photographer
+        text += ImageInfo.format_empty_value_template_parameter('deathyear', self.obj_data['death_year'])
+        text += u'|other_versions= %s\n' % self.see_also
+        if preview:
+            text += u'}}<pre>\n%s</pre>\n' % self.categories
+        else:
+            text += u'}}\n%s' % self.categories
+        return text.replace(u'<!>', u'<br/>')
+
+    @staticmethod
+    def format_empty_value_template_parameter(param, value):
+        """Format a template parameter which can be empty."""
+        text = u'|%s= ' % param
+        if value:
+            text += u'%s\n' % value
+        else:
+            text += u'\n'
+        return text
+
+    @staticmethod
+    def format_multi_value_template_parameter(param, values):
+        """Format a template parameter which can be multi-valued.
+
+        If values is empty this returns an empty parameter
+        """
+        text = u'|%s= ' % param
+        if values:
+            if len(values) > 1:
+                text += u'* '
+            text += u'%s\n' % '\n* '.join(values)
+        else:
+            text += u'\n'
+        return text
+
+
 class MakeInfo(object):
 
     """Store of shared data used by all ImageInfo generation."""
@@ -101,31 +261,36 @@ class MakeInfo(object):
             print u'Found a file without an extention!: %s' % pho_mull
             return ('file without an extention: %s\n' % pho_mull, None)
 
+        # set up Info object
+        image_info = ImageInfo()
+
         # maintanance categories
         cat_meta = []
 
         # collect info from Photo.csv
-        wikiname = u'%s.%s' % (self.wikinameD[pho_mull][u'filename'],
-                               self.wikinameD[pho_mull][u'ext'])
-        origFile = self.wikinameD[pho_mull][u'MulDateiS']
-        photo_license = self.lic[phoInfo[u'PhoAufnahmeortS']]
-        photo_id = phoInfo[u'PhoId']
-        source = self.source[phoInfo[u'PhoSwdS']]  # can be overridden by objData
-        orig_descr = phoInfo[u'PhoBeschreibungM']
-        photographer, cat_photographer = self.make_photographer(phoInfo)
+        image_info.wikiname = u'%s.%s' % (
+            self.wikinameD[pho_mull][u'filename'],
+            self.wikinameD[pho_mull][u'ext'])
+        image_info.orig_file = self.wikinameD[pho_mull][u'MulDateiS']
+        image_info.photo_license = self.lic[phoInfo[u'PhoAufnahmeortS']]
+        image_info.photo_id = phoInfo[u'PhoId']
+        image_info.source = self.source[phoInfo[u'PhoSwdS']]  # can be overridden by objData
+        image_info.orig_descr = phoInfo[u'PhoBeschreibungM']
+        image_info.photographer, cat_photographer = self.make_photographer(phoInfo)
 
         # category-stichwort
-        orig_stich, cat_stich = self.handle_stichwort(phoInfo, cat_meta)
+        image_info.orig_stich, cat_stich = self.handle_stichwort(phoInfo, cat_meta)
 
         # objId(s)
-        objIds, objData, source = self.handle_obj_ids(phoInfo, source, cat_meta)
+        # TODO pass this the image_info object instead and use already initialised obj_data
+        image_info.obj_ids, image_info.obj_data, source = self.handle_obj_ids(phoInfo, image_info.source, cat_meta)
 
         # see also
-        see_also = self.make_see_also(phoInfo, objData)
+        image_info.see_also = self.make_see_also(phoInfo, image_info.obj_data)
 
         # Combine categories
-        categories, printedCats = MakeInfo.handle_categories(
-            cat_meta, cat_stich, cat_photographer, objData)
+        image_info.categories, printedCats = MakeInfo.handle_categories(
+            cat_meta, cat_stich, cat_photographer, image_info.obj_data)
 
         if testing:
             catData = u'%r/%r|%s' % (len(printedCats) - len(cat_meta),
@@ -133,37 +298,8 @@ class MakeInfo(object):
                                      ';'.join(printedCats))
             return (None, catData)
 
-        text = MakeInfo.makeTemplate(wikiname,
-                                     origFile,
-                                     photo_license,
-                                     photo_id,
-                                     source,
-                                     orig_descr,
-                                     orig_stich,
-                                     photographer,
-                                     objIds,
-                                     see_also,
-                                     categories,
-                                     objData[u'invNr'],
-                                     objData[u'title'],
-                                     objData[u'description'],
-                                     objData[u'date'],
-                                     objData[u'artist'],
-                                     objData[u'manufacturer'],
-                                     objData[u'owner'],
-                                     objData[u'depicted'],
-                                     objData[u'death_year'],
-                                     objData[u'exhibits'],
-                                     objData[u'orig_event'],
-                                     objData[u'place'],
-                                     objData[u'title_orig'],
-                                     objData[u'title_en'],
-                                     objData[u'material_tech'],
-                                     objData[u'signature'],
-                                     objData[u'dimensions'],
-                                     objData[u'multiple'],
-                                     preview=preview)
-        return (wikiname, text)
+        text = image_info.make_template(preview=preview)
+        return (image_info.wikiname, text)
 
     def make_photographer(self, pho_info):
         """Construct the photographer field and add photographer category."""
@@ -203,45 +339,11 @@ class MakeInfo(object):
             orig_stich = ', '.join(orig_stich)
         return orig_stich, cat_stich
 
-    @staticmethod
-    def make_empty_obj_data():
-        """Return an obj_data dict with all values initialised to None.
-
-        Multiple is set to False.
-        """
-        return {
-            u'invNr': None,
-            u'title': None,
-            u'description': None,
-            u'date': None,
-            u'source': None,
-            u'artist': None,
-            u'manufacturer': None,
-            u'owner': None,
-            u'depicted': None,
-            u'death_year': None,
-            u'exhibits': None,
-            u'orig_event': None,
-            u'place': None,
-            u'title_orig': None,
-            u'title_en': None,
-            u'material_tech': None,
-            u'signature': None,
-            u'dimensions': None,
-            u'related': None,
-            u'cat_meta': None,
-            u'cat_event': None,
-            u'cat_artist': None,
-            u'cat_depicted': None,
-            u'cat_obj': None,
-            u'multiple': False
-        }
-
     def handle_obj_ids(self, pho_info, source, cat_meta):
         """Handle data extracted through ObjIds for the photo."""
         obj_ids = helpers.split_multi_valued(pho_info[u'PhoObjId'])
         # objId(s)
-        obj_data = MakeInfo.make_empty_obj_data()
+        obj_data = ImageInfo.make_empty_obj_data()
 
         # Deal with info from objIds
         if not obj_ids:  # do nothing
@@ -912,139 +1014,6 @@ class MakeInfo(object):
             place = u'%s, %s' % (ort, land)
         out = u'%s%s%s' % (name.strip(), bracket, place.strip())
         return out.strip()
-
-    @staticmethod
-    def makeTemplate(wikiname, origFile, photo_license, photo_id, source, orig_descr,
-                     orig_stich, photographer, objIds, see_also, categories, invNr, title, description, date, artist, manufacturer,
-                     owner, depicted, death_year, exhibits, orig_event, place, title_orig, title_en, material_tech, signature, dimensions,
-                     multiple, preview=False):
-        # event (orig_event)
-        text = u''
-        if preview:
-            text += u'%s\n' % wikiname
-        text += u'{{LSH artwork\n'
-        text += u'|artist= '
-        if artist:
-            if len(artist) > 1:
-                text += u'* '
-            text += u'%s\n' % '\n* '.join(artist)
-        else:
-            text += u'\n'
-        if manufacturer:
-            text += u'|manufacturer= '
-            if len(manufacturer) > 1:
-                text += u'* '
-            text += u'%s\n' % '\n* '.join(manufacturer)
-        text += u'|title= '
-        if title_orig or title_en:
-            titlar = u'{{Title\n'
-            if title_orig:
-                titlar += u'|%s\n' % title_orig[0]
-            if title_en:
-                titlar += u'|en = %s\n' % title_en[0]
-            if title:
-                titlar += u'|sv = %s\n' % title
-            text += titlar + u'}}\n'
-        elif title:
-            text += u'{{Title|%s}}\n' % title
-        # if title_orig or title_en:
-        #     if title_orig: text += u'%s\n' % title_orig[0]
-        #     if title: text += u'{{sv|%s}}\n' % title
-        #     if title_en: text += u'{{en|%s}}\n' % title_en[0]
-        # elif title: text += u'%s\n' % title
-        else:
-            text += u'\n'
-        text += u'|description= '
-        if depicted:
-            if multiple:
-                for dep in depicted:
-                    invNrDep = dep[0]
-                    # depList = dep[1]
-                    text += MakeInfo.depictedFormater(depicted, invNr=invNrDep)
-            else:
-                text += MakeInfo.depictedFormater(depicted)
-        if description:
-            text += u'{{sv|1=%s}}\n' % description
-        else:
-            text += u'%s\n' % orig_descr
-        text += u'|original caption= %s' % orig_descr
-        if orig_stich:
-            text += u'<br/>\n\'\'\'Nyckelord\'\'\': %s\n' % orig_stich
-        else:
-            text += u'\n'
-        if orig_event:
-            text += u'|event= '
-            if len(orig_event) > 1:
-                text += u'* '
-            text += u'%s\n' % '\n* '.join(orig_event)
-        text += u'|date= '
-        if multiple and date:
-            text += u'\n* %s\n' % '\n* '.join(date)
-        elif date:
-            text += u'%s\n' % date
-        else:
-            text += u'\n'
-        text += u'|medium= '
-        if material_tech:
-            text += u'%s\n' % u' - '.join(material_tech)
-        else:
-            text += u'\n'
-        text += u'|dimensions= '
-        if dimensions:
-            if len(dimensions) > 1:
-                text += u'* '
-            text += u' %s\n' % '\n* '.join(dimensions)
-        else:
-            text += u'\n'
-        text += u'|source= %s\n' % source
-        text += u'|provenance= '
-        if owner:
-            if len(owner) > 1:
-                text += u'* '
-            text += u'%s\n' % '\n* '.join(owner)
-        else:
-            text += u'\n'
-        text += u'|exhibition= '
-        if exhibits:
-            if len(exhibits) > 1:
-                text += u'* '
-            text += u'%s\n' % '\n* '.join(exhibits)
-        else:
-            text += u'\n'
-        text += u'|inscriptions= '
-        if signature:
-            if len(signature) > 1:
-                text += u'* '
-            text += u'%s\n' % '\n* '.join(signature)
-        else:
-            text += u'\n'
-        text += u'|place of origin= '
-        if place:
-            if len(place) > 1:
-                text += u'* '
-            text += u'%s\n' % '\n* '.join(place)
-        else:
-            text += u'\n'
-        text += u'|original filename= %s\n' % origFile
-        if multiple:
-            text += u'|object-multiple= \n* %s\n' % '\n* '.join(invNr)
-        else:
-            text += u'|object-id= %s\n' % objIds
-            text += u'|inventory number= %s\n' % invNr
-        text += u'|photo-id= %s\n' % photo_id
-        text += u'|photo-license= %s\n' % photo_license
-        text += u'|photographer= %s\n' % photographer
-        text += u'|deathyear= '
-        if death_year:
-            text += u'%s\n' % death_year
-        else:
-            text += u'\n'
-        text += u'|other_versions= %s\n' % see_also
-        if preview:
-            text += u'}}<pre>\n%s</pre>\n' % categories
-        else:
-            text += u'}}\n%s' % categories
-        return text.replace(u'<!>', u'<br/>')
 
     @staticmethod
     def depictedFormater(depicted, invNr=None):

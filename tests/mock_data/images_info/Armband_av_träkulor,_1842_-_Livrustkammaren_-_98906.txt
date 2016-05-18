@@ -7,7 +7,7 @@
 '''Nyckelord''': Föremålsbild, Runda, Armband, Trä
 |date= 1842
 |medium= {{technique|wood}}
-|dimensions= *  {{weight|g|13}}
+|dimensions= * {{weight|g|13}}
 * {{size|unit=mm|length=205}}
 |source= LRK
 |provenance= Eugenia av Sverige (prinsessa, 1830-) Stockholms slott, Sverige

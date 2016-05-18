@@ -8,7 +8,7 @@
 * Johan Casimirs död och begravning
 |date= 1652
 |medium= {{technique|leather}} (Färg: brun, material: läder)
-|dimensions= *  {{weight|g|3400}}
+|dimensions= * {{weight|g|3400}}
 * {{size|unit=mm|width=533}}
 * {{size|unit=mm|depth=280}} (ca)
 * {{size|unit=mm|height=230}}

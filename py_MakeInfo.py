@@ -407,14 +407,11 @@ class MakeInfo(object):
 
     def infoFromObject(self, objId, data):
         """Return a dictionary of information based on an objId."""
-        # TODO - Split up this behemoth
         objInfo = self.objD[objId]
-        cat_meta = []
+        data[u'cat_meta'] = cat_meta = []
 
         # collect info from ObjDaten.csv
-        source = self.source[objInfo[u'AufAufgabeS']]
-        # TODO: combine with previous line then only pass data around
-        data[u'source'] = source
+        data[u'source'] = source = self.source[objInfo[u'AufAufgabeS']]
         nyckelord = objInfo[u'ObjTitelOriginalS']  # titel/nyckelord
         kort = objInfo[u'ObjTitelWeitereM']  # kortbeskrivning
         invNr = objInfo[u'ObjInventarNrS']
@@ -457,39 +454,20 @@ class MakeInfo(object):
             date = stdDate
         data[u'date'] = date
 
-        # exhibits
-        self.handle_exhibits(exhibits, data, cat_meta)
-
-        # events
-        self.handle_events(events, data, cat_meta)
-
-        # ObjMul
-        self.multiCruncher(mulId, data, cat_meta)
-
-        # ObjMass
-        self.handle_dimensions(dimensions, data, cat_meta)
-
-        # object categories from group and classification
-        self.handle_obj_categories(group, classification, data,
-                                   source, cat_meta)
-
-        # related
+        # process and add to data
+        self.handle_exhibits(exhibits, data)
+        self.handle_events(events, data)
+        self.multiCruncher(mulId, data)
+        self.handle_dimensions(dimensions, data)
+        self.handle_obj_categories(group, classification, data)
         self.handle_related(related, data)
+        self.handle_roles(roles, data)
 
-        # roles
-        self.handle_roles(roles, data, cat_meta)
-
-        # TODO set this up before so only data is passed around
-        if cat_meta:
-            data[u'cat_meta'] = cat_meta
         return data
     # -----------------------------------------------------------------------------------------------
 
-    def handle_exhibits(self, exhibits, data, cat_meta):
-        """Add exhibits to data if present.
-
-        Returns nothing but adds info to data and cat_meta.
-        """
+    def handle_exhibits(self, exhibits, data):
+        """Add exhibits to data if present."""
         # skip on empty
         if not exhibits:
             return
@@ -505,7 +483,7 @@ class MakeInfo(object):
             if self.placesC.get(ex_place):
                 ex_place = self.placesC[ex_place]
             elif ex_place in self.placesC.keys():
-                cat_meta.append(u'unmatched place')
+                data[u'cat_meta'].append(u'unmatched place')
             if ex_year:
                 out = u'%s (%s) %s' % (ex_name, ex_year, ex_place)
             else:
@@ -514,11 +492,8 @@ class MakeInfo(object):
         for key in sorted(exhibit_dict.iterkeys()):
             data[u'exhibits'].append(exhibit_dict[key])
 
-    def handle_events(self, events, data, cat_meta):
-        """Add events to data if present.
-
-        Returns nothing but adds info to data and cat_meta.
-        """
+    def handle_events(self, events, data):
+        """Add events to data if present."""
         # skip on empty
         if not events:
             return
@@ -533,7 +508,7 @@ class MakeInfo(object):
                 for ec in self.ereignisC[event_key]:
                     cat_event.append(ec)
             elif event_key in self.ereignisC.keys():
-                cat_meta.append(u'unmatched event')
+                data[u'cat_meta'].append(u'unmatched event')
             if event_key in self.ereignisLinkC.keys() and \
                     self.ereignisLinkC[event_key]:
                 orig_event.append(u'[[%s|%s]]'
@@ -586,11 +561,8 @@ class MakeInfo(object):
             if rel_list:
                 data[u'related'] = rel_list
 
-    def handle_roles(self, roles, data, cat_meta):
-        """Add person related objects to data if present.
-
-        Returns nothing but adds info to data and cat_meta.
-        """
+    def handle_roles(self, roles, data):
+        """Add person related objects to data if present."""
         # skip on empty
         if not roles:
             return
@@ -610,7 +582,7 @@ class MakeInfo(object):
                 continue
             if role in self.role_mappings['ok_roles']:
                 name = self.formatKuenstler(
-                    kue_id, cat_meta,
+                    kue_id, data[u'cat_meta'],
                     role in self.role_mappings['creative_roles'])
                 if role in self.rolesC.keys():
                     name = u'%s: %s' % (self.rolesC[role], name)
@@ -651,18 +623,17 @@ class MakeInfo(object):
         if cat_depicted:
             data['cat_depicted'] = artist
 
-    def handle_obj_categories(self, group, classification, data,
-                              source, cat_meta):
+    def handle_obj_categories(self, group, classification, data):
         """Add object categories to data from group and classification."""
         # objcategories from group and classification
         cat_obj = []
         # group if source == HWY
-        if source == u'HWY' and group:
+        if data[u'source'] == u'HWY' and group:
             if self.objCatC.get(group):
                 for sc in self.objCatC[group]:
                     cat_obj.append(sc)
             elif group in self.objCatC.keys():
-                cat_meta.append(u'unmatched objKeyword')
+                data[u'cat_meta'].append(u'unmatched objKeyword')
 
         # classifiction for the others
         # note failiure for ord2 keywords containing a comma
@@ -673,7 +644,7 @@ class MakeInfo(object):
                     for sc in self.objCatC[classification]:
                         cat_obj.append(sc)
                 elif classification in self.objCatC.keys():
-                    cat_meta.append(u'unmatched objKeyword')
+                    data[u'cat_meta'].append(u'unmatched objKeyword')
             else:
                 # TODO: this can be done neater
                 parts = classification.split(')')
@@ -687,7 +658,7 @@ class MakeInfo(object):
                             for sc in self.objCatC[ord1]:
                                 cat_obj.append(sc)
                         elif ord1 in self.objCatC.keys():
-                            cat_meta.append(u'unmatched objKeyword')
+                            data[u'cat_meta'].append(u'unmatched objKeyword')
                         else:
                             ord2 = p[pos + 1:].split(',')
                             ord2 = ord2[-1].strip()  # keep only last word
@@ -696,13 +667,13 @@ class MakeInfo(object):
                                 for sc in self.objCatC[ord2]:
                                     cat_obj.append(sc)
                             elif ord2 in self.objCatC.keys():
-                                cat_meta.append(u'unmatched objKeyword')
+                                data[u'cat_meta'].append(u'unmatched objKeyword')
 
         # store in data
         if cat_obj:
             data[u'cat_obj'] = cat_obj
 
-    def handle_dimensions(self, dimensions, data, cat_meta):
+    def handle_dimensions(self, dimensions, data):
         """Add dimensions to data."""
         # skip on empty
         if not dimensions:
@@ -718,11 +689,11 @@ class MakeInfo(object):
             dims.append((d_type, d_value))
 
         # convert the list of tuples to a list of strings
-        dims = MakeInfo.dimensionCruncher(dims, cat_meta)
+        dims = MakeInfo.dimensionCruncher(dims, data[u'cat_meta'])
         if dims:
             data[u'dimensions'] = dims
 
-    def multiCruncher(self, mulId, data, cat_meta):
+    def multiCruncher(self, mulId, data):
         # skip on empty
         if not mulId:
             return
@@ -759,18 +730,18 @@ class MakeInfo(object):
                                 value = u'%s (%s)' % (value, val_cmt)
                             material_tech.add(value)
                     elif value in self.materialC.keys():
-                        cat_meta.append(u'unmatched material')
+                        data[u'cat_meta'].append(u'unmatched material')
                 elif typ == u'tillverkningsort':
                     if self.placesC.get(value):
                         value = self.placesC[value]
                     elif value in self.placesC.keys():
-                        cat_meta.append(u'unmatched place')
+                        data[u'cat_meta'].append(u'unmatched place')
                     tOrt.append(value)
                 elif typ == u'tillverkningsland':
                     if self.placesC.get(value):
                         value = self.placesC[value]
                     elif value in self.placesC.keys():
-                        cat_meta.append(u'unmatched place')
+                        data[u'cat_meta'].append(u'unmatched place')
                     if val_cmt:
                         value = u'%s (%s)' % (value, val_cmt)
                     tLand.append(value)

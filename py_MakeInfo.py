@@ -20,7 +20,7 @@ class MakeInfo(object):
 
     """Store of shared data used by all ImageInfo generation."""
 
-    def __init__(self, flog=None, flogName=None):
+    def __init__(self, flog=None, flog_name=None):
         u"""Initialise object with a logfile.
 
         :param flog: a file object to use as log file
@@ -32,8 +32,8 @@ class MakeInfo(object):
         self.skiplist = []
 
         # logfile
-        flogName = flogName or u'¤MakeInfo.log'
-        self.flog = flog or codecs.open(flogName, 'w', 'utf-8')
+        flog_name = flog_name or u'¤MakeInfo.log'
+        self.flog = flog or codecs.open(flog_name, 'w', 'utf-8')
 
     def catTestBatch(self, pho_mull_list, data_dir, connections_dir,
                      outputPath=u'output', log=None):
@@ -125,7 +125,7 @@ class MakeInfo(object):
 
         # Combine categories
         categories, printedCats = MakeInfo.handle_categories(
-            cat_meta, cat_stich, cat_photographer, objData, testing)
+            cat_meta, cat_stich, cat_photographer, objData)
 
         if testing:
             catData = u'%r/%r|%s' % (len(printedCats) - len(cat_meta),
@@ -181,19 +181,19 @@ class MakeInfo(object):
 
     def handle_stichwort(self, pho_info, cat_meta):
         """Isolate original stichwort and find mapped categories."""
-        stichIds = helpers.split_multi_valued(pho_info[u'PstId'])
+        stich_ids = helpers.split_multi_valued(pho_info[u'PstId'])
         orig_stich = []
         cat_stich = []
-        if stichIds:
-            for s in stichIds:
-                stichKey = self.stichD[s][u'StiBezeichnungS']
-                orig_stich.append(stichKey)
-                stichKey = stichKey.lower()
+        if stich_ids:
+            for s in stich_ids:
+                stich_key = self.stichD[s][u'StiBezeichnungS']
+                orig_stich.append(stich_key)
+                stich_key = stich_key.lower()
                 # map to actual category
-                if self.stichC.get(stichKey):
-                    for sc in self.stichC[stichKey]:
+                if self.stichC.get(stich_key):
+                    for sc in self.stichC[stich_key]:
                         cat_stich.append(sc)
-                elif stichKey in self.stichC.keys():
+                elif stich_key in self.stichC.keys():
                     cat_meta.append(u'unmatched keyword')
         if not cat_stich:
             cat_stich = None
@@ -316,8 +316,7 @@ class MakeInfo(object):
                 obj_data[u'cat_depicted'] += v[u'cat_depicted']
 
     @staticmethod
-    def handle_categories(cat_meta, cat_stich, cat_photographer,
-                          obj_data, testing):
+    def handle_categories(cat_meta, cat_stich, cat_photographer, obj_data):
         """Combine categories into a single text block."""
         # Categories need de-duplidication
         categories = u''
@@ -465,8 +464,7 @@ class MakeInfo(object):
         self.handle_events(events, data, cat_meta)
 
         # ObjMul
-        if mulId:
-            self.multiCruncher(mulId, data, cat_meta)
+        self.multiCruncher(mulId, data, cat_meta)
 
         # ObjMass
         self.handle_dimensions(dimensions, data, cat_meta)
@@ -631,9 +629,9 @@ class MakeInfo(object):
                     if data[u'death_year']:
                         death_year = max(data[u'death_year'], int(death_year))
                     data[u'death_year'] = death_year
-            if role in self.role_mappings['creative_roles']:
-                if self.peopleCatC.get(kue_id):
-                    cat_artist.append(self.peopleCatC[kue_id])
+            if role in self.role_mappings['creative_roles'] and \
+                    self.peopleCatC.get(kue_id):
+                cat_artist.append(self.peopleCatC[kue_id])
 
         # store in data
         # TODO: check if final output differes between
@@ -659,13 +657,12 @@ class MakeInfo(object):
         # objcategories from group and classification
         cat_obj = []
         # group if source == HWY
-        if source == u'HWY':
-            if group:
-                if self.objCatC.get(group):
-                    for sc in self.objCatC[group]:
-                        cat_obj.append(sc)
-                elif group in self.objCatC.keys():
-                    cat_meta.append(u'unmatched objKeyword')
+        if source == u'HWY' and group:
+            if self.objCatC.get(group):
+                for sc in self.objCatC[group]:
+                    cat_obj.append(sc)
+            elif group in self.objCatC.keys():
+                cat_meta.append(u'unmatched objKeyword')
 
         # classifiction for the others
         # note failiure for ord2 keywords containing a comma
@@ -726,12 +723,17 @@ class MakeInfo(object):
             data[u'dimensions'] = dims
 
     def multiCruncher(self, mulId, data, cat_meta):
+        # skip on empty
+        if not mulId:
+            return
+
         tOrt = []
         tLand = []
         title_en = set()
         title_orig = set()
         material_tech = set()
         sign = set()
+        # TODO externalise these
         mat_techTypes = [u'material', u'material och teknik', u'teknik']
         sigTypes = [u'signatur/påskrift', u'signering', u'signatur']
         okTypes = [u'tillverkningsort', u'tillverkningsland', u'titel (engelsk)',

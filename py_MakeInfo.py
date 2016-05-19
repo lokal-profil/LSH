@@ -635,14 +635,12 @@ class MakeInfo(object):
         for e in events:
             event_key = self.ereignisD[e][u'ErgKurztitelS']
             # map to actual category
-            if event_key in self.ereignisC.keys() and \
-                    self.ereignisC[event_key]:
+            if self.ereignisC.get(event_key):
                 for ec in self.ereignisC[event_key]:
                     cat_event.append(ec)
             elif event_key in self.ereignisC.keys():
                 data[u'cat_meta'].append(u'unmatched event')
-            if event_key in self.ereignisLinkC.keys() and \
-                    self.ereignisLinkC[event_key]:
+            if self.ereignisLinkC.get(event_key):
                 orig_event.append(u'[[%s|%s]]'
                                   % (self.ereignisLinkC[event_key],
                                      event_key))
@@ -771,8 +769,7 @@ class MakeInfo(object):
         # note failiure for ord2 keywords containing a comma
         if classification:
             if u'(' not in classification:
-                if classification in self.objCatC.keys() and \
-                        self.objCatC[classification]:
+                if self.objCatC.get(classification):
                     for sc in self.objCatC[classification]:
                         cat_obj.append(sc)
                 elif classification in self.objCatC.keys():
@@ -794,8 +791,7 @@ class MakeInfo(object):
                         else:
                             ord2 = p[pos + 1:].split(',')
                             ord2 = ord2[-1].strip()  # keep only last word
-                            if ord2 in self.objCatC.keys() and \
-                                    self.objCatC[ord2]:
+                            if self.objCatC.get(ord2):
                                 for sc in self.objCatC[ord2]:
                                     cat_obj.append(sc)
                             elif ord2 in self.objCatC.keys():
@@ -854,8 +850,7 @@ class MakeInfo(object):
                     sign.add(value)
                 elif typ in mat_techTypes:
                     value = value.lower()
-                    if value in self.materialC.keys() and \
-                            self.materialC[value]:
+                    if self.materialC.get(value):
                         for sc in self.materialC[value]:
                             value = u'{{technique|%s}}' % sc
                             if val_cmt:
@@ -1018,9 +1013,7 @@ class MakeInfo(object):
 
     # formating output
     def formatKuenstler(self, kueId, cat_meta, creative=False):
-        if creative and \
-                kueId in self.peopleCreatC.keys() and \
-                self.peopleCreatC[kueId]:
+        if creative and self.peopleCreatC.get(kueId):
             return u'{{%s}}' % self.peopleCreatC[kueId]
         elif creative and kueId in self.peopleCreatC.keys():
             cat_meta.append(u'unmatched creator')

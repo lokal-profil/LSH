@@ -517,7 +517,7 @@ class MakeInfo(object):
                 f_name = u'%s.%s' % (self.wikinameD[so]['filename'],
                                      self.wikinameD[so]['ext'])
                 filenames.append(f_name)
-        return MakeInfo.makeGallery(gallery_title, filenames, printed_pics)
+        return MakeInfo.make_gallery(gallery_title, filenames, printed_pics)
 
     def output_related(self, related_object, printed_pics):
         """Make a gallery with images of related objects."""
@@ -534,8 +534,8 @@ class MakeInfo(object):
                                      self.wikinameD[ro]['ext'])
                 filenames.append(f_name)
                 captions[f_name] = caption
-        return MakeInfo.makeGallery(gallery_title, filenames,
-                                    printed_pics, captions=captions)
+        return MakeInfo.make_gallery(gallery_title, filenames,
+                                     printed_pics, captions=captions)
 
     def infoFromObject(self, objId, data):
         """Return a dictionary of information based on an objId."""
@@ -1046,7 +1046,7 @@ class MakeInfo(object):
         return out.strip()
 
     @staticmethod
-    def makeGallery(gallery_title, filenames, printed, captions=None):
+    def make_gallery(gallery_title, filenames, printed, captions=None):
         """
         Given a list of objects add the corresponding images to a gallery.
 

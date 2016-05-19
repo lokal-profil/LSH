@@ -115,7 +115,7 @@ class TestFormatDepicted(unittest.TestCase):
 
 
 class testMakeGallery(unittest.TestCase):
-    """Test MakeInfo.makeGallery()."""
+    """Test MakeInfo.make_gallery()."""
 
     def setUp(self):
         self.title = u'galleryTitle'
@@ -134,7 +134,7 @@ class testMakeGallery(unittest.TestCase):
     def test_make_gallery_empty(self):
         expected_gallery = ''
         expected_printed = []
-        self.assertEqual(MakeInfo.makeGallery(self.title, [], self.printed),
+        self.assertEqual(MakeInfo.make_gallery(self.title, [], self.printed),
                          expected_gallery)
         self.assertItemsEqual(self.printed, expected_printed)
 
@@ -144,7 +144,7 @@ class testMakeGallery(unittest.TestCase):
                            u'</gallery>'
         expected_printed = ['foo.jpg']
         files = ['foo.jpg']
-        self.assertEqual(MakeInfo.makeGallery(self.title, files, self.printed),
+        self.assertEqual(MakeInfo.make_gallery(self.title, files, self.printed),
                          expected_gallery)
         self.assertItemsEqual(self.printed, expected_printed)
 
@@ -155,7 +155,7 @@ class testMakeGallery(unittest.TestCase):
                            u'</gallery>'
         expected_printed = ['foo.jpg']
         files = ['foo.jpg', 'foo.jpg']
-        self.assertEqual(MakeInfo.makeGallery(self.title, files, self.printed),
+        self.assertEqual(MakeInfo.make_gallery(self.title, files, self.printed),
                          expected_gallery)
         self.assertItemsEqual(self.printed, expected_printed)
 
@@ -165,7 +165,7 @@ class testMakeGallery(unittest.TestCase):
         expected_printed = ['foo.jpg']
         self.printed = ['foo.jpg']
         files = ['foo.jpg', ]
-        self.assertEqual(MakeInfo.makeGallery(self.title, files, self.printed),
+        self.assertEqual(MakeInfo.make_gallery(self.title, files, self.printed),
                          expected_gallery)
         self.assertItemsEqual(self.printed, expected_printed)
 
@@ -178,7 +178,7 @@ class testMakeGallery(unittest.TestCase):
         expected_printed = ['foo1.jpg', 'foo2.jpg', 'foo3.jpg']
         files = ['foo1.jpg', 'foo2.jpg', 'foo3.jpg']
         self.assert_same_gallery_content(
-            MakeInfo.makeGallery(self.title, files, self.printed),
+            MakeInfo.make_gallery(self.title, files, self.printed),
             expected_gallery)
         self.assertItemsEqual(self.printed, expected_printed)
 
@@ -192,6 +192,6 @@ class testMakeGallery(unittest.TestCase):
         captions = {u'foo1.jpg': u'The foo',
                     u'foo2.jpg': u'The bar'}
         self.assert_same_gallery_content(
-            MakeInfo.makeGallery(self.title, files, self.printed, captions=captions),
+            MakeInfo.make_gallery(self.title, files, self.printed, captions=captions),
             expected_gallery)
         self.assertItemsEqual(self.printed, expected_printed)

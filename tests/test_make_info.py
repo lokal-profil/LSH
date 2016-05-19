@@ -1,10 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8  -*-
 import unittest
-from py_MakeInfo import (
-    MakeInfo,
-    ImageInfo
-)
+from py_MakeInfo import ImageInfo
 
 
 class TestEmptyValueFormater(unittest.TestCase):
@@ -54,49 +51,61 @@ class TestMultiValueFormater(unittest.TestCase):
             expected)
 
 
-class TestDepictedFormater(unittest.TestCase):
-    """Test MakeInfo.depictedFormater()."""
+class TestFormatDepicted(unittest.TestCase):
+    """Test ImageInfo.format_depicted()."""
 
-    def test_depictedFormater_with_single(self):
+    def test_format_depicted_with_empty(self):
+        expected = u''
+        value = []
+        self.assertEqual(ImageInfo.format_depicted(value),
+                         expected)
+
+    def test_format_depicted_with_single(self):
         expected = u'{{depicted person|p1|style=plain text}}\n'
         value = ['p1', ]
-        self.assertEqual(MakeInfo.depictedFormater(value),
+        self.assertEqual(ImageInfo.format_depicted(value),
                          expected)
 
-    def test_depictedFormater_with_few(self):
+    def test_format_depicted_with_few(self):
         expected = u'{{depicted person|p1|p2|p3|style=plain text}}\n'
         value = ['p1', 'p2', 'p3']
-        self.assertEqual(MakeInfo.depictedFormater(value),
+        self.assertEqual(ImageInfo.format_depicted(value),
                          expected)
 
-    def test_depictedFormater_with_max(self):
+    def test_format_depicted_with_max(self):
         expected = u'{{depicted person|p1|p2|p3|p4|p5|p6|p7|p8|p9|style=plain text}}\n'
         value = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9']
-        self.assertEqual(MakeInfo.depictedFormater(value),
+        self.assertEqual(ImageInfo.format_depicted(value),
                          expected)
 
-    def test_depictedFormater_with_many(self):
+    def test_format_depicted_with_many(self):
         expected = u'{{depicted person|p1|p2|p3|p4|p5|p6|p7|p8|p9|style=plain text}}\n' \
                    u'{{depicted person|p10|style=plain text}}\n'
         value = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10']
-        self.assertEqual(MakeInfo.depictedFormater(value),
+        self.assertEqual(ImageInfo.format_depicted(value),
                          expected)
 
-    def test_depictedFormater_with_single_and_inv_nr(self):
+    def test_format_depicted_with_single_and_inv_nr(self):
         expected = u'{{depicted person|p1|style=plain text|comment=invNr}}\n'
         value = ['p1', ]
-        self.assertEqual(MakeInfo.depictedFormater(value, inv_nr='invNr'),
+        self.assertEqual(ImageInfo.format_depicted(value, inv_nr='invNr'),
                          expected)
 
-    def test_depictedFormater_with_few_and_inv_nr(self):
+    def test_format_depicted_with_empty_and_inv_nr(self):
+        expected = u''
+        value = []
+        self.assertEqual(ImageInfo.format_depicted(value, inv_nr='invNr'),
+                         expected)
+
+    def test_format_depicted_with_few_and_inv_nr(self):
         expected = u'{{depicted person|p1|p2|p3|style=plain text|comment=invNr}}\n'
         value = ['p1', 'p2', 'p3']
-        self.assertEqual(MakeInfo.depictedFormater(value, inv_nr='invNr'),
+        self.assertEqual(ImageInfo.format_depicted(value, inv_nr='invNr'),
                          expected)
 
-    def test_depictedFormater_with_many_and_inv_nr(self):
+    def test_format_depicted_with_many_and_inv_nr(self):
         expected = u'{{depicted person|p1|p2|p3|p4|p5|p6|p7|p8|p9|style=plain text|comment=invNr}}\n' \
                    u'{{depicted person|p10|style=plain text|comment=invNr}}\n'
         value = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10']
-        self.assertEqual(MakeInfo.depictedFormater(value, inv_nr='invNr'),
+        self.assertEqual(ImageInfo.format_depicted(value, inv_nr='invNr'),
                          expected)

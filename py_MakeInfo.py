@@ -111,10 +111,10 @@ class ImageInfo(object):
                 for dep in self.obj_data['depicted']:
                     inv_nr_dep = dep[0]
                     # depList = dep[1]
-                    text += MakeInfo.depictedFormater(
+                    text += ImageInfo.format_depicted(
                         self.obj_data['depicted'], inv_nr=inv_nr_dep)
             else:
-                text += MakeInfo.depictedFormater(self.obj_data['depicted'])
+                text += ImageInfo.format_depicted(self.obj_data['depicted'])
         if self.obj_data['description']:
             text += u'{{sv|1=%s}}\n' % self.obj_data['description']
         else:
@@ -191,6 +191,20 @@ class ImageInfo(object):
             text += u'%s\n' % '\n* '.join(values)
         else:
             text += u'\n'
+        return text
+
+    @staticmethod
+    def format_depicted(depicted, inv_nr=None):
+        """Format list of people with {{depicted person}} templates."""
+        max_people = 9  # max entries in a single template
+        ending = u'style=plain text'
+        if inv_nr:
+            ending = u'%s|comment=%s' % (ending, inv_nr)
+        text = u''
+        while depicted:
+            text += u'{{depicted person|%s|%s}}\n' \
+                    % ('|'.join(depicted[:max_people]), ending)
+            depicted = depicted[max_people:]
         return text
 
 
@@ -1034,32 +1048,6 @@ class MakeInfo(object):
             place = u'%s, %s' % (ort, land)
         out = u'%s%s%s' % (name.strip(), bracket, place.strip())
         return out.strip()
-
-    @staticmethod
-    def depictedFormater(depicted, inv_nr=None):
-        '''takes a list of people and returns one or more depicted people templates'''
-        ending = u'style=plain text'
-        if inv_nr:
-            ending = u'%s|comment=%s' % (ending, inv_nr)
-        if len(depicted) < 9:
-            return u'{{depicted person|%s|%s}}\n' \
-                   % ('|'.join(depicted), ending)
-        else:
-            text = ''
-            i = 0
-            start = True
-            for d in depicted:
-                if start:
-                    text += u'{{depicted person|'
-                    start = False
-                i += 1
-                text += u'%s|' % d
-                if i % 9 == 0:
-                    text += u'%s}}\n' % ending
-                    start = True
-            if not start:
-                text += u'%s}}\n' % ending
-            return text
 
     @staticmethod
     def makeGallery(galleryTitle, filenames, printed, addTo, captions=None):

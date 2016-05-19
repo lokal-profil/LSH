@@ -132,65 +132,66 @@ class testMakeGallery(unittest.TestCase):
         self.assertItemsEqual(actual_lines[1:-1], expected_lines[1:-1])
 
     def test_make_gallery_empty(self):
-        expected = ('', [])
+        expected_gallery = ''
+        expected_printed = []
         self.assertEqual(MakeInfo.makeGallery(self.title, [], self.printed),
-                         expected)
-        self.assertItemsEqual(self.printed, [])
+                         expected_gallery)
+        self.assertItemsEqual(self.printed, expected_printed)
 
     def test_make_gallery_single(self):
-        expected = (u'\n<gallery caption="galleryTitle">\n'
-                    u'File:foo.jpg\n'
-                    u'</gallery>',
-                    ['foo.jpg'])
+        expected_gallery = u'\n<gallery caption="galleryTitle">\n' \
+                           u'File:foo.jpg\n' \
+                           u'</gallery>'
+        expected_printed = ['foo.jpg']
         files = ['foo.jpg']
         self.assertEqual(MakeInfo.makeGallery(self.title, files, self.printed),
-                         expected)
-        self.assertItemsEqual(self.printed, ['foo.jpg'])
+                         expected_gallery)
+        self.assertItemsEqual(self.printed, expected_printed)
 
     def test_make_gallery_duplicate(self):
         """Ensure internal duplicates are not outputted."""
-        expected = (u'\n<gallery caption="galleryTitle">\n'
-                    u'File:foo.jpg\n'
-                    u'</gallery>',
-                    ['foo.jpg'])
+        expected_gallery = u'\n<gallery caption="galleryTitle">\n' \
+                           u'File:foo.jpg\n' \
+                           u'</gallery>'
+        expected_printed = ['foo.jpg']
         files = ['foo.jpg', 'foo.jpg']
         self.assertEqual(MakeInfo.makeGallery(self.title, files, self.printed),
-                         expected)
-        self.assertItemsEqual(self.printed, ['foo.jpg'])
+                         expected_gallery)
+        self.assertItemsEqual(self.printed, expected_printed)
 
     def test_make_gallery_reprint(self):
         """Ensure already outputted images are not re-outputted."""
-        expected = ('', ['foo.jpg'])
+        expected_gallery = ''
+        expected_printed = ['foo.jpg']
         self.printed = ['foo.jpg']
         files = ['foo.jpg', ]
         self.assertEqual(MakeInfo.makeGallery(self.title, files, self.printed),
-                         expected)
-        self.assertItemsEqual(self.printed, ['foo.jpg'])
+                         expected_gallery)
+        self.assertItemsEqual(self.printed, expected_printed)
 
     def test_make_gallery_multiple(self):
-        expected = (u'\n<gallery caption="galleryTitle">\n'
-                    u'File:foo1.jpg\n'
-                    u'File:foo2.jpg\n'
-                    u'File:foo3.jpg\n'
-                    u'</gallery>',
-                    ['foo1.jpg', 'foo2.jpg', 'foo3.jpg'])
+        expected_gallery = u'\n<gallery caption="galleryTitle">\n' \
+                           u'File:foo1.jpg\n' \
+                           u'File:foo2.jpg\n' \
+                           u'File:foo3.jpg\n' \
+                           u'</gallery>'
+        expected_printed = ['foo1.jpg', 'foo2.jpg', 'foo3.jpg']
         files = ['foo1.jpg', 'foo2.jpg', 'foo3.jpg']
-        result = MakeInfo.makeGallery(self.title, files, self.printed)
-        self.assert_same_gallery_content(result[0], expected[0])
-        self.assertItemsEqual(result[1], expected[1])
-        self.assertItemsEqual(self.printed, ['foo1.jpg', 'foo2.jpg', 'foo3.jpg'])
+        self.assert_same_gallery_content(
+            MakeInfo.makeGallery(self.title, files, self.printed),
+            expected_gallery)
+        self.assertItemsEqual(self.printed, expected_printed)
 
     def test_make_gallery_captions(self):
-        expected = (u'\n<gallery caption="galleryTitle">\n'
-                    u'File:foo1.jpg|The foo\n'
-                    u'File:foo2.jpg|The bar\n'
-                    u'</gallery>',
-                    ['foo1.jpg', 'foo2.jpg'])
+        expected_gallery = u'\n<gallery caption="galleryTitle">\n' \
+                           u'File:foo1.jpg|The foo\n' \
+                           u'File:foo2.jpg|The bar\n' \
+                           u'</gallery>'
+        expected_printed = ['foo1.jpg', 'foo2.jpg']
         files = ['foo1.jpg', 'foo2.jpg']
         captions = {u'foo1.jpg': u'The foo',
                     u'foo2.jpg': u'The bar'}
-        result = MakeInfo.makeGallery(self.title, files, self.printed,
-                                      captions=captions)
-        self.assert_same_gallery_content(result[0], expected[0])
-        self.assertItemsEqual(result[1], expected[1])
-        self.assertItemsEqual(self.printed, ['foo1.jpg', 'foo2.jpg'])
+        self.assert_same_gallery_content(
+            MakeInfo.makeGallery(self.title, files, self.printed, captions=captions),
+            expected_gallery)
+        self.assertItemsEqual(self.printed, expected_printed)

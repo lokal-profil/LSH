@@ -497,16 +497,12 @@ class MakeInfo(object):
     def make_see_also(self, pho_info, obj_data):
         """Make a see_also galleries."""
         see_also = u''
-        printed_pics = []  # ensure an image does not appear in both galleries
+        printed_pics = []  # ensure image does not appear in both galleries
         same_object = helpers.split_multi_valued(pho_info[u'same_object'])
         if same_object:
-            gallery, printed_pics = self.output_same_object(
-                same_object, printed_pics)
-            see_also += gallery
+            see_also += self.output_same_object(same_object, printed_pics)
         if obj_data[u'related']:
-            gallery, printed_pics = self.output_related(
-                obj_data[u'related'], printed_pics)
-            see_also += gallery
+            see_also += self.output_related(obj_data[u'related'], printed_pics)
         return see_also
 
     def output_same_object(self, same_object, printed_pics):
@@ -521,8 +517,7 @@ class MakeInfo(object):
                 f_name = u'%s.%s' % (self.wikinameD[so]['filename'],
                                      self.wikinameD[so]['ext'])
                 filenames.append(f_name)
-        return MakeInfo.makeGallery(gallery_title, filenames,
-                                    printed_pics)
+        return MakeInfo.makeGallery(gallery_title, filenames, printed_pics)
 
     def output_related(self, related_object, printed_pics):
         """Make a gallery with images of related objects."""
@@ -1051,16 +1046,16 @@ class MakeInfo(object):
         return out.strip()
 
     @staticmethod
-    def makeGallery(galleryTitle, filenames, printed, captions=None):
+    def makeGallery(gallery_title, filenames, printed, captions=None):
         """
         Given a list of objects add the corresponding images to a gallery.
 
-        Also adds printed images to the list of previously printed images
-        :param galleryTitle: Gallery title
+        Also adds newly printed images to the printed list.
+        :param gallery_title: Gallery title
         :param filenames: list of (Commons) filenames
-        :param printed: list previously printed images
+        :param printed: list of previously printed images
         :param captions: a {filename: caption} dict. Defaults to None
-        :return: str, list
+        :return: str
         """
         # check for duplicates
         filenames = list(set(filenames))  # remove internal duplicates
@@ -1071,17 +1066,17 @@ class MakeInfo(object):
 
         # escape if all were dupes
         if not filenames:
-            return '', printed
+            return ''
 
         # output
-        text = u'\n<gallery caption="%s">\n' % galleryTitle
-        for filename in filenames:
-            if captions is not None:
+        text = u'\n<gallery caption="%s">\n' % gallery_title
+        if captions is not None:
+            for filename in filenames:
                 text += u'File:%s|%s\n' % (filename, captions[filename])
-            else:
-                text += u'File:%s\n' % (filename)
+        else:
+            text += u'File:%s\n' % '\nFile:'.join(filenames)
         text += u'</gallery>'
-        return text, printed
+        return text
 
     @staticmethod
     def makeCategory(caption, lList, printed, addTo, pre=u''):
@@ -1128,10 +1123,8 @@ class MakeInfo(object):
 
     @staticmethod
     def make_role_input_mappings():
-        """Loads various role mappings for later use.
-
-        TODO: load this from an external json instead.
-        """
+        """Loads various role mappings for later use."""
+        # Todo. Consider replacing by external json mapping
         roles = {
             'artist': [
                 u'Konstnär', u'Upphovsman', u'Författare', u'Kompositör'],

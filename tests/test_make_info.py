@@ -114,7 +114,7 @@ class TestFormatDepicted(unittest.TestCase):
                          expected)
 
 
-class testMakeGallery(unittest.TestCase):
+class TestMakeGallery(unittest.TestCase):
     """Test MakeInfo.make_gallery()."""
 
     def setUp(self):
@@ -122,7 +122,7 @@ class testMakeGallery(unittest.TestCase):
         self.printed = []
 
     def assert_same_gallery_content(self, actual, expected):
-        """Assert that gallery is same, up to order of items."""
+        """Assert that gallery is same, up to order its entries."""
         actual_lines = actual.split('\n')
         expected_lines = expected.split('\n')
         # check first and last line
@@ -144,8 +144,9 @@ class testMakeGallery(unittest.TestCase):
                            u'</gallery>'
         expected_printed = ['foo.jpg']
         files = ['foo.jpg']
-        self.assertEqual(MakeInfo.make_gallery(self.title, files, self.printed),
-                         expected_gallery)
+        self.assertEqual(
+            MakeInfo.make_gallery(self.title, files, self.printed),
+            expected_gallery)
         self.assertItemsEqual(self.printed, expected_printed)
 
     def test_make_gallery_duplicate(self):
@@ -155,8 +156,9 @@ class testMakeGallery(unittest.TestCase):
                            u'</gallery>'
         expected_printed = ['foo.jpg']
         files = ['foo.jpg', 'foo.jpg']
-        self.assertEqual(MakeInfo.make_gallery(self.title, files, self.printed),
-                         expected_gallery)
+        self.assertEqual(
+            MakeInfo.make_gallery(self.title, files, self.printed),
+            expected_gallery)
         self.assertItemsEqual(self.printed, expected_printed)
 
     def test_make_gallery_reprint(self):
@@ -165,8 +167,9 @@ class testMakeGallery(unittest.TestCase):
         expected_printed = ['foo.jpg']
         self.printed = ['foo.jpg']
         files = ['foo.jpg', ]
-        self.assertEqual(MakeInfo.make_gallery(self.title, files, self.printed),
-                         expected_gallery)
+        self.assertEqual(
+            MakeInfo.make_gallery(self.title, files, self.printed),
+            expected_gallery)
         self.assertItemsEqual(self.printed, expected_printed)
 
     def test_make_gallery_multiple(self):
@@ -192,6 +195,7 @@ class testMakeGallery(unittest.TestCase):
         captions = {u'foo1.jpg': u'The foo',
                     u'foo2.jpg': u'The bar'}
         self.assert_same_gallery_content(
-            MakeInfo.make_gallery(self.title, files, self.printed, captions=captions),
+            MakeInfo.make_gallery(self.title, files, self.printed,
+                                  captions=captions),
             expected_gallery)
         self.assertItemsEqual(self.printed, expected_printed)

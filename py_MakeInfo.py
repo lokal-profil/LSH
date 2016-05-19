@@ -10,6 +10,14 @@
 #
 # Set up an infoObject which in turn contains the makeTemplate function
 #
+# Replace to following:
+# bla = []
+# ...
+# if bla
+#   data[bla] = bla
+# With:
+# data[bla] = bla = [] (whenever end consumer doesn't explicitly look for "bla not in data.keys()"
+#
 import codecs
 import os
 import helpers
@@ -73,9 +81,11 @@ class ImageInfo(object):
         if preview:
             text += u'%s\n' % self.wikiname
         text += u'{{LSH artwork\n'
-        text += ImageInfo.format_multi_value_template_parameter('artist', self.obj_data['artist'])
+        text += ImageInfo.format_multi_value_parameter(
+            'artist', self.obj_data['artist'])
         if self.obj_data['manufacturer']:
-            text += ImageInfo.format_multi_value_template_parameter('manufacturer', self.obj_data['manufacturer'])
+            text += ImageInfo.format_multi_value_parameter(
+                'manufacturer', self.obj_data['manufacturer'])
         text += u'|title= '
         if self.obj_data['title_orig'] or self.obj_data['title_en']:
             titlar = u'{{Title\n'
@@ -99,9 +109,10 @@ class ImageInfo(object):
         if self.obj_data['depicted']:
             if self.obj_data['multiple']:
                 for dep in self.obj_data['depicted']:
-                    invNrDep = dep[0]
+                    inv_nr_dep = dep[0]
                     # depList = dep[1]
-                    text += MakeInfo.depictedFormater(self.obj_data['depicted'], invNr=invNrDep)
+                    text += MakeInfo.depictedFormater(
+                        self.obj_data['depicted'], inv_nr=inv_nr_dep)
             else:
                 text += MakeInfo.depictedFormater(self.obj_data['depicted'])
         if self.obj_data['description']:
@@ -114,7 +125,8 @@ class ImageInfo(object):
         else:
             text += u'\n'
         if self.obj_data['orig_event']:
-            text += ImageInfo.format_multi_value_template_parameter('event', self.obj_data['orig_event'])
+            text += ImageInfo.format_multi_value_parameter(
+                'event', self.obj_data['orig_event'])
         text += u'|date= '
         if self.obj_data['multiple'] and self.obj_data['date']:
             text += u'\n* %s\n' % '\n* '.join(self.obj_data['date'])
@@ -127,12 +139,17 @@ class ImageInfo(object):
             text += u'%s\n' % u' - '.join(self.obj_data['material_tech'])
         else:
             text += u'\n'
-        text += ImageInfo.format_multi_value_template_parameter('dimensions', self.obj_data['dimensions'])
+        text += ImageInfo.format_multi_value_parameter(
+            'dimensions', self.obj_data['dimensions'])
         text += u'|source= %s\n' % self.source
-        text += ImageInfo.format_multi_value_template_parameter('provenance', self.obj_data['owner'])
-        text += ImageInfo.format_multi_value_template_parameter('exhibition', self.obj_data['exhibits'])
-        text += ImageInfo.format_multi_value_template_parameter('inscriptions', self.obj_data['signature'])
-        text += ImageInfo.format_multi_value_template_parameter('place of origin', self.obj_data['place'])
+        text += ImageInfo.format_multi_value_parameter(
+            'provenance', self.obj_data['owner'])
+        text += ImageInfo.format_multi_value_parameter(
+            'exhibition', self.obj_data['exhibits'])
+        text += ImageInfo.format_multi_value_parameter(
+            'inscriptions', self.obj_data['signature'])
+        text += ImageInfo.format_multi_value_parameter(
+            'place of origin', self.obj_data['place'])
         text += u'|original filename= %s\n' % self.orig_file
         if self.obj_data['multiple']:
             text += u'|object-multiple= \n* %s\n' % '\n* '.join(self.obj_data['invNr'])
@@ -142,7 +159,8 @@ class ImageInfo(object):
         text += u'|photo-id= %s\n' % self.photo_id
         text += u'|photo-license= %s\n' % self.photo_license
         text += u'|photographer= %s\n' % self.photographer
-        text += ImageInfo.format_empty_value_template_parameter('deathyear', self.obj_data['death_year'])
+        text += ImageInfo.format_empty_value_parameter(
+            'deathyear', self.obj_data['death_year'])
         text += u'|other_versions= %s\n' % self.see_also
         if preview:
             text += u'}}<pre>\n%s</pre>\n' % self.categories
@@ -151,7 +169,7 @@ class ImageInfo(object):
         return text.replace(u'<!>', u'<br/>')
 
     @staticmethod
-    def format_empty_value_template_parameter(param, value):
+    def format_empty_value_parameter(param, value):
         """Format a template parameter which can be empty."""
         text = u'|%s= ' % param
         if value:
@@ -161,7 +179,7 @@ class ImageInfo(object):
         return text
 
     @staticmethod
-    def format_multi_value_template_parameter(param, values):
+    def format_multi_value_parameter(param, values):
         """Format a template parameter which can be multi-valued.
 
         If values is empty this returns an empty parameter
@@ -289,6 +307,8 @@ class MakeInfo(object):
         image_info.see_also = self.make_see_also(phoInfo, image_info.obj_data)
 
         # Combine categories
+        # TODO: rename this format_categories and consider doing it in ImageInfo
+        #       since it is related to outputting
         image_info.categories, printedCats = MakeInfo.handle_categories(
             cat_meta, cat_stich, cat_photographer, image_info.obj_data)
 
@@ -1016,11 +1036,11 @@ class MakeInfo(object):
         return out.strip()
 
     @staticmethod
-    def depictedFormater(depicted, invNr=None):
+    def depictedFormater(depicted, inv_nr=None):
         '''takes a list of people and returns one or more depicted people templates'''
         ending = u'style=plain text'
-        if invNr:
-            ending = u'%s|comment=%s' % (ending, invNr)
+        if inv_nr:
+            ending = u'%s|comment=%s' % (ending, inv_nr)
         if len(depicted) < 9:
             return u'{{depicted person|%s|%s}}\n' \
                    % ('|'.join(depicted), ending)

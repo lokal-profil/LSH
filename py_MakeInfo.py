@@ -500,14 +500,16 @@ class MakeInfo(object):
         printed_pics = []  # ensure an image does not appear in both galleries
         same_object = helpers.split_multi_valued(pho_info[u'same_object'])
         if same_object:
-            see_also, printed_pics = self.output_same_object(
-                same_object, see_also, printed_pics)
+            gallery, printed_pics = self.output_same_object(
+                same_object, printed_pics)
+            see_also += gallery
         if obj_data[u'related']:
-            see_also, printed_pics = self.output_related(
-                obj_data[u'related'], see_also, printed_pics)
+            gallery, printed_pics = self.output_related(
+                obj_data[u'related'], printed_pics)
+            see_also += gallery
         return see_also
 
-    def output_same_object(self, same_object, see_also, printed_pics):
+    def output_same_object(self, same_object, printed_pics):
         """Make a gallery with other images of the same object."""
         gallery_title = u'Different images of same object'
         filenames = []
@@ -520,9 +522,9 @@ class MakeInfo(object):
                                      self.wikinameD[so]['ext'])
                 filenames.append(f_name)
         return MakeInfo.makeGallery(gallery_title, filenames,
-                                    printed_pics, see_also)
+                                    printed_pics)
 
-    def output_related(self, related_object, see_also, printed_pics):
+    def output_related(self, related_object, printed_pics):
         """Make a gallery with images of related objects."""
         gallery_title = u'Related objects'
         filenames = []
@@ -538,8 +540,7 @@ class MakeInfo(object):
                 filenames.append(f_name)
                 captions[f_name] = caption
         return MakeInfo.makeGallery(gallery_title, filenames,
-                                    printed_pics, see_also,
-                                    captions=captions)
+                                    printed_pics, captions=captions)
 
     def infoFromObject(self, objId, data):
         """Return a dictionary of information based on an objId."""
@@ -1050,14 +1051,14 @@ class MakeInfo(object):
         return out.strip()
 
     @staticmethod
-    def makeGallery(galleryTitle, filenames, printed, addTo, captions=None):
+    def makeGallery(galleryTitle, filenames, printed, captions=None):
         """
-        Given a list of objects add the corresponding images to a gallery
+        Given a list of objects add the corresponding images to a gallery.
+
         Also adds printed images to the list of previously printed images
         :param galleryTitle: Gallery title
         :param filenames: list of (Commons) filenames
         :param printed: list previously printed images
-        :param addTo: text to add the output to
         :param captions: a {filename: caption} dict. Defaults to None
         :return: str, list
         """
@@ -1070,10 +1071,10 @@ class MakeInfo(object):
 
         # escape if all were dupes
         if not filenames:
-            return addTo, printed
+            return '', printed
 
         # output
-        text = addTo + u'\n<gallery caption="%s">\n' % galleryTitle
+        text = u'\n<gallery caption="%s">\n' % galleryTitle
         for filename in filenames:
             if captions is not None:
                 text += u'File:%s|%s\n' % (filename, captions[filename])

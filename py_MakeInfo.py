@@ -665,14 +665,18 @@ class MakeInfo(object):
         # process all roles
         for r in roles:
             role, role_cmt, kue_id = r.split(':')
-            if role_cmt in self.role_mappings['bad_cmts']:
+            if role_cmt in self.role_mappings['bad_cmts'] or \
+                    role not in self.role_mappings['ok_roles']:
                 continue
-            if role in self.role_mappings['ok_roles']:
-                name = self.formatKuenstler(
-                    kue_id, data[u'cat_meta'],
-                    role in self.role_mappings['creative_roles'])
-                if role in self.rolesC.keys():
-                    name = u'%s: %s' % (self.rolesC[role], name)
+
+            # format name
+            name = self.format_person(
+                kue_id, data[u'cat_meta'],
+                role in self.role_mappings['creative_roles'])
+            if role in self.rolesC.keys():
+                name = u'%s: %s' % (self.rolesC[role], name)
+
+            # store as right type
             if role in self.role_mappings['manufacturer']:
                 manufacturer.append(name)
             elif role in self.role_mappings['owner']:
@@ -685,9 +689,12 @@ class MakeInfo(object):
                 artist.append(name)
                 death_year = self.kuenstlerD[kue_id][u'KudJahrBisL']
                 if death_year:
+                    # we only care about when the last person died
                     if data[u'death_year']:
                         death_year = max(data[u'death_year'], int(death_year))
                     data[u'death_year'] = death_year
+
+            # add artist category
             if role in self.role_mappings['creative_roles'] and \
                     self.peopleCatC.get(kue_id):
                 cat_artist.append(self.peopleCatC[kue_id])
@@ -943,9 +950,14 @@ class MakeInfo(object):
                 returns.append(u'%s: %s' % (d[0], d[1]))
         return returns
 
-    # formating output
-    def formatKuenstler(self, kueId, cat_meta, creative=False):
-        """Create formated string for an identified artist/person."""
+    # formatting output
+    def format_person(self, kueId, cat_meta, creative=False):
+        """Create formatted string for an identified artist/person (kuenstler).
+
+        If no creator templates or links/categories are present then the
+        full format used is:
+        FirstName LastName (profession, birth_year-death_year) city, country
+        """
         # return creator template if appropriate and one is known
         if creative and self.peopleCreatC.get(kueId):
             return u'{{%s}}' % self.peopleCreatC[kueId]
@@ -954,23 +966,29 @@ class MakeInfo(object):
 
         kuenstler = self.kuenstlerD[kueId]
         name = u'%s %s' % (kuenstler[u'KueVorNameS'], kuenstler[u'KueNameS'])
+        name = name.strip()
+        # return a link, if one is known
         if self.peopleLinkC.get(kueId):
-            return u'[[%s|%s]]' % (self.peopleLinkC[kueId], name.strip())
-        bYear = kuenstler[u'KudJahrVonL']
-        dYear = kuenstler[u'KudJahrBisL']
-        ort = kuenstler[u'KudOrtS']
-        land = kuenstler[u'KudLandS']
-        yrke = kuenstler[u'KueFunktionS']
+            return u'[[%s|%s]]' % (self.peopleLinkC[kueId], name)
+
+        # format profession, year bracket
+        birth_year = kuenstler[u'KudJahrVonL']
+        death_year = kuenstler[u'KudJahrBisL']
+        profession = kuenstler[u'KueFunktionS']
         years = ''
-        if bYear or dYear:
-            years = u'%s-%s' % (bYear, dYear)
-        bracket = u'%s, %s' % (yrke, years)
-        if years or yrke:
+        if birth_year or death_year:
+            years = u'%s-%s' % (birth_year, death_year)
+        bracket = u'%s, %s' % (profession, years)
+        if years or profession:
             bracket = u' (%s) ' % bracket.strip(', ')
-        place = u'%s%s' % (ort, land)
-        if ort and land:
-            place = u'%s, %s' % (ort, land)
-        out = u'%s%s%s' % (name.strip(), bracket, place.strip())
+
+        # format city, country appendix
+        city = kuenstler[u'KudOrtS']
+        country = kuenstler[u'KudLandS']
+        place = u'%s, %s' % (city, country)
+        place = place.strip(', ')
+
+        out = u'%s%s%s' % (name, bracket, place)
         return out.strip()
 
     @staticmethod

@@ -41,38 +41,20 @@ class ImageInfo(object):
         self.obj_ids = None
         self.see_also = None
         self.categories = None
-        self.obj_data = ImageInfo.make_empty_obj_data()
+        self.obj_data = None
 
     @staticmethod
     def make_empty_obj_data():
         """Make obj_data dict with all values initialised to None or False."""
-        return {
-            u'invNr': None,
-            u'title': None,
-            u'description': None,
-            u'date': None,
-            u'source': None,
-            u'artist': None,
-            u'manufacturer': None,
-            u'owner': None,
-            u'depicted': None,
-            u'death_year': None,
-            u'exhibits': None,
-            u'orig_event': None,
-            u'place': None,
-            u'title_orig': None,
-            u'title_en': None,
-            u'material_tech': None,
-            u'signature': None,
-            u'dimensions': None,
-            u'related': None,
-            u'cat_meta': None,
-            u'cat_event': None,
-            u'cat_artist': None,
-            u'cat_depicted': None,
-            u'cat_obj': None,
-            u'multiple': False
-        }
+        obj_data = dict.fromkeys(
+            [u'invNr', u'title', u'description', u'date', u'source', u'artist',
+             u'manufacturer', u'owner', u'depicted', u'death_year',
+             u'exhibits', u'orig_event', u'place', u'title_orig', u'title_en',
+             u'material_tech', u'signature', u'dimensions', u'related',
+             u'cat_meta', u'cat_event', u'cat_artist', u'cat_depicted',
+             u'cat_obj'])
+        obj_data[u'multiple'] = False
+        return obj_data
 
     def make_template(self, preview=False):
         """Output a {{LSH artwork}} for the current ImageInfo object."""
@@ -314,8 +296,7 @@ class MakeInfo(object):
         image_info.orig_stich, cat_stich = self.handle_stichwort(phoInfo, cat_meta)
 
         # objId(s)
-        # TODO pass this the image_info object instead and use already initialised obj_data
-        image_info.obj_ids, image_info.obj_data, source = self.handle_obj_ids(phoInfo, image_info.source, cat_meta)
+        image_info.obj_ids, image_info.obj_data = self.handle_obj_ids(phoInfo, image_info, cat_meta)
 
         # see also
         image_info.see_also = self.make_see_also(phoInfo, image_info.obj_data)
@@ -373,56 +354,51 @@ class MakeInfo(object):
             orig_stich = ', '.join(orig_stich)
         return orig_stich, cat_stich
 
-    def handle_obj_ids(self, pho_info, source, cat_meta):
-        """Handle data extracted through ObjIds for the photo."""
+    def handle_obj_ids(self, pho_info, image_info, cat_meta):
+        """Handle data extracted through ObjIds for the photo.
+
+        Returns list of obj_ids and obj_data object and updates the source
+        of the passed image_info.
+        """
         obj_ids = helpers.split_multi_valued(pho_info[u'PhoObjId'])
-        # objId(s)
-        obj_data = ImageInfo.make_empty_obj_data()
+        obj_data = None
 
         # Deal with info from objIds
         if not obj_ids:  # do nothing
             cat_meta.append(u'no objects')
+            obj_data = ImageInfo.make_empty_obj_data()
         elif len(obj_ids) == 1:
             # cat_meta.append(u'one object')
             obj_ids = obj_ids[0]
-            source = self.handle_single_obj_id(obj_ids, obj_data,
-                                               source, cat_meta)
+            obj_data = self.handle_single_obj_id(obj_ids, cat_meta)
+            # use object source instead since this contains SKObok info
+            if obj_data[u'source']:
+                image_info.source = obj_data[u'source']
         else:
             # cat_meta.append(u'many objects')
+            obj_data = self.handle_multiple_obj_ids(obj_ids, image_info.source)
             obj_data[u'multiple'] = True
-            self.handle_multiple_obj_ids(obj_ids, obj_data, source)
 
-        return obj_ids, obj_data, source
+        return obj_ids, obj_data
 
-    def handle_single_obj_id(self, obj_id, obj_data, source, cat_meta):
-        """Handle the case where there is a single associated objId.
+    def handle_single_obj_id(self, obj_id, cat_meta):
+        """Handle the case where there is a single associated obj_id.
 
-        Returns source and populates objData and cat_meta.
+        Returns obj_data and adds to cat_meta.
         """
-        obj_data = self.infoFromObject(obj_id, obj_data)
-        # use object source instead since this contains SKObok info
-        if obj_data[u'source']:
-            source = obj_data[u'source']
+        obj_data = self.infoFromObject(obj_id)
         if obj_data[u'cat_meta']:
             cat_meta += obj_data[u'cat_meta']
 
-        return source
+        return obj_data
 
-    def handle_multiple_obj_ids(self, obj_ids, obj_data, source):
-        """Handle the case where there are multiple associated objIds.
-
-        Returns nothing but populates objData.
-        """
+    def handle_multiple_obj_ids(self, obj_ids, source):
+        """Handle the case where there are multiple associated objIds."""
         many_data = {}
         for obj_id in obj_ids:
-            data_to_fill = dict.fromkeys([u'invNr', u'title', u'date',
-                                          u'artist', u'cat_artist',
-                                          u'manufacturer', u'depicted',
-                                          u'cat_depicted', u'death_year',
-                                          u'source'])
-            # TODO: consider sending a make_empty_obj_data() instead
-            many_data[obj_id] = self.infoFromObject(obj_id, data_to_fill)
+            many_data[obj_id] = self.infoFromObject(obj_id)
         # dict.fromkeys doesn't allow initialisation with []
+        obj_data = ImageInfo.make_empty_obj_data()
         obj_data.update({i: [] for i in (u'invNr', u'date', u'artist',
                                          u'cat_artist', u'manufacturer',
                                          u'depicted', u'cat_depicted')})
@@ -450,6 +426,8 @@ class MakeInfo(object):
                     obj_data[u'depicted'].append(u'%s: %s' % (v[u'invNr'], d))
             if v[u'cat_depicted']:
                 obj_data[u'cat_depicted'] += v[u'cat_depicted']
+
+        return obj_data
 
     @staticmethod
     def handle_categories(cat_meta, cat_stich, cat_photographer, obj_data):
@@ -537,9 +515,10 @@ class MakeInfo(object):
         return MakeInfo.make_gallery(gallery_title, filenames,
                                      printed_pics, captions=captions)
 
-    def infoFromObject(self, objId, data):
+    def infoFromObject(self, objId):
         """Return a dictionary of information based on an objId."""
         objInfo = self.objD[objId]
+        data = ImageInfo.make_empty_obj_data()
         data[u'cat_meta'] = cat_meta = []
 
         # collect info from ObjDaten.csv

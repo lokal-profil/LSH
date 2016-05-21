@@ -53,8 +53,6 @@ def run(in_path=None, log_file=None):
 
     # Load known variables
     A = MakeInfo()
-    A.makeAbbrevLicense()
-    A.makeAbbrevSource()
 
     # start analysis
     analysePhoto(A, f, file_in=os.path.join(in_path, u'%s.csv' % 'photo'))

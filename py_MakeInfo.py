@@ -5,10 +5,8 @@
 #
 # @ToDo:
 # data files should not be hardcoded
-# Make many small functions instead of the current behemoths
 # Add an init which calls readInLibraries & readConnections
-#
-# Set up an infoObject which in turn contains the makeTemplate function
+#    Note that this would likely cause issues with py_analyseCSVdata
 #
 # Replace to following:
 # bla = []
@@ -209,6 +207,10 @@ class MakeInfo(object):
         flog_name = flog_name or u'¤MakeInfo.log'
         self.flog = flog or codecs.open(flog_name, 'w', 'utf-8')
 
+        # load some abbreviations
+        self.lic = MakeInfo.load_license_abbreviations()
+        self.source = MakeInfo.load_source_abbreviations()
+
     def catTestBatch(self, pho_mull_list, data_dir, connections_dir,
                      outputPath=u'output', log=None):
         """Produce category statistics."""
@@ -258,9 +260,7 @@ class MakeInfo(object):
         self.photographerCatC = Common.makeConnections(os.path.join(folder, u'commons-Photographers.csv'), start=u'[[:Category:', end=u']]', verbose=verbose, keepskip=keepskip)
         self.rolesC = MakeInfo.make_role_output_mappings()
         self.role_mappings = MakeInfo.make_role_input_mappings()
-        self.massC = MakeInfo.makeDimensions()
-        self.lic = MakeInfo.makeAbbrevLicense()
-        self.source = MakeInfo.makeAbbrevSource()
+        self.massC = MakeInfo.load_dimension_mappings()
 
     def infoFromPhoto(self, pho_mull, preview=True, testing=False):
         phoInfo = self.photoD[pho_mull]
@@ -1074,7 +1074,7 @@ class MakeInfo(object):
         return text
 
     @staticmethod
-    def makeDimensions():
+    def load_dimension_mappings():
         """Set up known dimension mappings."""
         # Todo. Consider replacing by external json mapping
         # bredd should be breath but doesn't seem to exist
@@ -1120,7 +1120,7 @@ class MakeInfo(object):
         return roles
 
     @staticmethod
-    def makeAbbrevLicense():
+    def load_license_abbreviations():
         """Set up known mappings for Commons license templates."""
         # Todo. Consider replacing by external json mapping
         return {
@@ -1130,7 +1130,7 @@ class MakeInfo(object):
         }
 
     @staticmethod
-    def makeAbbrevSource():
+    def load_source_abbreviations():
         """Set up known mappings for Commons license templates.
 
         The last two are for objects.

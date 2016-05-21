@@ -8,14 +8,6 @@
 # Add an init which calls readInLibraries & readConnections
 #    Note that this would likely cause issues with py_analyseCSVdata
 #
-# Replace to following:
-# bla = []
-# ...
-# if bla
-#   data[bla] = bla
-# With:
-# data[bla] = bla = [] (whenever end consumer doesn't explicitly look for "bla not in data.keys()"
-#
 import codecs
 import os
 import helpers
@@ -261,6 +253,7 @@ class MakeInfo(object):
         self.rolesC = MakeInfo.make_role_output_mappings()
         self.role_mappings = MakeInfo.make_role_input_mappings()
         self.massC = MakeInfo.load_dimension_mappings()
+        self.multi_mappings = MakeInfo.make_multimedia_type_input_mappings()
 
     def infoFromPhoto(self, pho_mull, preview=True, testing=False):
         phoInfo = self.photoD[pho_mull]
@@ -567,7 +560,6 @@ class MakeInfo(object):
         self.handle_roles(roles, data)
 
         return data
-    # -----------------------------------------------------------------------------------------------
 
     def handle_exhibits(self, exhibits, data):
         """Add exhibits to data if present."""
@@ -601,8 +593,8 @@ class MakeInfo(object):
         if not events:
             return
 
-        orig_event = []
-        cat_event = []
+        data[u'orig_event'] = orig_event = []
+        data[u'cat_event'] = cat_event = []
         for e in events:
             event_key = self.ereignisD[e][u'ErgKurztitelS']
             # map to actual category
@@ -617,10 +609,6 @@ class MakeInfo(object):
                                      event_key))
             else:
                 orig_event.append(event_key)
-        if cat_event:
-            data[u'cat_event'] = cat_event
-        if orig_event:
-            data[u'orig_event'] = orig_event
 
     def handle_related(self, related, data):
         """Add related objects to data if present."""
@@ -628,7 +616,7 @@ class MakeInfo(object):
         if not related:
             return
 
-        rel_list = []
+        data[u'related'] = []
         rel_dict = {}
         for r in related:
             if r not in self.objD.keys():
@@ -658,9 +646,7 @@ class MakeInfo(object):
                 if not v[0]:
                     continue
                 for pho_mull in v[0]:
-                    rel_list.append((pho_mull, v[1]))
-            if rel_list:
-                data[u'related'] = rel_list
+                    data[u'related'].append((pho_mull, v[1]))
 
     def handle_roles(self, roles, data):
         """Add person related objects to data if present."""
@@ -669,12 +655,12 @@ class MakeInfo(object):
             return
 
         # set-up
-        artist = []
-        manufacturer = []
-        owner = []
-        depicted = []
-        cat_artist = []
-        cat_depicted = []
+        data['artist'] = artist = []
+        data['manufacturer'] = manufacturer = []
+        data['owner'] = owner = []
+        data['depicted'] = depicted = []
+        data['cat_artist'] = cat_artist = []
+        data['cat_depicted'] = cat_depicted = []
 
         # process all roles
         for r in roles:
@@ -706,28 +692,11 @@ class MakeInfo(object):
                     self.peopleCatC.get(kue_id):
                 cat_artist.append(self.peopleCatC[kue_id])
 
-        # store in data
-        # TODO: check if final output differes between
-        #       key not in data.keys() and data[key] == [] or data[key] == None
-        #       if not then initialise as key = data[key] = []
-        #       also in several other places
-        if manufacturer:
-            data['manufacturer'] = manufacturer
-        if owner:
-            data['owner'] = owner
-        if depicted:
-            data['depicted'] = depicted
-        if artist:
-            data['artist'] = artist
-        if cat_artist:
-            data['cat_artist'] = cat_artist
-        if cat_depicted:
-            data['cat_depicted'] = artist
-
     def handle_obj_categories(self, group, classification, data):
         """Add object categories to data from group and classification."""
         # objcategories from group and classification
-        cat_obj = []
+        data[u'cat_obj'] = cat_obj = []
+
         # group if source == HWY
         if data[u'source'] == u'HWY' and group:
             if self.objCatC.get(group):
@@ -768,10 +737,6 @@ class MakeInfo(object):
                             elif ord2 in self.objCatC.keys():
                                 data[u'cat_meta'].append(u'unmatched objKeyword')
 
-        # store in data
-        if cat_obj:
-            data[u'cat_obj'] = cat_obj
-
     def handle_dimensions(self, dimensions, data):
         """Add dimensions to data."""
         # skip on empty
@@ -788,11 +753,11 @@ class MakeInfo(object):
             dims.append((d_type, d_value))
 
         # convert the list of tuples to a list of strings
-        dims = MakeInfo.dimensionCruncher(dims, data[u'cat_meta'])
-        if dims:
-            data[u'dimensions'] = dims
+        data[u'dimensions'] = MakeInfo.dimensionCruncher(dims, data[u'cat_meta'])
 
     def multiCruncher(self, mulId, data):
+        """Add info via mulId to data, if present."""
+        # TODO: Re-factor
         # skip on empty
         if not mulId:
             return
@@ -803,23 +768,18 @@ class MakeInfo(object):
         title_orig = set()
         material_tech = set()
         sign = set()
-        # TODO externalise these
-        mat_techTypes = [u'material', u'material och teknik', u'teknik']
-        sigTypes = [u'signatur/påskrift', u'signering', u'signatur']
-        okTypes = [u'tillverkningsort', u'tillverkningsland', u'titel (engelsk)',
-                   u'titel'] + sigTypes + mat_techTypes
         for m in mulId:
             typ = self.multiD[m][u'OmuTypS'].lower()
             value = self.multiD[m][u'OmuInhalt01M'].strip()
             val_cmt = self.multiD[m][u'OmuBemerkungM'].strip()
-            if typ in okTypes and len(value) > 0:
+            if typ in self.multi_mappings['ok_types'] and value:
                 if not val_cmt or val_cmt == value:
                     val_cmt = None
-                if typ in sigTypes:
+                if typ in self.multi_mappings['signature_types']:
                     if val_cmt:
                         value = u'%s [%s]' % (value, val_cmt)
                     sign.add(value)
-                elif typ in mat_techTypes:
+                elif typ in self.multi_mappings['material_tech_types']:
                     value = value.lower()
                     if self.materialC.get(value):
                         for sc in self.materialC[value]:
@@ -882,10 +842,11 @@ class MakeInfo(object):
     @staticmethod
     def dimensionCruncher(dims, cat_meta, debug=''):
         '''takes a list of tuples and returns a list of strings'''
+        # TODO: Re-factor
         # @toDo: make sure named parameters are used for size (incl. unit). See if "part=" was added
         # check if all are simply formatted
-        lUnits = [u'm', u'dm', u'cm', u'mm']
-        wUnits = [u'g', u'kg']
+        length_units = [u'm', u'dm', u'cm', u'mm']
+        weight_units = [u'g', u'kg']
         returns = []  # list of strings
         types = []
         prefixes = []
@@ -930,7 +891,7 @@ class MakeInfo(object):
             for d in nice_dims:
                 role, prefix, num, unit, ca = d
                 if role == u'weight':
-                    if unit not in wUnits:
+                    if unit not in weight_units:
                         cat_meta.append(u'dim-with weird units|%s%s in %s'
                                         % (debug, role, unit))
                     if prefix:
@@ -940,7 +901,7 @@ class MakeInfo(object):
                     returns.append(u'%s{{weight|%s|%s}}%s'
                                    % (ca, unit, num, prefix))
                 else:
-                    if unit not in lUnits:
+                    if unit not in length_units:
                         cat_meta.append(u'dim-with weird units|%s%s in %s'
                                         % (debug, role, unit))
                     unit_size = unit
@@ -965,13 +926,13 @@ class MakeInfo(object):
                 if ca:
                     ca = u'{{circa}} '
                 if role == u'weight':
-                    if unit not in wUnits:
+                    if unit not in weight_units:
                         cat_meta.append(u'dim-with weird units|%s%s in %s'
                                         % (debug, role, unit))
                     returns.append(u'%s{{weight|%s|%s}}%s'
                                    % (ca, unit, num, prefix))
                 else:
-                    if unit not in lUnits:
+                    if unit not in length_units:
                         cat_meta.append(u'dim-with weird units|%s%s in %s'
                                         % (debug, role, unit))
                     returns.append(u'%s{{size|unit=%s|%s=%s}}%s'
@@ -984,10 +945,13 @@ class MakeInfo(object):
 
     # formating output
     def formatKuenstler(self, kueId, cat_meta, creative=False):
+        """Create formated string for an identified artist/person."""
+        # return creator template if appropriate and one is known
         if creative and self.peopleCreatC.get(kueId):
             return u'{{%s}}' % self.peopleCreatC[kueId]
         elif creative and kueId in self.peopleCreatC.keys():
             cat_meta.append(u'unmatched creator')
+
         kuenstler = self.kuenstlerD[kueId]
         name = u'%s %s' % (kuenstler[u'KueVorNameS'], kuenstler[u'KueNameS'])
         if self.peopleLinkC.get(kueId):
@@ -1102,7 +1066,7 @@ class MakeInfo(object):
 
     @staticmethod
     def make_role_input_mappings():
-        """Loads various role mappings for later use."""
+        """Load various role mappings for later use."""
         # Todo. Consider replacing by external json mapping
         roles = {
             'artist': [
@@ -1118,6 +1082,25 @@ class MakeInfo(object):
             roles['owner'] + roles['depicted']
         roles['creative_roles'] = roles['artist'] + roles['manufacturer']
         return roles
+
+    @staticmethod
+    def make_multimedia_type_input_mappings():
+        """Load various multimedia/mulid mappings for later use."""
+        # Todo. Consider replacing by external json mapping
+        multi_types = {
+            'material_tech_types': [
+                u'material', u'material och teknik', u'teknik'],
+            'signature_types': [
+                u'signatur/påskrift', u'signering', u'signatur'],
+            'other_allowed_types': [
+                u'tillverkningsort', u'tillverkningsland', u'titel (engelsk)',
+                u'titel']
+        }
+
+        # set up useful groupings
+        multi_types['ok_types'] = multi_types['material_tech_types'] + \
+            multi_types['signature_types'] + multi_types['other_allowed_types']
+        return multi_types
 
     @staticmethod
     def load_license_abbreviations():

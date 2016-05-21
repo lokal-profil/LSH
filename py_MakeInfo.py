@@ -346,8 +346,7 @@ class MakeInfo(object):
                         cat_stich.append(sc)
                 elif stich_key in self.stichC.keys():
                     cat_meta.append(u'unmatched keyword')
-        if not cat_stich:
-            cat_stich = None
+        # format output
         if not orig_stich:
             orig_stich = u''
         else:

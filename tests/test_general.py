@@ -139,6 +139,7 @@ class TestGeneral(unittest.TestCase):
 
         :param exts: file ending string or tuple of such
         """
+        # self.maxDiff = None # toggle to gett full diff
         # check info file contents
         files = get_files(expected_dir, exts)
         for f in files:

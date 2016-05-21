@@ -433,41 +433,34 @@ class MakeInfo(object):
         """Combine categories into a single text block."""
         # Categories need de-duplidication
         categories = u''
-        printed_cats = []
+        printed_cats = []  # ensure same category isn't outputted twice
         if cat_stich:
-            categories, printed_cats = MakeInfo.makeCategory(
-                u'Photograph categories', cat_stich,
-                printed=printed_cats, addTo=categories)
+            categories += MakeInfo.make_category(
+                u'Photograph categories', cat_stich, printed_cats)
         if obj_data[u'cat_event']:
-            categories, printed_cats = MakeInfo.makeCategory(
-                u'Event categories', obj_data[u'cat_event'],
-                printed=printed_cats, addTo=categories)
+            categories += MakeInfo.make_category(
+                u'Event categories', obj_data[u'cat_event'], printed_cats)
         if obj_data[u'cat_artist']:
-            categories, printed_cats = MakeInfo.makeCategory(
-                u'Artist categories', obj_data[u'cat_artist'],
-                printed=printed_cats, addTo=categories)
+            categories += MakeInfo.make_category(
+                u'Artist categories', obj_data[u'cat_artist'], printed_cats)
         if obj_data[u'cat_depicted']:
-            categories, printed_cats = MakeInfo.makeCategory(
+            categories += MakeInfo.make_category(
                 u'Depicted categories', obj_data[u'cat_depicted'],
-                printed=printed_cats, addTo=categories)
+                printed_cats)
         if obj_data[u'cat_obj']:
-            categories, printed_cats = MakeInfo.makeCategory(
-                u'Object categories', obj_data[u'cat_obj'],
-                printed=printed_cats, addTo=categories)
+            categories += MakeInfo.make_category(
+                u'Object categories', obj_data[u'cat_obj'], printed_cats)
 
         # before cat_photographer since these are a type of meta categories
         if not printed_cats:
             cat_meta.append(u'without any categories')
         if cat_photographer:
-            categories, printed_cats = MakeInfo.makeCategory(
-                u'Photographer category', [cat_photographer, ],
-                printed=printed_cats, addTo=categories)
+            categories += MakeInfo.make_category(
+                u'Photographer category', [cat_photographer, ], printed_cats)
         if cat_meta:
-            cat_meta = list(set(cat_meta))
-            categories, printed_cats = MakeInfo.makeCategory(
-                u'Maintanance categories', cat_meta,
-                pre=u'Media contributed by LSH: ',
-                printed=printed_cats, addTo=categories)
+            categories += MakeInfo.make_category(
+                u'Maintanance categories', cat_meta, printed_cats,
+                prefix=u'Media contributed by LSH: ')
 
         return categories, printed_cats
 
@@ -1050,20 +1043,35 @@ class MakeInfo(object):
         return text
 
     @staticmethod
-    def makeCategory(caption, lList, printed, addTo, pre=u''):
+    def make_category(caption, categories, printed, prefix=u''):
+        """Given a list of objects add the corresponding images to a gallery.
+
+        Also adds newly printed categories to the printed list.
+        :param caption: Comment preceding category block
+        :param categories: list of (Commons) categories
+        :param printed: list of previously printed images
+        :param prefix: a prefix to add to each category name
+        :return: str
+        """
         # check for duplicates and escape if all were dupes
-        lList = list(set(lList))  # remove internal duplicates
+        categories = list(set(categories))  # remove internal duplicates
         for p in printed:
-            if p in lList:
-                lList.remove(p)
-        printed += lList
-        if not lList:
-            return addTo, printed
+            if p in categories:
+                categories.remove(p)
+        printed += categories
+
+        # escape if all were dupes
+        if not categories:
+            return ''
+
         # output
-        text = addTo + u'\n<!--%s-->\n' % caption
-        for c in lList:
-            text += u'[[Category:%s%s]]\n' % (pre, c)
-        return text, printed
+        text = u'\n<!--%s-->\n' % caption
+        if prefix:
+            for c in categories:
+                text += u'[[Category:%s%s]]\n' % (prefix, c)
+        else:
+            text += u'[[Category:%s]]\n' % ']]\n[[Category:'.join(categories)
+        return text
 
     @staticmethod
     def makeDimensions():

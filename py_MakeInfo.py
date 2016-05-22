@@ -810,16 +810,14 @@ class MakeInfo(object):
                     if val_cmt:
                         value = u'%s (%s)' % (value, val_cmt)
                     tLand.append(value)
-                elif typ == u'titel (engelsk)':
-                    if value != data[u'title']:
-                        if val_cmt:
-                            value = u'%s (%s)' % (value, val_cmt)
-                        title_en.add(value)
-                elif typ == u'titel':
-                    if value != data[u'title']:
-                        if val_cmt:
-                            value = u'%s (%s)' % (value, val_cmt)
-                        title_orig.add(value)
+                elif typ == u'titel (engelsk)' and value != data[u'title']:
+                    if val_cmt:
+                        value = u'%s (%s)' % (value, val_cmt)
+                    title_en.add(value)
+                elif typ == u'titel' and value != data[u'title']:
+                    if val_cmt:
+                        value = u'%s (%s)' % (value, val_cmt)
+                    title_orig.add(value)
         # format and send to relevant field
         # this is were Connection-lookup shold be done add maintanance cat if lookup fails
         if sign:

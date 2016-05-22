@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8  -*-
 import unittest
+import mock
 from py_MakeInfo import (
     MakeInfo,
     ImageInfo
@@ -281,3 +282,234 @@ class TestMakeCategory(unittest.TestCase):
                                    prefix=prefix),
             expected_category)
         self.assertItemsEqual(self.printed, expected_printed)
+
+
+class TestFormatPerson(unittest.TestCase):
+    """Test MakeInfo.format_person()."""
+
+    def setUp(self):
+        self.mock_info = mock.create_autospec(MakeInfo)
+        self.cat_meta = []
+        self.kuenstler = None
+        self.reset_kuenstler_params()
+
+        self.mock_info.kuenstlerD = {'123': self.kuenstler}
+        self.mock_info.peopleCreatC = {}
+        self.mock_info.peopleLinkC = {}
+
+    def unset_kuenstler_params(self, params=None):
+        """Removes the given parameters from self.kuenstler."""
+        if not params:
+            params = self.kuenstler.keys()
+        for p in params:
+            self.kuenstler[p] = ''
+
+    def reset_kuenstler_params(self, params=None):
+        """Re-add the given parameters to self.kuenstler."""
+        kuenstler = {
+            'KueVorNameS': 'FirstName',
+            'KueNameS': 'LastName',
+            'KudJahrVonL': 'BirthYear',
+            'KudJahrBisL': 'DeathYear',
+            'KueFunktionS': 'Profession',
+            'KudOrtS': 'City',
+            'KudLandS': 'Country'
+        }
+        if not params:
+            self.kuenstler = kuenstler.copy()
+        else:
+            for p in params:
+                self.kuenstler[p] = kuenstler[p]
+
+    def test_format_person_empty_returns_empty(self):
+        expected_name = ''
+        expected_cat_meta = []
+        self.unset_kuenstler_params()
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta),
+            expected_name)
+        self.assertItemsEqual(self.cat_meta, expected_cat_meta)
+
+    def test_format_person_full_info(self):
+        expected_name = 'FirstName LastName (Profession, BirthYear-DeathYear) ' \
+                        'City, Country'
+        expected_cat_meta = []
+
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta),
+            expected_name)
+        self.assertItemsEqual(self.cat_meta, expected_cat_meta)
+
+    def test_format_person_only_name(self):
+        expected_name = 'FirstName LastName'
+        expected_cat_meta = []
+
+        self.unset_kuenstler_params(
+            ['KudJahrVonL', 'KudJahrBisL', 'KueFunktionS',
+             'KudOrtS', 'KudLandS'])
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta),
+            expected_name)
+        self.assertItemsEqual(self.cat_meta, expected_cat_meta)
+
+    def test_format_person_no_bracket(self):
+        expected_name = 'FirstName LastName, City, Country'
+        expected_cat_meta = []
+
+        self.unset_kuenstler_params(
+            ['KudJahrVonL', 'KudJahrBisL', 'KueFunktionS'])
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta),
+            expected_name)
+        self.assertItemsEqual(self.cat_meta, expected_cat_meta)
+
+    def test_format_person_no_place(self):
+        expected_name = 'FirstName LastName (Profession, BirthYear-DeathYear)'
+        expected_cat_meta = []
+
+        self.unset_kuenstler_params(
+            ['KudOrtS', 'KudLandS'])
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta),
+            expected_name)
+        self.assertItemsEqual(self.cat_meta, expected_cat_meta)
+
+    def test_format_person_various_brackets(self):
+        """Test various variations of bracket contents."""
+        expected_cat_meta = []
+
+        # all
+        expected_name = '(Profession, BirthYear-DeathYear)'
+        self.unset_kuenstler_params(
+            ['KueVorNameS', 'KueNameS', 'KudOrtS', 'KudLandS'])
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta),
+            expected_name)
+
+        # Profession only
+        expected_name = '(Profession)'
+        self.unset_kuenstler_params(['KudJahrVonL', 'KudJahrBisL'])
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta),
+            expected_name)
+
+        # Year only
+        expected_name = '(BirthYear-DeathYear)'
+        self.unset_kuenstler_params(['KueFunktionS'])
+        self.reset_kuenstler_params(['KudJahrVonL', 'KudJahrBisL'])
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta),
+            expected_name)
+
+        # Birth year range only
+        expected_name = '(BirthYear-)'
+        self.unset_kuenstler_params(['KudJahrBisL'])
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta),
+            expected_name)
+
+        # Death year range only
+        expected_name = '(-DeathYear)'
+        self.unset_kuenstler_params(['KudJahrVonL'])
+        self.reset_kuenstler_params(['KudJahrBisL'])
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta),
+            expected_name)
+
+        # Year range and profession only
+        expected_name = '(Profession, -DeathYear)'
+        self.reset_kuenstler_params(['KueFunktionS'])
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta),
+            expected_name)
+
+        # Assert none of these added to cat_meta
+        self.assertItemsEqual(self.cat_meta, expected_cat_meta)
+
+    def test_format_person_various_places_appendix(self):
+        """Test various variations of place appendix."""
+        expected_cat_meta = []
+
+        # all
+        expected_name = 'City, Country'
+        self.unset_kuenstler_params(
+            ['KueVorNameS', 'KueNameS', 'KudJahrVonL', 'KudJahrBisL',
+             'KueFunktionS'])
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta),
+            expected_name)
+
+        # City only
+        expected_name = 'City'
+        self.unset_kuenstler_params(['KudLandS'])
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta),
+            expected_name)
+
+        # Country only
+        expected_name = 'Country'
+        self.unset_kuenstler_params(['KudOrtS'])
+        self.reset_kuenstler_params(['KudLandS'])
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta),
+            expected_name)
+
+        # Assert none of these added to cat_meta
+        self.assertItemsEqual(self.cat_meta, expected_cat_meta)
+
+    def test_format_person_matching_creator(self):
+        expected_name = '{{Creator:Some template}}'
+        expected_cat_meta = []
+        self.mock_info.peopleCreatC = {'123': 'Creator:Some template'}
+
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta,
+                                   creative=True),
+            expected_name)
+        self.assertItemsEqual(self.cat_meta, expected_cat_meta)
+
+    def test_format_person_matching_creator_not_creative(self):
+        expected_name = 'FirstName LastName (Profession, BirthYear-DeathYear) ' \
+                        'City, Country'
+        expected_cat_meta = []
+        self.mock_info.peopleCreatC = {'123': 'Creator:Some template'}
+
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta),
+            expected_name)
+        self.assertItemsEqual(self.cat_meta, expected_cat_meta)
+
+    def test_format_person_trigger_cat_meta(self):
+        expected_name = 'FirstName LastName (Profession, BirthYear-DeathYear) ' \
+                        'City, Country'
+        expected_cat_meta = ['unmatched creator']
+        self.mock_info.peopleCreatC = {'123': ''}
+
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta,
+                                   creative=True),
+            expected_name)
+        self.assertItemsEqual(self.cat_meta, expected_cat_meta)
+
+    def test_format_person_matching_link(self):
+        expected_name = '[[:sv:Some link|FirstName LastName]]'
+        expected_cat_meta = []
+        self.mock_info.peopleLinkC = {'123': ':sv:Some link'}
+
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta),
+            expected_name)
+        self.assertItemsEqual(self.cat_meta, expected_cat_meta)
+
+    def test_format_person_creator_over_link(self):
+        """Test that creator template is prioritised over link."""
+        expected_name = '{{Creator:Some template}}'
+        expected_cat_meta = []
+        self.mock_info.peopleCreatC = {'123': 'Creator:Some template'}
+        self.mock_info.peopleLinkC = {'123': ':sv:Some link'}
+
+        self.assertEqual(
+            MakeInfo.format_person(self.mock_info, '123', self.cat_meta,
+                                   creative=True),
+            expected_name)
+        self.assertItemsEqual(self.cat_meta, expected_cat_meta)

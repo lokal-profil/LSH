@@ -989,7 +989,7 @@ class MakeInfo(object):
         place = place.strip(', ')
 
         out = u'%s%s%s' % (name, bracket, place)
-        return out.strip()
+        return out.strip(', ')
 
     @staticmethod
     def make_gallery(gallery_title, filenames, printed, captions=None):

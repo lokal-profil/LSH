@@ -54,6 +54,13 @@ class TestMultiValueFormater(unittest.TestCase):
             ImageInfo.format_multi_value_parameter('parameter', value),
             expected)
 
+    def test_format_multi_value_parameter_with_multiple_and_creator(self):
+        expected = u'|parameter= * val1\n{{Creator:val2}}\n* val3\n'
+        value = ['val1', '{{Creator:val2}}', 'val3']
+        self.assertEqual(
+            ImageInfo.format_multi_value_parameter('parameter', value),
+            expected)
+
 
 class TestFormatDepicted(unittest.TestCase):
     """Test ImageInfo.format_depicted()."""

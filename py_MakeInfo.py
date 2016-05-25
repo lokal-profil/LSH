@@ -154,13 +154,19 @@ class ImageInfo(object):
     def format_multi_value_parameter(param, values):
         """Format a template parameter which can be multi-valued.
 
-        If values is empty this returns an empty parameter
+        If values is empty this returns an empty parameter.
+        Creator templates does not deal well with preceding '*', hence the
+        special handling of these.
         """
         text = u'|%s= ' % param
-        if values:
-            if len(values) > 1:
-                text += u'* '
-            text += u'%s\n' % '\n* '.join(values)
+        if values and len(values) == 1:
+            text += u'%s\n' % values[0]
+        elif values:
+            for v in values:
+                if v.startswith('{{Creator:'):
+                    text += u'%s\n' % v
+                else:
+                    text += u'* %s\n' % v
         else:
             text += u'\n'
         return text

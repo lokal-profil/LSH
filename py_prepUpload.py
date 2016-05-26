@@ -96,35 +96,35 @@ def moveHits(path, filenamesFile=None):
     filenamesFile = filenamesFile or FILENAMES
 
     # Find and move all relevant files
-    tree, nameToPho = makeHitlist(filenamesFile)
+    tree, name_to_pho = makeHitlist(filenamesFile)
     subdirs = []
     for filename in os.listdir(path):
         # for LSH all files are in upper case directories
-        filenamePath = os.path.join(path, filename)
-        if os.path.isdir(filenamePath) and filename.isupper():
-            subdirs.append(filenamePath)
+        filename_path = os.path.join(path, filename)
+        if os.path.isdir(filename_path) and filename.isupper():
+            subdirs.append(filename_path)
     for subdir in subdirs:
         # make a subdir path where (only the) last directory is lower case
         tmp_path, tmp_dir = os.path.split(subdir)
         lower_subdir = os.path.join(tmp_path, tmp_dir.lower())
 
-        counter, fileNum = moveFiles(lower_subdir, tree, nameToPho,
-                                     path=subdir)
-        output(u'%s: %d out of %d were hits' % (subdir, counter, fileNum))
+        counter, file_num = moveFiles(lower_subdir, tree, name_to_pho,
+                                      path=subdir)
+        output(u'%s: %d out of %d were hits' % (subdir, counter, file_num))
 
     # load filenames file
-    filenamesHeader = 'PhoId|MulId|MulPfadS|MulDateiS|filename|ext'
-    oldFilenames = helpers.csvFileToDict(filenamesFile, 'PhoId',
-                                         filenamesHeader)
+    filenames_header = 'PhoId|MulId|MulPfadS|MulDateiS|filename|ext'
+    old_filenames = helpers.csvFileToDict(filenamesFile, 'PhoId',
+                                          filenames_header)
 
     # Add found extentions to filenames file
-    for phoId, v in oldFilenames.iteritems():
-        oldFilename = v['MulDateiS']
-        if oldFilename in nameToPho.keys():
-            v['ext'] = nameToPho[oldFilename]['ext']  # overwrite extention
+    for phoId, v in old_filenames.iteritems():
+        old_filename = v['MulDateiS']
+        if old_filename in name_to_pho.keys():
+            v['ext'] = name_to_pho[old_filename]['ext']  # overwrite extention
 
     # output updated file
-    helpers.dictToCsvFile(filenamesFile, oldFilenames, filenamesHeader)
+    helpers.dictToCsvFile(filenamesFile, old_filenames, filenames_header)
 
     # delete all emptied directories
     for subdir in subdirs:
@@ -177,8 +177,9 @@ def makeAndRename(path, dataDir=None, connectionsDir=None,
             flog.write(u'%s did not have a photoId\n' % filenameIn)
             continue
         phoMull = nameToPho[baseName]['phoMull']
-        filenameOut = u'%s.%s' % (nameToPho[baseName]['filename'].replace(u' ', u'_'),
-                                  nameToPho[baseName]['ext'])
+        filenameOut = u'%s.%s' % (
+            nameToPho[baseName]['filename'].replace(u' ', u'_'),
+            nameToPho[baseName]['ext'])
         wName, out = maker.infoFromPhoto(phoMull, preview=False, testing=False)
         if out:
             # Make info file
@@ -207,22 +208,30 @@ def negatives(path):
     count = 0
     skipcount = 0
     for filename in os.listdir(path):
-        if filename.endswith(u'.tif') and not filename.endswith(u'-negative.tif'):
+        if filename.endswith(u'.tif') and \
+                not filename.endswith(u'-negative.tif'):
             negative = u'%s-negative.tif' % filename[:-4]
             if os.path.isfile(os.path.join(path, negative)):
                 output(u'%s was already inverted, skipping...' % filename)
                 skipcount += 1
                 continue
-            os.rename(os.path.join(path, filename), os.path.join(path, negative))
-            imageMagick = u'convert %s -negate -auto-gamma -level 10%%,90%%,1,0 %s' % (pipes.quote(os.path.join(path, negative)), pipes.quote(os.path.join(path, filename)))
-            imageMagick = u'%s 2>>%s' % (imageMagick, pipes.quote(os.path.join(path, u'¤imageMagick-errors.log')))  # pipe errors to file
+            os.rename(os.path.join(path, filename),
+                      os.path.join(path, negative))
+            imageMagick = u'convert %s -negate -auto-gamma -level 10%%,90%%,1,0 %s' % (
+                pipes.quote(os.path.join(path, negative)),
+                pipes.quote(os.path.join(path, filename)))
+            # pipe errors to file
+            imageMagick = u'%s 2>>%s' % (
+                imageMagick,
+                pipes.quote(os.path.join(path, u'¤imageMagick-errors.log')))
             os.system(imageMagick.encode(encoding='UTF-8'))
             # new info files
             infoFilename = u'%s.txt' % filename[:-4]
             f = codecs.open(os.path.join(path, infoFilename), 'r', 'utf-8')
             infoFile = f.read()
             f.close()
-            negInfo, posInfo = negPosInfo(infoFile, filename.replace(u'_', u' '))
+            negInfo, posInfo = negPosInfo(infoFile,
+                                          filename.replace(u'_', u' '))
             f = codecs.open(os.path.join(path, u'%s-negative.txt' % infoFilename[:-4]), 'w', 'utf-8')
             f.write(negInfo)
             f.close()
@@ -266,7 +275,8 @@ def catTest(path, data_dir, connections_dir, filename_file, nameToPho=None):
     '''
     if not nameToPho:
         tree, nameToPho = makeHitlist(filename_file)
-    flog = codecs.open(os.path.join(path, u'¤catStats.log'), 'w', 'utf-8')  # logfile
+    # logfile
+    flog = codecs.open(os.path.join(path, u'¤catStats.log'), 'w', 'utf-8')
     maker = MakeInfo()
     phoMull_list = []
     for filename_in in os.listdir(path):
@@ -291,20 +301,26 @@ def negativeCleanup(path):
         if filename.endswith(u'-negative.tif'):
             positive = filename[:-len(u'-negative.tif')]
             negative = filename[:-len('.tif')]
-            if not os.path.isfile(os.path.join(path, u'%s.tif' % positive)):  # check if .tif exists
+            if not os.path.isfile(os.path.join(path, u'%s.tif' % positive)):
+                # check if .tif exists
                 no_original.append(u'%s.tif' % positive)
-            if not os.path.isfile(os.path.join(path, u'%s.txt' % positive)):  # check if .txt exists
+            if not os.path.isfile(os.path.join(path, u'%s.txt' % positive)):
+                # check if .txt exists
                 no_original_info(u'%s.txt' % positive)
-            if not os.path.isfile(os.path.join(path, u'%s.tif' % negative)):  # check if -negative.txt exists
+            if not os.path.isfile(os.path.join(path, u'%s.tif' % negative)):
+                # check if -negative.txt exists
                 no_invert_info.append(u'%s.txt' % negative)
         elif filename.endswith(u'.tif'):
             positive = filename[:-len(u'.tif')]
             negative = u'%s-negative' % filename[:-len('.tif')]
-            if not os.path.isfile(os.path.join(path, u'%s.tif' % negative)):  # check if -negative.tif exists
+            if not os.path.isfile(os.path.join(path, u'%s.tif' % negative)):
+                # check if -negative.tif exists
                 no_invert.append(u'%s.tif' % negative)
-            if not os.path.isfile(os.path.join(path, u'%s.txt' % positive)):  # check if .txt exists
+            if not os.path.isfile(os.path.join(path, u'%s.txt' % positive)):
+                # check if .txt exists
                 no_original_info(u'%s.txt' % positive)
-            if not os.path.isfile(os.path.join(path, u'%s.tif' % negative)):  # check if -negative.txt exists
+            if not os.path.isfile(os.path.join(path, u'%s.tif' % negative)):
+                # check if -negative.txt exists
                 no_invert_info.append(u'%s.txt' % negative)
         elif filename.endswith(u'.txt'):
             # check that either -negative.tif or .tif exists
@@ -315,7 +331,8 @@ def negativeCleanup(path):
             else:
                 positive = filename[:-len(u'.txt')]
                 negative = u'%s-negative' % filename[:-len(u'.txt')]
-            if not os.path.isfile(os.path.join(path, u'%s.tif' % negative)) and not os.path.isfile(os.path.join(path, u'%s.tif' % positive)):
+            if not os.path.isfile(os.path.join(path, u'%s.tif' % negative)) and \
+                    not os.path.isfile(os.path.join(path, u'%s.tif' % positive)):
                 just_info.append(filename)
     # sort and remove any dupes
     no_invert = sorted(set(no_invert))

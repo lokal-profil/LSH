@@ -8,7 +8,7 @@
 * Johan Casimirs död och begravning
 |date= 1652
 |medium= {{technique|leather}} (Färg: brun, material: läder)
-|dimensions= *  {{weight|g|3400}}
+|dimensions= * {{weight|g|3400}}
 * {{size|unit=mm|width=533}}
 * {{size|unit=mm|depth=280}} (ca)
 * {{size|unit=mm|height=230}}
@@ -39,7 +39,7 @@ File:Gyllene rustningssko tillverkad för Johan Gyllenstierna 1660 - Livrustkamm
 <!--Maintanance categories-->
 [[Category:Media contributed by LSH: unmatched event]]
 [[Category:Media contributed by LSH: unmatched material]]
-[[Category:Media contributed by LSH: unmatched keyword]]
-[[Category:Media contributed by LSH: dim-with multiple size templates]]
 [[Category:Media contributed by LSH: unmatched objKeyword]]
+[[Category:Media contributed by LSH: dim-with multiple size templates]]
+[[Category:Media contributed by LSH: unmatched keyword]]
 [[Category:Media contributed by LSH: 2015-11]]

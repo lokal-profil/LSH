@@ -7,7 +7,7 @@
 |event= [[:sv:Karl X Gustav|Karl X Gustavs död och begravning]]
 |date= 1660
 |medium= 
-|dimensions= *  {{weight|g|2700}}
+|dimensions= * {{weight|g|2700}}
 * {{size|unit=mm|width=140|length=360|height=480}}
 |source= LRK
 |provenance= 

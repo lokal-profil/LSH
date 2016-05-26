@@ -7,7 +7,7 @@
 '''Nyckelord''': Stol, Föremålsbild
 |date= {{other date|ca|1750}}
 |medium= {{technique|fakeMapping}}
-|dimensions=  {{size|unit=mm|depth=760|width=700|height=1020}}
+|dimensions= {{size|unit=mm|depth=760|width=700|height=1020}}
 |source= SKO
 |provenance= 
 |exhibition= 

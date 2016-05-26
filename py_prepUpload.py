@@ -315,79 +315,81 @@ def catTest(path, data_dir, connections_dir, filename_file, nameToPho=None):
     flog.close()
 
 
-def negativeCleanup(path):
+def negative_cleanup(path, ext=u'.tif'):
     '''
     Run after negatives to identify any failed conversions.
     '''
-    no_invert = []
-    no_invert_info = []
-    no_original = []
-    no_original_info = []
-    just_info = []
+    negative_appendix = NEGATIVE_PATTERN % ext
+    info = {
+        'no_invert': [],
+        'no_invert_info': [],
+        'no_original': [],
+        'no_original_info': [],
+        'just_info': []
+    }
     for filename in os.listdir(path):
-        if filename.endswith(u'-negative.tif'):
-            positive = filename[:-len(u'-negative.tif')]
-            negative = filename[:-len('.tif')]
-            if not os.path.isfile(os.path.join(path, u'%s.tif' % positive)):
-                # check if .tif exists
-                no_original.append(u'%s.tif' % positive)
-            if not os.path.isfile(os.path.join(path, u'%s.txt' % positive)):
-                # check if .txt exists
-                no_original_info(u'%s.txt' % positive)
-            if not os.path.isfile(os.path.join(path, u'%s.tif' % negative)):
-                # check if -negative.txt exists
-                no_invert_info.append(u'%s.txt' % negative)
-        elif filename.endswith(u'.tif'):
-            positive = filename[:-len(u'.tif')]
-            negative = u'%s-negative' % filename[:-len('.tif')]
-            if not os.path.isfile(os.path.join(path, u'%s.tif' % negative)):
-                # check if -negative.tif exists
-                no_invert.append(u'%s.tif' % negative)
-            if not os.path.isfile(os.path.join(path, u'%s.txt' % positive)):
-                # check if .txt exists
-                no_original_info(u'%s.txt' % positive)
-            if not os.path.isfile(os.path.join(path, u'%s.tif' % negative)):
-                # check if -negative.txt exists
-                no_invert_info.append(u'%s.txt' % negative)
+        if filename.endswith(negative_appendix):
+            positive = filename[:-len(negative_appendix)]
+            negative = filename[:-len(ext)]
+            check_related_file_existence(path, positive, negative, ext, info)
+        elif filename.endswith(ext):
+            positive = filename[:-len(ext)]
+            negative = u'%s%s' % (filename[:-len(ext)],
+                                  negative_appendix[:-len(ext)])
+            check_related_file_existence(path, positive, negative, ext, info)
         elif filename.endswith(u'.txt'):
             # check that either -negative.tif or .tif exists
             # (if so then dealt with by above)
-            if filename.endswith(u'-negative.txt'):
-                positive = filename[:-len(u'-negative.txt')]
-                negative = filename[:-len(u'.txt')]
+            negative_info_appendix = NEGATIVE_PATTERN % '.txt'
+            if filename.endswith(negative_info_appendix):
+                positive = u'%s%s' % (filename[:-len(negative_info_appendix)],
+                                      ext)
+                negative = u'%s%s' % (filename[:-len(u'.txt')], ext)
             else:
-                positive = filename[:-len(u'.txt')]
-                negative = u'%s-negative' % filename[:-len(u'.txt')]
-            if not os.path.isfile(os.path.join(path, u'%s.tif' % negative)) and \
-                    not os.path.isfile(os.path.join(path, u'%s.tif' % positive)):
-                just_info.append(filename)
+                positive = u'%s%s' % (filename[:-len(u'.txt')], ext)
+                negative = u'%s%s' % (filename[:-len(u'.txt')],
+                                      negative_appendix)
+            if not os.path.isfile(os.path.join(path, negative)) and \
+                    not os.path.isfile(os.path.join(path, positive)):
+                info['just_info'].append(filename)
+
     # sort and remove any dupes
-    no_invert = sorted(set(no_invert))
-    no_invert_info = sorted(set(no_invert_info))
-    no_original = sorted(set(no_original))
-    no_original_info = sorted(set(no_original_info))
-    just_info = sorted(set(just_info))
+    for k, v in info.iteritems():
+        info[k] = sorted(set(v))
+
     # output to log
-    logFilename = u'¤conversion-errors.log'
-    f = codecs.open(os.path.join(path, logFilename), 'w', 'utf-8')
-    f.write(u'Total: %d, problems %d\n' % (len(os.listdir(path)),
-                                           len(no_invert) + len(no_original)))
-    f.write(u'\n== no_invert: %d ==\n' % len(no_invert))
-    for i in no_invert:
-        f.write(u'%s\n' % i)
-    f.write(u'\n== no_original: %d ==\n' % len(no_original))
-    for i in no_original:
-        f.write(u'%s\n' % i)
-    f.write(u'\n== no_invert_info: %d ==\n' % len(no_invert_info))
-    for i in no_invert_info:
-        f.write(u'%s\n' % i)
-    f.write(u'\n== no_original_info: %d ==\n' % len(no_original_info))
-    for i in no_original_info:
-        f.write(u'%s\n' % i)
-    f.write(u'\n== just_info: %d ==\n' % len(just_info))
-    for i in just_info:
-        f.write(u'%s\n' % i)
-    f.close()
+    log_filename = u'¤conversion-errors.log'
+    txt = u'Total: %d, problems %d\n' % (
+        len(os.listdir(path)),
+        len(info['no_invert']) + len(info['no_original']))
+    for k, v in info.iteritems():
+        txt += u'\n== %s: %d ==\n' % (k, len(v))
+        txt += u'%s\n' % '\n'.join(v)
+    helpers.open_and_write_file(os.path.join(path, log_filename), txt)
+
+
+def check_related_file_existence(path, positive, negative, ext, info):
+    """
+    Given a pattern for positive and negative check that related files exist.
+
+    :param path: realtive path to the directory in which to process the files
+    :param positive: full path to positive, without file extension
+    :param negative: full path to negative, without file extension
+    :param ext: image file extension
+    :param info: dict to hold found statistics
+    """
+    if not os.path.isfile(os.path.join(path, u'%s%s' % (positive, ext))):
+        # check if .ext exists
+        info['no_original'].append(u'%s%s' % (positive, ext))
+    if not os.path.isfile(os.path.join(path, u'%s%s' % (negative, ext))):
+        # check if -NEGATIVE_PATTERN.ext exists
+        info['no_invert'].append(u'%s%s' % (negative, ext))
+    if not os.path.isfile(os.path.join(path, u'%s.txt' % positive)):
+        # check if .txt exists
+        info['no_original_info'](u'%s.txt' % positive)
+    if not os.path.isfile(os.path.join(path, u'%s.txt' % negative)):
+        # check if NEGATIVE_PATTERN.txt exists
+        info['no_invert_info'].append(u'%s.txt' % negative)
 
 
 def removeEmptyDirectories(path, top=True):
@@ -446,7 +448,7 @@ if __name__ == '__main__':
         elif argv[0] == 'negatives':
             negatives(path=path)
         elif argv[0] == 'negativeCleanup':
-            negativeCleanup(path=path)
+            negative_cleanup(path=path)
         else:
             print usage
     elif len(argv) == 3:

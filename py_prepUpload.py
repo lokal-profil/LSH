@@ -182,14 +182,16 @@ def makeAndRename(path, dataDir=None, connectionsDir=None,
             nameToPho[baseName]['filename'].replace(u' ', u'_'),
             nameToPho[baseName]['ext'])
         wName, out = maker.infoFromPhoto(phoMull, preview=False, testing=False)
+
+        # output
         if out:
-            # Make info file
-            infoFile = u'%s.txt' % os.path.splitext(filenameOut)[0]
-            f = codecs.open(os.path.join(path, infoFile), 'w', 'utf-8')
             if batchCat:
                 out += batchCat
-            f.write(out)
-            f.close()
+
+            # Make info file
+            info_file = u'%s.txt' % os.path.splitext(filenameOut)[0]
+            helpers.open_and_write_file(os.path.join(path, info_file), out)
+
             # Move image file
             os.rename(os.path.join(path, filenameIn),
                       os.path.join(path, filenameOut))

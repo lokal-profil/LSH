@@ -186,12 +186,16 @@ class Common:
 
     @staticmethod
     def std_date(date, risky=False):
-        '''
-        returns a standardised date in isoform or for other date template
-        risky=True for additional logic
-        Note that risky has not yet been tested in full production and is never
-        suitable as a first run
-        '''
+        """
+        Attempt to convert a string to a Commons date.
+
+        Commons date is either isoform or using {{other_date}}.
+
+        :param date: string to analyse
+        :param risky: activate additional logic. Note that risky has not yet
+                      been tested in full production and is never suitable as
+                      a first run
+        """
         # interpret semicolon as multiple dates
         if ';' in date:
             combined = []
@@ -210,13 +214,14 @@ class Common:
         # Atempt risky tactic
         # Note that this should only be run on values which have failed a first run
         # Note also that it calls the std_date function WITHOUT the risky option
-        if risky and (len(date.split(u'-')) == 2):  # as a last attempt try to match this with a complex between pattern
+        if risky and (len(date.split(u'-')) == 2):
             combined = []
             for p in date.split(u'-'):
                 combined.append(Common.std_date(p))
                 if combined[-1] is None:  # if any fails then fail all
                     return None
-            return u'{{other date|-|%s|%s}}' % (combined[0], combined[1])
+            return Common.other_date_range(combined[0], combined[1])
+
         # Non-risky continues
         endings = {
             u'?': u'?',
@@ -257,18 +262,10 @@ class Common:
         modalityEndings = [u'troligen', u'sannolikt']
         for k, v in starts.iteritems():
             if date.lower().startswith(k):
-                again = Common.std_date(date[len(k):])
-                if again:
-                    return u'{{other date|%s|%s}}' % (v, again)
-                else:
-                    return None
+                return Common.other_date_if_more(v, date[len(k):])
         for k, v in endings.iteritems():
             if date.lower().endswith(k):
-                again = Common.std_date(date[:-len(k)])
-                if again:
-                    return u'{{other date|%s|%s}}' % (v, again)
-                else:
-                    return None
+                return Common.other_date_if_more(v, date[:-len(k)])
         for k in modalityEndings:
             if date.lower().endswith(k):
                 date = date[:-len(k)].strip(u'.,  ')
@@ -280,39 +277,97 @@ class Common:
         for k in talEndings:
             if date.lower().endswith(k):
                 date = date[:-len(k)].strip(u'.  ')
-                if date[-2:] == u'00':
-                    v = u'century'
-                    if len(date) == 4:
-                        return u'{{other date|%s|%r}}' % (v, int(date[:2]) + 1)
-                    elif len(date) == 9:
-                        return u'{{other date|-|{{other date|%s|%s}}|{{other date|%s|%s}}}}' % (v, int(date[:2]) + 1, v, int(date[5:7]) + 1)
-                    else:
-                        return None
-                else:
-                    v = u'decade'
-                again = Common.std_date(date)
-                if again:
-                    return u'{{other date|%s|%s}}' % (v, again)
-                else:
-                    return None
-        ldate = len(date)
-        if ldate == 10:  # YYYY-MM-DD
-            if Common.is_number(date[:4]) and Common.is_number(date[5:7]) and Common.is_number(date[-2:]):
-                return u'%s-%s-%s' % (date[:4], date[5:7], date[-2:])
-        elif ldate == 9:  # YYYY-YYYY
-            if Common.is_number(date[:4]) and Common.is_number(date[-4:]):
-                return u'{{other date|%s|%s|%s}}' % (u'-', date[:4], date[-4:])
-        elif ldate == 7:  # YYYY-YY
-            if Common.is_number(date[:4]) and Common.is_number(date[-2:]):
-                return u'{{other date|%s|%s|%s%s}}' % (u'-', date[:4], date[:2], date[-2:])
-        elif ldate == 5:  # YYYY-
-            if date[:1] == '-' and Common.is_number(date[1:]):
-                return u'{{other date|%s|%s}}' % (u'<', date[1:])
-            elif date[4:5] == '-' and Common.is_number(date[:4]):
-                return u'{{other date|%s|%s}}' % (u'>', date[:4])
-        elif ldate == 4:  # YYYY
-            if Common.is_number(date):
-                return date
+                # attempt century matchings
+                try:
+                    return Common.other_date_century(date)
+                except helpers.MyError:
+                    if len(date.split('-')) == 2:
+                        try:
+                            part = date.split('-')
+                            return Common.other_date_range(
+                                Common.other_date_century(part[0]),
+                                Common.other_date_century(part[1]))
+                        except helpers.MyError:
+                            pass
+
+                # assume decade
+                return Common.other_date_if_more(u'decade', date)
+
+        # reach this point if all else fails
+        return Common.std_numeric_date(date)
+
+    @staticmethod
+    def other_date_if_more(typ, remainder):
+        """
+        Return {{other_date|typ}} if remainder can be interpreted by std_date.
+        """
+        again = Common.std_date(remainder)
+        if again:
+            return u'{{other date|%s|%s}}' % (typ, again)
+        else:
+            return None
+
+    @staticmethod
+    def other_date_century(year):
+        """Return {{other_date|century}} for a given year."""
+        # TODO add year[-2:] == u'00' and helpers.is_int(year) testing
+        if not helpers.is_int(year) or int(year[-2:]) != 0:
+            raise helpers.MyError(
+                u'other_date_century() expects year in the format YY00 or Y00')
+        return '{{other date|century|%d}}' % (int(year[:-2]) + 1)
+
+    @staticmethod
+    def other_date_range(date_from, date_to):
+        """
+        Return a {{other_date}} for a given range.
+
+        Gives:
+        * {{other_date|-}} if both to and from
+        * {{other_date|>}} if just from
+        * {{other_date|<}} if just to
+        raises an error if both are empty
+        """
+        if date_from and date_to:
+            return u'{{other date|-|%s|%s}}' % (date_from, date_to)
+        elif date_from:
+            return u'{{other date|>|%s}}' % date_from
+        elif date_from:
+            return u'{{other date|<|%s}}' % date_to
+        else:
+            raise helpers.MyError(
+                u'other_date_range() must get at least one non-empty value')
+
+    @staticmethod
+    def std_numeric_date(date):
+        """
+        Attempt to convert a numeric (+ dash) string as a Commons date.
+
+        Note that standard string_to_ISO dunctions don't work, mainly since
+        ####-## is YYYY-YY not the standard YYYY-MM.
+        :param date: string to analyse
+        :return: string
+        """
+        if date.strip('1234567890-'):
+            # if string contains anything other than numbers and dash
+            return
+
+        parts = date.split('-')
+        if len(parts) == 3 and len(parts[0]) == 4 and \
+                len(parts[1]) == 2 and len(parts[2]) == 2:
+            # YYYY-MM-DD
+            return date
+        elif len(parts) == 2:
+            if (len(parts[0]) == 4 and len(parts[1]) in (0, 4)) or \
+                    (len(parts[0]) == 0 and len(parts[1]) == 4):
+                # YYYY-YYYY or YYYY- or -YYYY
+                return Common.other_date_range(parts[0], parts[1])
+            elif len(parts[0]) == 4 and len(parts[1]) == 2:
+                # YYYY-YY
+                parts[1] = u'%s%s' % (parts[0][:2], parts[1])
+                return Common.other_date_range(parts[0], parts[1])
+        elif len(parts) == 1 and len(parts[0]) == 4:
+            # YYYY
+            return date
         else:
             return None
 
@@ -325,7 +380,8 @@ class Common:
             * content: the string to look at
             * start: the substring indicating the start of the object
             * end: the substring indicating the end of the object
-            * brackets: a dict of brackets used which must match within the object
+            * brackets: a dict of brackets used which must match
+                        within the object
         @output:
             the-object, lead-in-to-object, the-remainder-of-the-string
             OR None, None, None if an error

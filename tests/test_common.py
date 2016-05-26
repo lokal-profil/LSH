@@ -9,7 +9,7 @@ from common import (
 
 class TestStdDate(unittest.TestCase):
 
-    """Test the ucfirst method."""
+    """Test the std_date() method."""
 
     def test_std_date_on_empty_string_returns_empty_string(self):
         self.assertEquals(Common.std_date(''), '')
@@ -18,9 +18,9 @@ class TestStdDate(unittest.TestCase):
         input_value = 'n.d'
         self.assertEquals(Common.std_date(input_value), '')
 
-    def test_std_date_iso_string(self):
-        input_value = '1989-02-04'
-        expected = '1989-02-04'
+    def test_std_date_bad_date_returns_none(self):
+        input_value = 'bad date'
+        expected = None
         self.assertEquals(Common.std_date(input_value), expected)
 
     def test_std_date_ymd_iso_string(self):
@@ -71,6 +71,18 @@ class TestStdDate(unittest.TestCase):
     def test_std_date_century_string(self):
         input_value = '1700-talet'
         expected = '{{other date|century|18}}'
+        self.assertEquals(Common.std_date(input_value), expected)
+
+    def test_std_date_low_century_string(self):
+        input_value = '700-talet'
+        expected = '{{other date|century|8}}'
+        self.assertEquals(Common.std_date(input_value), expected)
+
+    def test_std_date_century_range_string(self):
+        input_value = '1700-1800-talet'
+        expected = '{{other date|-' \
+                   '|{{other date|century|18}}' \
+                   '|{{other date|century|19}}}}'
         self.assertEquals(Common.std_date(input_value), expected)
 
     def test_std_date_start_string(self):

@@ -104,7 +104,11 @@ def moveHits(path, filenamesFile=None):
         if os.path.isdir(filenamePath) and filename.isupper():
             subdirs.append(filenamePath)
     for subdir in subdirs:
-        counter, fileNum = moveFiles(subdir.lower(), tree, nameToPho,
+        # make a subdir path where (only the) last directory is lower case
+        tmp_path, tmp_dir = os.path.split(subdir)
+        lower_subdir = os.path.join(tmp_path, tmp_dir.lower())
+
+        counter, fileNum = moveFiles(lower_subdir, tree, nameToPho,
                                      path=subdir)
         output(u'%s: %d out of %d were hits' % (subdir, counter, fileNum))
 

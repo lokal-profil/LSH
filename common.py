@@ -181,6 +181,11 @@ class Common:
 
     @staticmethod
     def stdDate(date, risky=False):
+        print 'You have called the deprecated stdDate(), please update'
+        return Common.std_date(date, risky=risky)
+
+    @staticmethod
+    def std_date(date, risky=False):
         '''
         returns a standardised date in isoform or for other date template
         risky=True for additional logic
@@ -191,7 +196,7 @@ class Common:
         if ';' in date:
             combined = []
             for p in date.split(';'):
-                combined.append(Common.stdDate(p))
+                combined.append(Common.std_date(p))
                 if combined[-1] is None:  # if any fails then fail all
                     return None
             return u'; '.join(combined)
@@ -204,11 +209,11 @@ class Common:
 
         # Atempt risky tactic
         # Note that this should only be run on values which have failed a first run
-        # Note also that it calls the stdDate function WITHOUT the risky option
+        # Note also that it calls the std_date function WITHOUT the risky option
         if risky and (len(date.split(u'-')) == 2):  # as a last attempt try to match this with a complex between pattern
             combined = []
             for p in date.split(u'-'):
-                combined.append(Common.stdDate(p))
+                combined.append(Common.std_date(p))
                 if combined[-1] is None:  # if any fails then fail all
                     return None
             return u'{{other date|-|%s|%s}}' % (combined[0], combined[1])
@@ -252,14 +257,14 @@ class Common:
         modalityEndings = [u'troligen', u'sannolikt']
         for k, v in starts.iteritems():
             if date.lower().startswith(k):
-                again = Common.stdDate(date[len(k):])
+                again = Common.std_date(date[len(k):])
                 if again:
                     return u'{{other date|%s|%s}}' % (v, again)
                 else:
                     return None
         for k, v in endings.iteritems():
             if date.lower().endswith(k):
-                again = Common.stdDate(date[:-len(k)])
+                again = Common.std_date(date[:-len(k)])
                 if again:
                     return u'{{other date|%s|%s}}' % (v, again)
                 else:
@@ -267,7 +272,7 @@ class Common:
         for k in modalityEndings:
             if date.lower().endswith(k):
                 date = date[:-len(k)].strip(u'.,  ')
-                again = Common.stdDate(date)
+                again = Common.std_date(date)
                 if again:
                     return u'%s {{Probably}}' % again
                 else:
@@ -285,7 +290,7 @@ class Common:
                         return None
                 else:
                     v = u'decade'
-                again = Common.stdDate(date)
+                again = Common.std_date(date)
                 if again:
                     return u'{{other date|%s|%s}}' % (v, again)
                 else:

@@ -549,11 +549,11 @@ class MakeInfo(object):
             data[u'description'] = description
 
         # datering
-        stdDate = Common.stdDate(date)
-        if stdDate is None:
+        std_date = Common.std_date(date)
+        if std_date is None:
             cat_meta.append(u'malformated year')
         else:
-            date = stdDate
+            date = std_date
         data[u'date'] = date
 
         # process and add to data

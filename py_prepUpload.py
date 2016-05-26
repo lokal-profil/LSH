@@ -17,6 +17,7 @@ DATA_DIR = u'data'
 CONNECTIONS_DIR = u'connections'
 FILENAMES = os.path.join(DATA_DIR, u'filenames.csv')
 FILEEXTS = (u'.tif', u'.jpg', u'.tiff', u'.jpeg')
+NEGATIVE_PATTERN = u'-negative%s'
 
 
 def moveFiles(target, tree, nameToPho, path=u'.', fileExts=None):
@@ -197,76 +198,102 @@ def makeAndRename(path, dataDir=None, connectionsDir=None,
             flog.write(u'%s failed to make infopage. See log\n' % filenameIn)
 
 
-def negatives(path):
-    '''
-    moves file to filename-negative.tif
-    creates an inverted file at filename.tif
-    creates a info file for negative and modifes info file for positive
-    path is the realtive path to the directory in which to process the files
-    only .tif are ever negatives
-    '''
+def negatives(path, ext=u'.tif'):
+    """
+    Identify and invert all files at the given location.
+
+    * moves file to filename-NEGATIVE_PATTERN.ext
+    * creates an inverted file at filename.ext
+    * creates a info file for negative and modifes info file for positive
+    :param path: realtive path to the directory in which to process the files
+    :param ext: image file extension (only .tif are ever negatives?)
+    """
+    negative_appendix = NEGATIVE_PATTERN % ext
     count = 0
     skipcount = 0
     for filename in os.listdir(path):
-        if filename.endswith(u'.tif') and \
-                not filename.endswith(u'-negative.tif'):
-            negative = u'%s-negative.tif' % filename[:-4]
+        if filename.endswith(ext) and \
+                not filename.endswith(negative_appendix):
+            negative = u'%s%s' % (filename[:-len(ext)], negative_appendix)
             if os.path.isfile(os.path.join(path, negative)):
                 output(u'%s was already inverted, skipping...' % filename)
                 skipcount += 1
                 continue
-            os.rename(os.path.join(path, filename),
-                      os.path.join(path, negative))
-            imageMagick = u'convert %s -negate -auto-gamma -level 10%%,90%%,1,0 %s' % (
-                pipes.quote(os.path.join(path, negative)),
-                pipes.quote(os.path.join(path, filename)))
-            # pipe errors to file
-            imageMagick = u'%s 2>>%s' % (
-                imageMagick,
-                pipes.quote(os.path.join(path, u'¤imageMagick-errors.log')))
-            os.system(imageMagick.encode(encoding='UTF-8'))
-            # new info files
-            infoFilename = u'%s.txt' % filename[:-4]
-            f = codecs.open(os.path.join(path, infoFilename), 'r', 'utf-8')
-            infoFile = f.read()
-            f.close()
-            negInfo, posInfo = negPosInfo(infoFile,
-                                          filename.replace(u'_', u' '))
-            f = codecs.open(os.path.join(path, u'%s-negative.txt' % infoFilename[:-4]), 'w', 'utf-8')
-            f.write(negInfo)
-            f.close()
-            f = codecs.open(os.path.join(path, infoFilename), 'w', 'utf-8')
-            f.write(posInfo)
-            f.close()
+            invert_file_and_info(path, filename, negative, ext)
             count += 1
             if count % 10 == 0:
                 output(u'%d files inverted (%d)' % (count, count + skipcount))
 
 
-def negPosInfo(infoFile, filename):
-    '''
-    generate a negative and positive version of the given info file
-    '''
-    ovPos = infoFile.find(u'|other_versions=')
-    # for negative we want to remove cats (i.e. anything after </gallery>\n}} )
-    # so need to identify end position
-    end = infoFile.find(u'</gallery>\n}}')
-    if end > 0:
-        end += len(u'</gallery>\n}}')
-    else:
-        end = infoFile.find(u'|other_versions= \n}}')
-        if end > 0:
-            end += len(u'|other_versions= \n}}')
-        else:
-            print '%s: could not find end of template' % filename
-            end = ''
-    pos = u'%s|negative= %s\n%s' % (infoFile[:ovPos],
-                                    u'%s-negative.%s' % (filename[:-4], filename[-3:]),
-                                    infoFile[ovPos:])
-    neg = u'%s|positive= %s\n%s' % (infoFile[:ovPos],
-                                    filename,
-                                    infoFile[ovPos:end])
-    return (neg, pos)
+def invert_file_and_info(path, filename, negative, ext):
+    """
+    Given a negative file and an output filename, invert files and update info.
+
+    * Moves the original file to the negative filename
+    * Inverts the (new) negative file and stores as original filename
+    * Updates the original file description and creates one for the negative.
+    :param path: realtive path to the directory in which to process the files
+    :param filename: the original (negative) file
+    :param negative: the target name for the negative
+    :param ext: the file extension
+    """
+    # move original
+    os.rename(os.path.join(path, filename),
+              os.path.join(path, negative))
+
+    # invert using imageMagick with errors piped to file
+    image_magick = u'convert %s -negate -auto-gamma -level 10%%,90%%,1,0 %s 2>>%s' % (
+        pipes.quote(os.path.join(path, negative)),
+        pipes.quote(os.path.join(path, filename)),
+        pipes.quote(os.path.join(path, u'¤imageMagick-errors.log')))
+    os.system(image_magick.encode(encoding='UTF-8'))
+
+    # make new info files
+    info_filename_pos = os.path.join(path, u'%s.txt' % filename[:-len(ext)])
+    info_filename_neg = os.path.join(path, u'%s.txt' % negative[:-len(ext)])
+    info_file = helpers.open_and_read_file(info_filename_pos)
+    neg_info, pos_info = make_neg_and_pos_info(
+        info_file, filename.replace(u'_', u' '), ext)
+    helpers.open_and_write_file(info_filename_neg, neg_info)
+    helpers.open_and_write_file(info_filename_pos, pos_info)
+
+
+def make_neg_and_pos_info(info_file, filename, ext):
+    """
+    Generate a negative and positive version of the given info file.
+
+    The two refer to each other using the negative/positive parameters. The
+    negative file gets categories removed.
+    :param info_file: the contents of the info file
+    :param filename: the (positive) image filename
+    :param ext: the file extension
+    """
+    negative_appendix = NEGATIVE_PATTERN % ext
+    ov_position = info_file.find(u'|other_versions=')
+
+    # for negative we need to identify end position of the template
+    end_position = -1
+    end_patterns = [u'</gallery>\n}}', u'|other_versions= \n}}']
+    for end_pattern in end_patterns:
+        end_position = info_file.find(end_pattern)
+        if end_position > 0:
+            end_position += len(end_pattern)
+            break
+    if not end_position > 0:
+        # if all else fails just keep it all
+        output('%s: could not find end of template' % filename)
+        end_position = len(info_file)
+
+    # make new infos
+    pos_info = u'%s|negative= %s\n%s' % (
+        info_file[:ov_position],
+        u'%s%s' % (filename[:-len(ext)], negative_appendix),
+        info_file[ov_position:])
+    neg_info = u'%s|positive= %s\n%s' % (
+        info_file[:ov_position],
+        filename,
+        info_file[ov_position:end_position])
+    return (neg_info, pos_info)
 
 
 def catTest(path, data_dir, connections_dir, filename_file, nameToPho=None):

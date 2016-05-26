@@ -44,6 +44,33 @@ def openConnection(configPath, apiClass=wikiApi.WikiApi, verbose=None):
     return wApi
 
 
+def open_and_read_file(filename, codec='utf-8'):
+    """
+    Open and read a file using the provided codec.
+
+    Automatically closes the file on return.
+
+    :param filename: the file to open
+    :param codec: the used encoding (defaults to "utf-8")
+    """
+    with codecs.open(filename, 'r', codec) as f:
+        return f.read()
+
+
+def open_and_write_file(filename, text, codec='utf-8'):
+    """
+    Open and write to a file using the provided codec.
+
+    Automatically closes the file on return.
+
+    :param filename: the file to open
+    :param text: the text to output to the file
+    :param codec: the used encoding (defaults to "utf-8")
+    """
+    with codecs.open(filename, 'w', codec) as f:
+        f.write(text)
+
+
 def open_csv_file(filename, delimiter='|', codec='utf-8'):
     """
     Open a csv file and returns the header row plus following lines.
@@ -53,7 +80,7 @@ def open_csv_file(filename, delimiter='|', codec='utf-8'):
     :param codec: the used encoding (defaults to "utf-8")
     :return: tuple(array(str), array(str))
     """
-    lines = codecs.open(filename, 'r', codec).read().split('\n')
+    lines = open_and_read_file(filename, codec).split('\n')
     header = lines.pop(0).split(delimiter)
     return header, lines
 

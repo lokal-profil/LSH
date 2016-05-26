@@ -24,11 +24,12 @@ COMMONS_PREFIX = u'Commons:Batch uploading/LSH'
 
 
 def parseEntries(contents):
-    '''
-    Given the contents of a wikipage this returns the entries listed in it
-    input: wikicode
-    @ output: list of entry-dict items
-    '''
+    """
+    Return entries listed in given wikipage.
+
+    :param contents: wikicode of page with lists
+    :return: list of entry-dict items
+    """
     units = []
     header_t = u'{{user:Lokal Profil/LSH2'
     row_t = u'{{User:Lokal Profil/LSH3'

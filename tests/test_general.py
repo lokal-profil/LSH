@@ -114,8 +114,9 @@ class TestGeneral(unittest.TestCase):
 
     def assert_items_equal_with_lists(self, a, b):
         """
-        compares two lists and checks that they are equal, up to the order
-        of the lines, and the order of any lists
+        Compare two lists and checks that they are equal, up to the order
+        of the lines, and the order of any lists.
+
         :param a: a list
         :param b: a list
         """
@@ -231,7 +232,7 @@ class TestGeneral(unittest.TestCase):
         self.assert_file_contents_equal(DIR_LISTSCRAPE_OUTPUT, DIR_TMP,
                                         ('.csv', '.txt'))
 
-    def test_moveHits(self):
+    def test_move_hits(self):
         """Check that finding and moving images gives the right results."""
         # copy mock files to temporary folder since these are changed
         shutil.copytree(DIR_IMAGES_FOLDERS_INPUT, DIR_TMP)
@@ -254,7 +255,7 @@ class TestGeneral(unittest.TestCase):
             print u'test_moveHits failed for filenames.csv'
             raise
 
-    def test_makeInfoAndRename(self):
+    def test_make_info_and_rename(self):
         """Check that creating filenames gives the right results."""
         # copy with Exts filename file to filenames.csv
         shutil.copyfile(os.path.join(DIR_DATA, u'filenames.Exts.csv'),
@@ -264,10 +265,10 @@ class TestGeneral(unittest.TestCase):
         shutil.copytree(DIR_IMAGES, DIR_TMP)
 
         # run test
-        filenameFile = os.path.join(DIR_DATA, u'filenames.csv')
+        filename_file = os.path.join(DIR_DATA, u'filenames.csv')
         Prep.makeAndRename(DIR_TMP, dataDir=DIR_DATA,
                            connectionsDir=DIR_CONNECTIONS,
-                           filenameFile=filenameFile, batchCat=u'2015-11')
+                           filenameFile=filename_file, batchCat=u'2015-11')
 
         # check file structure
         self.assert_file_structure_equal(DIR_IMAGES_INFO, DIR_TMP)
@@ -279,7 +280,7 @@ class TestGeneral(unittest.TestCase):
         shutil.copyfile(os.path.join(DIR_DATA, u'filenames.noExts.csv'),
                         os.path.join(DIR_DATA, u'filenames.csv'))
 
-    def test_makeNegatives(self):
+    def test_make_negatives(self):
         """Check that creating negatives gives the right results."""
         # copy mock files to temporary folder since these are changed
         shutil.copytree(DIR_NEGATIVES_INPUT, DIR_TMP)

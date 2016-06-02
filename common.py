@@ -258,15 +258,15 @@ class Common:
             u'före': u'<',
             u'efter': u'>',
             u'-': u'<'}
-        talEndings = [u'-talets', u'-tal', u'-talet', u' talets']
-        modalityEndings = [u'troligen', u'sannolikt']
+        tal_endings = [u'-talets', u'-tal', u'-talet', u' talets']
+        modality_endings = [u'troligen', u'sannolikt']
         for k, v in starts.iteritems():
             if date.lower().startswith(k):
                 return Common.other_date_if_more(v, date[len(k):])
         for k, v in endings.iteritems():
             if date.lower().endswith(k):
                 return Common.other_date_if_more(v, date[:-len(k)])
-        for k in modalityEndings:
+        for k in modality_endings:
             if date.lower().endswith(k):
                 date = date[:-len(k)].strip(u'.,  ')
                 again = Common.std_date(date)
@@ -274,7 +274,7 @@ class Common:
                     return u'%s {{Probably}}' % again
                 else:
                     return None
-        for k in talEndings:
+        for k in tal_endings:
             if date.lower().endswith(k):
                 date = date[:-len(k)].strip(u'.  ')
                 # attempt century matchings

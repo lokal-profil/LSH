@@ -20,27 +20,27 @@ FILEEXTS = (u'.tif', u'.jpg', u'.tiff', u'.jpeg')
 NEGATIVE_PATTERN = u'-negative%s'
 
 
-def moveFiles(target, tree, nameToPho, path=u'.', fileExts=None):
+def moveFiles(target, tree, name_to_pho, path=u'.', file_exts=None):
     """
     Move all files in the given dir and subdirs of the specified
     filetypes to the target dir.
     :param target: target directory to move files to
     :param tree: treestructure of expected filenames
-    :param nameToPho: look-up dictionary for filenames to phoId
+    :param name_to_pho: look-up dictionary for filenames to phoId
     :param path: path to directory in which to look for files and
                  subdirectories (defaults to ".")
-    :param filetypes: tuple of allowed file extensions (defaults to FILEEXTS)
+    :param file_exts: tuple of allowed file extensions (defaults to FILEEXTS)
     :return: int, int (moved files, total files)
     """
     # set defaults unless overridden
-    fileExts = fileExts or FILEEXTS
+    file_exts = file_exts or FILEEXTS
 
     baseDir, subdir = os.path.split(path)
     # create target if it doesn't exist
     if not os.path.isdir(target):
         os.mkdir(target)
 
-    files = helpers.findFiles(path, fileExts)
+    files = helpers.findFiles(path, file_exts)
     counter = 0
     for filename in files:
         filepath, plain_name = os.path.split(filename)
@@ -50,11 +50,11 @@ def moveFiles(target, tree, nameToPho, path=u'.', fileExts=None):
             os.rename(filename, os.path.join(target, plain_name))
             counter += 1
             # record the actual file extention
-            nameToPho[fileKey]['ext'] = ext[1:]
+            name_to_pho[fileKey]['ext'] = ext[1:]
     return (counter, len(files))
 
 
-def makeHitlist(filenamesFile=None):
+def makeHitlist(filenames_file=None):
     """
     Goes through the allowed filenames and builds up a treestructure
     {directory: [filenames]} as well as a look-up dictionary for filenames
@@ -63,24 +63,25 @@ def makeHitlist(filenamesFile=None):
     :return: dict, dict
     """
     # set defaults unless overridden
-    filenamesFile = filenamesFile or FILENAMES
+    filenames_file = filenames_file or FILENAMES
 
     # load filenames file
-    filenamesHeader = 'PhoId|MulId|MulPfadS|MulDateiS|filename|ext'
-    filenames = helpers.csvFileToDict(filenamesFile, 'PhoId', filenamesHeader)
+    filenames_header = 'PhoId|MulId|MulPfadS|MulDateiS|filename|ext'
+    filenames = helpers.csvFileToDict(filenames_file, 'PhoId',
+                                      filenames_header)
 
     tree = {}
-    nameToPho = {}
-    for phoId, v in filenames.iteritems():
-        oldName = v['MulDateiS']
+    name_to_pho = {}
+    for pho_id, v in filenames.iteritems():
+        old_name = v['MulDateiS']
         path = v['MulPfadS'].replace('\\', os.sep)  # windows -> current os
         if path not in tree.keys():
             tree[path] = []
-        tree[path].append(oldName)
-        nameToPho[oldName] = {'phoMull': u'%s:%s' % (phoId, v['MulId']),
-                              'filename': v['filename'],
-                              'ext': v['ext']}
-    return (tree, nameToPho)
+        tree[path].append(old_name)
+        name_to_pho[old_name] = {'phoMull': u'%s:%s' % (pho_id, v['MulId']),
+                                 'filename': v['filename'],
+                                 'ext': v['ext']}
+    return (tree, name_to_pho)
 
 
 def moveHits(path, filenamesFile=None):
@@ -132,72 +133,77 @@ def moveHits(path, filenamesFile=None):
         removeEmptyDirectories(subdir, top=False)
 
 
-def makeAndRename(path, dataDir=None, connectionsDir=None,
-                  filenameFile=None, batchCat=None):
+def makeAndRename(path, batch_cat=None,
+                  data_dir=None, connections_dir=None, filename_file=None):
     """
     Create info file and rename image file
     :param path: relative path to the directory in which to process files
-    :param batchCat: If given a category of the format
-                     Category:Media contributed by LSH: batchCat will be added
-                     to all files.
+    :param batch_cat: If given a category of the format
+                      Category:Media contributed by LSH: batchCat will be added
+                      to all files.
+    :param data_dir: override the default directory for data files
+    :param connections_dir: override the default directory for connection files
+    :param filename_file: override the default filename file
     :return: None
     """
     # set defaults unless overridden
-    dataDir = dataDir or DATA_DIR
-    connectionsDir = connectionsDir or CONNECTIONS_DIR
-    filenameFile = filenameFile or FILENAMES
+    data_dir = data_dir or DATA_DIR
+    connections_dir = connections_dir or CONNECTIONS_DIR
+    filename_file = filename_file or FILENAMES
 
     # logfile
     logfile = os.path.join(path, u'¤generator.log')
     flog = codecs.open(logfile, 'a', 'utf-8')
 
     # require batchCat to be of some length
-    if batchCat is not None:
-        batchCat = batchCat.strip()
-        if not batchCat:
-            batchCat = None
+    if batch_cat is not None:
+        batch_cat = batch_cat.strip()
+        if not batch_cat:
+            batch_cat = None
         else:
-            batchCat = u'[[Category:Media contributed by LSH: %s]]' % batchCat
+            batch_cat = u'[[Category:Media contributed by LSH: %s]]' \
+                        % batch_cat
 
-    tree, nameToPho = makeHitlist(filenameFile)
+    tree, name_to_pho = makeHitlist(filename_file)
 
     # get category statistics
-    catTest(path, dataDir, connectionsDir, filenameFile)
+    catTest(path, data_dir, connections_dir, filename_file)
 
     # initialise maker
     maker = MakeInfo()
-    maker.readInLibraries(folder=dataDir)
-    maker.readConnections(folder=connectionsDir)
+    maker.readInLibraries(folder=data_dir)
+    maker.readConnections(folder=connections_dir)
 
-    for filenameIn in os.listdir(path):
-        baseName = os.path.splitext(filenameIn)[0]
+    for filename_in in os.listdir(path):
+        base_name = os.path.splitext(filename_in)[0]
 
-        if filenameIn.startswith(u'¤'):  # log files
+        if filename_in.startswith(u'¤'):  # log files
             continue
-        elif baseName not in nameToPho.keys():
-            flog.write(u'%s did not have a photoId\n' % filenameIn)
+        elif base_name not in name_to_pho.keys():
+            flog.write(u'%s did not have a photoId\n' % filename_in)
             continue
-        phoMull = nameToPho[baseName]['phoMull']
-        filenameOut = u'%s.%s' % (
-            nameToPho[baseName]['filename'].replace(u' ', u'_'),
-            nameToPho[baseName]['ext'])
-        wName, out = maker.infoFromPhoto(phoMull, preview=False, testing=False)
+        pho_mull = name_to_pho[base_name]['phoMull']
+        filename_out = u'%s.%s' % (
+            name_to_pho[base_name]['filename'].replace(u' ', u'_'),
+            name_to_pho[base_name]['ext'])
+        wName, out = maker.infoFromPhoto(pho_mull, preview=False,
+                                         testing=False)
 
         # output
         if out:
-            if batchCat:
-                out += batchCat
+            if batch_cat:
+                out += batch_cat
 
             # Make info file
-            info_file = u'%s.txt' % os.path.splitext(filenameOut)[0]
+            info_file = u'%s.txt' % os.path.splitext(filename_out)[0]
             helpers.open_and_write_file(os.path.join(path, info_file), out)
 
             # Move image file
-            os.rename(os.path.join(path, filenameIn),
-                      os.path.join(path, filenameOut))
-            flog.write(u'%s outputed to %s\n' % (filenameIn, filenameOut))
+            os.rename(os.path.join(path, filename_in),
+                      os.path.join(path, filename_out))
+            flog.write(u'%s outputed to %s\n' % (filename_in, filename_out))
         else:
-            flog.write(u'%s failed to make infopage. See log\n' % filenameIn)
+            flog.write(u'%s failed to make infopage. See log\n' % filename_in)
 
 
 def negatives(path, ext=u'.tif'):
@@ -455,9 +461,9 @@ if __name__ == '__main__':
             print usage
     elif len(argv) == 3:
         path = helpers.convertFromCommandline(argv[1])
-        batchCat = helpers.convertFromCommandline(argv[2])
+        batch_cat = helpers.convertFromCommandline(argv[2])
         if argv[0] == 'makeAndRename':
-            makeAndRename(path=path, batchCat=batchCat)
+            makeAndRename(path=path, batch_cat=batch_cat)
         else:
             print usage
     else:

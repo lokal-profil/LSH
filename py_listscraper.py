@@ -226,24 +226,24 @@ def run(outPath=None, dataPath=None, mappingsPath=None,
         oldFilenames = helpers.csvFileToDict(filenamesFile, 'PhoId',
                                              filenamesHeader)
         for unit in units:
-            phoId = unit[u'phoId']
-            if phoId not in oldFilenames.keys():
+            pho_id = unit[u'phoId']
+            if pho_id not in oldFilenames.keys():
                 print u'could not find id in old: %s, %s' % \
-                      (phoId, unit[u'generated'])
+                      (pho_id, unit[u'generated'])
                 exit(1)
-            oldDesc = oldFilenames[phoId][u'filename']
+            old_desc = oldFilenames[pho_id][u'filename']
             # newDesc = oldDesc.replace(unit[u'generated'], unit[u'improved'])
             # a safer implementation where new description is appended to
             # old ending. I.e. "- Museum - idNo"
-            newDesc = u'%s %s' % (unit[u'improved'],
-                                  splitFilename(oldDesc)[1])
-            if oldDesc == newDesc:
+            new_desc = u'%s %s' % (unit[u'improved'],
+                                   splitFilename(old_desc)[1])
+            if old_desc == new_desc:
                 # indicator that commons file may not having been updated which
                 # may cause more complex problems which are hard to test for
                 print u'did you run the updater a second time without ' \
                       u'first updating the filenames table on Commons?'
                 exit(1)
-            oldFilenames[phoId][u'filename'] = newDesc
+            oldFilenames[pho_id][u'filename'] = new_desc
 
         # overwrite old filenames and old mapping
         # new filename.csv file w. header

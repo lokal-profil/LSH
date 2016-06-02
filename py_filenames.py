@@ -21,43 +21,44 @@ LOG_SUBFOLDER = u'logs'
 MAPPING_FOLDER = u'mappings'
 
 
-def run(folder=None, mapping=None, filenameP=None,
-        filenameO=None, outfolder=None):
+def run(folder=None, mapping=None, outfolder=None,
+        filename_photo=None, filename_obj_daten=None):
     """
     Generates filenames from photo and object descriptions
     :param folder: the folder containing csv files
     :param mapping: the folder containing mapping files
-    :param filenameP: the photo data csv file
-    :param filenameO: the objDaten csv file
+    :param filename_photo: the photo data csv file
+    :param filename_obj_daten: the objDaten csv file
     :param outfolder: if provided output is not put in default folder
     :return: None
     """
     # set defaults unless overridden
     folder = folder or CSV_FOLDER
     mapping = mapping or MAPPING_FOLDER
-    filenameP = filenameP or PHOTO_FILE
-    filenameO = filenameO or OBJDATEN_FILE
+    filename_photo = filename_photo or PHOTO_FILE
+    filename_obj_daten = filename_obj_daten or OBJDATEN_FILE
     outfolder = outfolder or folder
 
     # create target folders if they don't exist
-    targetFolders = (mapping, os.path.join(outfolder, LOG_SUBFOLDER))
-    for t in targetFolders:
+    target_folders = (mapping, os.path.join(outfolder, LOG_SUBFOLDER))
+    for t in target_folders:
         if not os.path.isdir(t):
             os.mkdir(t)
 
     # make descriptions
-    photoFile = os.path.join(folder, filenameP)
-    objDatenFile = os.path.join(folder, filenameO)
-    logFile = os.path.join(outfolder, LOG_SUBFOLDER, u'filenames.log')
-    descriptions, photo = makeDescriptions(photoFile, objDatenFile, logFile)
+    photo_file = os.path.join(folder, filename_photo)
+    obj_daten_file = os.path.join(folder, filename_obj_daten)
+    log_file = os.path.join(outfolder, LOG_SUBFOLDER, u'filenames.log')
+    descriptions, photo = makeDescriptions(photo_file, obj_daten_file,
+                                           log_file)
 
     # output Commons
-    mappingFile = os.path.join(mapping, u'Filenames.txt')
-    commonsOutput(descriptions, mappingFile)
+    mapping_file = os.path.join(mapping, u'Filenames.txt')
+    commonsOutput(descriptions, mapping_file)
 
     # make Filenames
-    filenamesFile = os.path.join(outfolder, u'filenames.csv')
-    makeFilenames(descriptions, photo, filenamesFile)
+    filenames_file = os.path.join(outfolder, u'filenames.csv')
+    makeFilenames(descriptions, photo, filenames_file)
 
 
 def makeDescriptions(photoFile, objDatenFile, logFile):

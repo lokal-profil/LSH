@@ -266,9 +266,9 @@ class TestGeneral(unittest.TestCase):
 
         # run test
         filename_file = os.path.join(DIR_DATA, u'filenames.csv')
-        Prep.makeAndRename(DIR_TMP, dataDir=DIR_DATA,
-                           connectionsDir=DIR_CONNECTIONS,
-                           filenameFile=filename_file, batchCat=u'2015-11')
+        Prep.makeAndRename(DIR_TMP, batch_cat=u'2015-11',
+                           data_dir=DIR_DATA, connections_dir=DIR_CONNECTIONS,
+                           filename_file=filename_file)
 
         # check file structure
         self.assert_file_structure_equal(DIR_IMAGES_INFO, DIR_TMP)

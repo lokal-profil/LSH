@@ -4,7 +4,7 @@ Assorted scripts used for [LSH batch upload](http://commons.wikimedia.org/wiki/C
 The work originally done on the redux branch (now merged) was a first attempt to cleanup the scripts and
 include the original steps needed to convert the original csv files to those required for the input
 
-Apart from the exeptions mentioned below this was produced by [Lokal_Profil](https://github.com/lokal-profil).
+Apart from the exceptions mentioned below this was produced by [Lokal_Profil](https://github.com/lokal-profil).
 Note however that the majority of the codebase is old and the coding might make you want to cry
 (I know that is how I feel when I see it).
 
@@ -15,9 +15,18 @@ Requires [WikiApi](https://github.com/lokal-profil/ODOK/blob/master/tools/WikiAp
 WikiApi is based on PyCJWiki Version 1.31 (C) by [Smallman12q](https://en.wikipedia.org/wiki/User_talk:Smallman12q) GPL,
 see http://www.gnu.org/licenses/.
 
-## TODO
-* Import improvements done in BatchUploadTools
-* Make older bits not suck...
+## User Requirements
+This bot does not (yet) support OAuth, hence you must use [[Special:BotPasswords]]
+with a bot account given the following grants:
+
+ * Basic rights
+ * High-volume editing
+ * Upload new files
+
+For clean up it is also recommended that it is given:
+
+ * Create, edit, and move pages
+ * Upload, replace, and move files
 
 ## Workflow
 
@@ -71,17 +80,17 @@ step 10 all can be done without the actual image files.
 
 ## Post upload
 1. Run `python py_postUpload.py purge` to purge LSH-files in [Category:Files with broken file links](https://commons.wikimedia.org/wiki/Category:Files_with_broken_file_links)
-2. Look at `BrokenFileLinks.csv` to identify any remaining files with
+2. Look at `postAnalysis/BrokenFileLinks.csv` to identify any remaining files with
    broken file links. Add any known renames after the pipe (excluding
    prefix but including the file extension)
 3. Run `python py_postUpload.py rename` to repair file pages linking to
    renamed files and updating the list of broken links
   * These indicate missing files, these can some times be uploaded manually
    but should otherwise be unlinked.
-4. Run `python py_postUpload.py findMissing` to check filenames.csv for
+4. Run `python py_postUpload.py findMissing` to check `filenames.csv` for
    any files not present on Commons
   * This also generates an export file with photoid to url links for LSH
 
 ## Tests
 Some basic tests have been added to simplify maintanance/improvement of
-the code base.
+the code base. Run these with `tox`.

@@ -249,12 +249,12 @@ def run(outPath=None, dataPath=None, mappingsPath=None,
         # new filename.csv file w. header
         helpers.dictToCsvFile(filenamesFile, oldFilenames, filenamesHeader)
         # new Commons mapping file needs a dict with all descriptions
-        mappingDict = {}
+        mapping_dict = {}
         for phoId, v in oldFilenames.iteritems():
             descr = splitFilename(v[u'filename'])[0]
-            mappingDict[phoId] = {'descr': descr}
+            mapping_dict[phoId] = {'descr': descr}
 
-        Filenames.commonsOutput(mappingDict, mappingFile, allEntries)
+        Filenames.commonsOutput(mapping_dict, mappingFile, allEntries)
         output(u'Updated %s and produced a new mappingfile %s. Please upload '
                u'the new one to Commons.' % (filenamesFile, mappingFile))
 

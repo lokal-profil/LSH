@@ -234,8 +234,8 @@ if __name__ == '__main__':
             u'\taction: purge - purges broken fileliks in LSH files and ' \
             u'produces a file with remaining broken file links\n' \
             u'\taction: rename - repairs broken file links for any files where ' \
-            u'a new name was added to broken file links\n' \
-            u'\taction: updateBroken - updates the brokenFileLinks file ' \
+            u'a new name was added to broken file links then ' \
+            u'updates the brokenFileLinks file ' \
             u'(overwriting any added renamings)\n' \
             u'\taction: findMissing - checks all filenames for existance ' \
             u'and produces a link table for LSH import'
@@ -246,7 +246,6 @@ if __name__ == '__main__':
             findMissingImages()
         elif argv[0] == 'rename':
             fixRenamedFiles()
-        elif argv[0] == 'updateBroken':
             findMissingImages()
         elif argv[0] == 'findMissing':
             findAllMissing()

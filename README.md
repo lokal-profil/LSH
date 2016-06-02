@@ -73,19 +73,15 @@ step 10 all can be done without the actual image files.
 1. Run `python py_postUpload.py purge` to purge LSH-files in [Category:Files with broken file links](https://commons.wikimedia.org/wiki/Category:Files_with_broken_file_links)
 2. Look at `BrokenFileLinks.csv` to identify any remaining files with
    broken file links. Add any known renames after the pipe (excluding
-   prefix and file extension)
+   prefix but including the file extension)
 3. Run `python py_postUpload.py rename` to repair file pages linking to
-   renamed files
-4. Run `python py_postUpload.py updateBroken` to find any remaining files
-   with broken links
+   renamed files and updating the list of broken links
   * These indicate missing files, these can some times be uploaded manually
    but should otherwise be unlinked.
-5. Run `python py_postUpload.py findMissing` to check filenames.csv for
+4. Run `python py_postUpload.py findMissing` to check filenames.csv for
    any files not present on Commons
   * This also generates an export file with photoid to url links for LSH
 
 ## Tests
 Some basic tests have been added to simplify maintanance/improvement of
-the code base. Run these through:
-
-* `python tests/test_general.py`
+the code base.

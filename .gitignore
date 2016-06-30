@@ -1,5 +1,6 @@
 config.json
 *.log
+
 data/*
 clean_csv/*
 original_csv/*
@@ -7,3 +8,7 @@ connections/*
 old_connections/*
 postAnalysis/*
 mappings/*
+tmp/*
+
+.tox/*
+.coverage

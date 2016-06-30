@@ -1,0 +1,8 @@
+-r requirements.txt
+
+six>=1.7
+mock
+nose
+nose-cov
+nose-exclude
+coverage

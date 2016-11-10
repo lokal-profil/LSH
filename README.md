@@ -33,7 +33,7 @@ For clean up it is also recommended that it is given:
 All of these should be run from the main code directory. Note that up to
 step 10 all can be done without the actual image files.
 
-0. Copy config.py.sample to config.py and fill in your username and password
+0. Copy config.example.json to config.json and fill in your username and password
 0. Run `python py_listscraper.py old_connections data`, to make a copy of
    the latest Commons mappings
 1. Unpack the new csv files to the `original_csv` directory
@@ -89,8 +89,8 @@ step 10 all can be done without the actual image files.
    but should otherwise be unlinked.
 4. Run `python py_postUpload.py findMissing` to check `filenames.csv` for
    any files not present on Commons
-  * This also generates an export file with photoid to url links for LSH
+  * This also generates an export file with photo-id to url-links for LSH
 
 ## Tests
-Some basic tests have been added to simplify maintanance/improvement of
+Some basic tests have been added to simplify maintenance/improvement of
 the code base. Run these with `tox`.

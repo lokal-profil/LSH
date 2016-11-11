@@ -176,16 +176,20 @@ def makePhoto_multi(photoFile, multiFile, logFile, tmpFile):
 
     # check that filename is unique
     flog.write('* Same files used by different PhoId, format is PhoId/MulId\n')
+    logged = False
     namelist = []
     mulPhoIdList = []
     for k, v in multi.iteritems():
         name = u'%s\\%s.%s' % (v['MulPfadS'], v['MulDateiS'], v['MulExtentS'])
         if name in namelist:
+            logged = True
             flog.write('%s/%s\n' % (v['MulPhoId'], v['MullId']))
         else:
             mulPhoIdList.append(v['MulPhoId'])
             namelist.append(name)
     output(u'\tmultimedia: %d' % len(multi))
+    if not logged:
+        flog.write(u'None =)\n')
 
     # handle photo
     # @toDO add duplicate check to cleanup script
@@ -197,12 +201,14 @@ def makePhoto_multi(photoFile, multiFile, logFile, tmpFile):
     # combine
     combined = {}
     flog.write(u'* unused rows in multimedia\n')
+    logged = False
     for k, v in multi.iteritems():
         phoId = v['MulPhoId']
         mulId = v['MulId']
         v['MulPfadS'] = v['MulPfadS'].replace(pathToTrim, u'')  # trim filepath
         v['MulExtentS'] = u''  # MulExtentS is always wrong
         if phoId not in photo.keys():
+            logged = True
             flog.write(u'%s\n' % v)
         elif not photo[phoId]['MulId'] == v['MulId']:
             raise MyError("phoId matched but to wrong mulId: p:%s m_found:%s, "
@@ -213,11 +219,17 @@ def makePhoto_multi(photoFile, multiFile, logFile, tmpFile):
             combo = photo.pop(phoId)  # move out of photo
             combo.update(v)  # add contents from multi
             combined[phoId] = combo
+    if not logged:
+        flog.write(u'None =)\n')
 
     # log any unused rows in photo
     flog.write(u'* unused rows in photo\n')
+    logged = False
     for k, v in photo.iteritems():
+        logged = True
         flog.write(u'%s\n' % v)
+    if not logged:
+        flog.write(u'None =)\n')
     flog.close()
     output(u"...done")
 

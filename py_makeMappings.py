@@ -484,12 +484,13 @@ def combineEvents(oldCatDict, oldLinkDict, newDict):
     '''
     for k, v in newDict.iteritems():
         newDict[k][u'cat'] = u''
+        newDict[k][u'link'] = newDict[k][u'link'].strip(u'[]')
         if k in oldCatDict.keys():  # assume key list is same in both
             if oldCatDict[k] is not None:
                 newDict[k][u'cat'] = oldCatDict[k]
             if oldLinkDict[k] is not None:
                 oldlink = oldLinkDict[k]
-                newlink = newDict[k][u'link'].replace('_', ' ').strip(u'[]')
+                newlink = newDict[k][u'link'].replace('_', ' ')
                 if oldlink != newlink:
                     # check if the same, otherwise use old
                     if newlink:

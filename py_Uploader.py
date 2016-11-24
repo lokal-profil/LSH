@@ -60,7 +60,7 @@ def upFiles(in_path, cutoff=None, target=u'Uploaded',
         if cutoff and counter > cutoff:
             break
         # verify that there is a matching info file
-        info_file = u'%s.txt' % os.path.splitext(f)[0]
+        info_file = u'%s.info' % os.path.splitext(f)[0]
         base_name = os.path.basename(f)
         if not os.path.exists(info_file):
             flog.write(u'%s: Found tif/jpg without info' % base_name)

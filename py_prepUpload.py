@@ -195,7 +195,7 @@ def makeAndRename(path, batch_cat=None,
                 out += batch_cat
 
             # Make info file
-            info_file = u'%s.txt' % os.path.splitext(filename_out)[0]
+            info_file = u'%s.info' % os.path.splitext(filename_out)[0]
             helpers.open_and_write_file(os.path.join(path, info_file), out)
 
             # Move image file
@@ -257,8 +257,8 @@ def invert_file_and_info(path, filename, negative, ext):
     os.system(image_magick.encode(encoding='UTF-8'))
 
     # make new info files
-    info_filename_pos = os.path.join(path, u'%s.txt' % filename[:-len(ext)])
-    info_filename_neg = os.path.join(path, u'%s.txt' % negative[:-len(ext)])
+    info_filename_pos = os.path.join(path, u'%s.info' % filename[:-len(ext)])
+    info_filename_neg = os.path.join(path, u'%s.info' % negative[:-len(ext)])
     info_file = helpers.open_and_read_file(info_filename_pos)
     neg_info, pos_info = make_neg_and_pos_info(
         info_file, filename.replace(u'_', u' '), ext)
@@ -315,9 +315,10 @@ def catTest(path, data_dir, connections_dir, filename_file, nameToPho=None):
     maker = MakeInfo()
     phoMull_list = []
     for filename_in in os.listdir(path):
-        if not filename_in[:-4] in nameToPho.keys():
+        base_name = os.path.splitext(filename_in)[0]
+        if base_name not in nameToPho.keys():
             continue
-        phoMull_list.append(nameToPho[filename_in[:-4]]['phoMull'])
+        phoMull_list.append(nameToPho[base_name]['phoMull'])
     maker.catTestBatch(phoMull_list, data_dir, connections_dir,
                        outputPath=path, log=flog)
     flog.close()
@@ -345,17 +346,17 @@ def negative_cleanup(path, ext=u'.tif'):
             negative = u'%s%s' % (filename[:-len(ext)],
                                   negative_appendix[:-len(ext)])
             check_related_file_existence(path, positive, negative, ext, info)
-        elif filename.endswith(u'.txt'):
+        elif filename.endswith(u'.info'):
             # check that either -negative.tif or .tif exists
             # (if so then dealt with by above)
-            negative_info_appendix = NEGATIVE_PATTERN % '.txt'
+            negative_info_appendix = NEGATIVE_PATTERN % '.info'
             if filename.endswith(negative_info_appendix):
                 positive = u'%s%s' % (filename[:-len(negative_info_appendix)],
                                       ext)
-                negative = u'%s%s' % (filename[:-len(u'.txt')], ext)
+                negative = u'%s%s' % (filename[:-len(u'.info')], ext)
             else:
-                positive = u'%s%s' % (filename[:-len(u'.txt')], ext)
-                negative = u'%s%s' % (filename[:-len(u'.txt')],
+                positive = u'%s%s' % (filename[:-len(u'.info')], ext)
+                negative = u'%s%s' % (filename[:-len(u'.info')],
                                       negative_appendix)
             if not os.path.isfile(os.path.join(path, negative)) and \
                     not os.path.isfile(os.path.join(path, positive)):
@@ -392,12 +393,12 @@ def check_related_file_existence(path, positive, negative, ext, info):
     if not os.path.isfile(os.path.join(path, u'%s%s' % (negative, ext))):
         # check if -NEGATIVE_PATTERN.ext exists
         info['no_invert'].append(u'%s%s' % (negative, ext))
-    if not os.path.isfile(os.path.join(path, u'%s.txt' % positive)):
-        # check if .txt exists
-        info['no_original_info'](u'%s.txt' % positive)
-    if not os.path.isfile(os.path.join(path, u'%s.txt' % negative)):
-        # check if NEGATIVE_PATTERN.txt exists
-        info['no_invert_info'].append(u'%s.txt' % negative)
+    if not os.path.isfile(os.path.join(path, u'%s.info' % positive)):
+        # check if .info exists
+        info['no_original_info'](u'%s.info' % positive)
+    if not os.path.isfile(os.path.join(path, u'%s.info' % negative)):
+        # check if NEGATIVE_PATTERN.info exists
+        info['no_invert_info'].append(u'%s.info' % negative)
 
 
 def removeEmptyDirectories(path, top=True):

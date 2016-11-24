@@ -273,7 +273,7 @@ class TestGeneral(unittest.TestCase):
         # check file structure
         self.assert_file_structure_equal(DIR_IMAGES_INFO, DIR_TMP)
         # check info file contents
-        self.assert_file_contents_equal(DIR_IMAGES_INFO, DIR_TMP, '.txt')
+        self.assert_file_contents_equal(DIR_IMAGES_INFO, DIR_TMP, '.info')
 
         # clean up
         # copy with NoExts filename file back
@@ -290,4 +290,4 @@ class TestGeneral(unittest.TestCase):
         # check file structure
         self.assert_file_structure_equal(DIR_NEGATIVES_OUTPUT, DIR_TMP)
         # check info file contents
-        self.assert_file_contents_equal(DIR_NEGATIVES_OUTPUT, DIR_TMP, '.txt')
+        self.assert_file_contents_equal(DIR_NEGATIVES_OUTPUT, DIR_TMP, '.info')

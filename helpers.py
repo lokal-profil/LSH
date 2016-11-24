@@ -356,7 +356,7 @@ def loadJsonConfig(filename=u'config.json'):
         f = open(filename, 'r')
         config = json.load(f)
         f.close()
-    except IOError, e:
+    except IOError as e:
         if e.errno == 2:  # file not found
             path = os.getenv("HOME")
             f = open(os.path.join(path, filename), 'r')

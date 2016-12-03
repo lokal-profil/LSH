@@ -199,16 +199,7 @@ def getDescFromPhoBes(text):
                     text = text[:pos]
 
     # cleanup text
-    text = text.strip(badchar)
-    text = cleanName(text)
-    text = cleanString(text)
-    if not text.strip('0123456789,.- '):
-        # if no relevant info left
-        text = ''
-    else:
-        text = shortenString(text)
-        text = touchup(text)
-
+    text = cleanup_routine(text)
     return text
 
 
@@ -260,12 +251,28 @@ def getDescFromObj(obj):
         else:  # u'LRK dubletter', u'Skoklosters slotts boksamling'
             descr = orig
 
-    # polish
-    descr = cleanName(descr)
-    descr = cleanString(descr)
-    descr = shortenString(descr)
-    descr = touchup(descr)
+    # cleanup
+    descr = cleanup_routine(descr)
     return descr
+
+
+def cleanup_routine(text):
+    """
+    Run the full cleanupp routine on a string.
+
+    :param text: the text to clean
+    :return: str
+    """
+    text = cleanName(text)
+    text = cleanString(text)
+    if not text.strip('0123456789,.- '):
+        # if no relevant info left
+        text = ''
+    else:
+        text = shortenString(text)
+        text = touchup(text)
+
+    return text
 
 
 def cleanName(text):

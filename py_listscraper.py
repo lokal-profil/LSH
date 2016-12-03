@@ -166,8 +166,8 @@ def parseFilenameEntries(contents):
                 generated = parts[1].replace(u'<span style="color:red">', u'') \
                                     .replace(u'</span>', u'') \
                                     .strip()
-                improved = Filenames.cleanName(parts[2].strip())
-                if generated != improved:  # if actually changed
+                improved = Filenames.cleanup_routine(parts[2])
+                if improved and (generated != improved):  # if actually changed
                     units.append({u'phoId': phoId,
                                   u'generated': generated,
                                   u'improved': improved})

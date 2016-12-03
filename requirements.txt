@@ -1,1 +1,2 @@
 pycurl
+git+https://github.com/lokal-profil/BatchUploadTools.git

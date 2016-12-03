@@ -11,9 +11,14 @@ Note however that the majority of the codebase is old and the coding might make 
 The SQL scripts were created by [Fredrik Andersson](http://lsh.se/sv/fredrik-andersson) at LSH.
 
 Requires [WikiApi](https://github.com/lokal-profil/ODOK/blob/master/tools/WikiApi.py)
+and [lokal-profil/BatchUploadTools](https://github.com/lokal-profil/BatchUploadTools).
 
 WikiApi is based on PyCJWiki Version 1.31 (C) by [Smallman12q](https://en.wikipedia.org/wiki/User_talk:Smallman12q) GPL,
 see http://www.gnu.org/licenses/.
+
+BatchUploadTools can be installed via `pip install git+https://github.com/lokal-profil/BatchUploadTools.git`
+*Note*: You might have to add the `--process-dependency-links` flag to the above
+command if you are running a different version of pywikibot from the required one.
 
 ## User Requirements
 This bot does not (yet) support OAuth, hence you must use [[Special:BotPasswords]]
@@ -33,7 +38,9 @@ For clean up it is also recommended that it is given:
 All of these should be run from the main code directory. Note that up to
 step 10 all can be done without the actual image files.
 
-0. Copy config.example.json to config.json and fill in your username and password
+0. Copy config.example.json to config.json and fill in your username and
+   password you also need to set up user_config.py (from pywikibot) with the
+   same credentials.
 0. Run `python py_listscraper.py old_connections data`, to make a copy of
    the latest Commons mappings
 1. Unpack the new csv files to the `original_csv` directory

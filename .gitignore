@@ -1,6 +1,6 @@
-config.json
-*.log
+tmp/*
 
+# runtime created directories
 data/*
 clean_csv/*
 original_csv/*
@@ -8,7 +8,20 @@ connections/*
 old_connections/*
 postAnalysis/*
 mappings/*
-tmp/*
 
-.tox/*
+# WikiApi files
+config.json
+
+# output files
+*.log
+
+# pywikibot
+*secretPasswords
+user-config.py
+*.ctrl
+*.lwp
+apicache
+
+# CI
 .coverage
+.tox

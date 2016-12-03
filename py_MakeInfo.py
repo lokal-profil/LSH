@@ -531,10 +531,16 @@ class MakeInfo(object):
         dimensions = helpers.split_multi_valued(objInfo[u'massId'])
 
         # InvNr. Note that Skokloster boksamling uses kort
-        # Specifically Skokloster boksamling uses Signumno. instead of inv. no.
+        # Specifically Skokloster- and Livrustkammaren boksamling use Signumno.
+        # instead of inv. no.
         if not invNr:
             invNr = kort
-            data[u'invNr'] = u'SKO %s' % invNr  # don't want SKObok here
+            if data[u'source'] == 'SKObok':
+                data[u'invNr'] = u'SKO %s' % invNr  # don't want SKObok here
+            elif data[u'source'] == 'LRKbok':
+                data[u'invNr'] = u'LRK %s' % invNr  # don't want SKObok here
+            else:
+                raise Exception
         else:
             data[u'invNr'] = u'%s %s' % (source, invNr)
 
@@ -1147,5 +1153,6 @@ class MakeInfo(object):
             u'Hallwylska museet': u'HWY',
             u'': u'LSH',
             u'LRK dubletter': u'LRK',
-            u'Skoklosters slotts boksamling': u'SKObok'
+            u'Skoklosters slotts boksamling': u'SKObok',
+            u'Livrustkammarens boksamling': u'LRKbok'
         }

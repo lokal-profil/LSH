@@ -709,7 +709,7 @@ def writeObjKeywords(filename, ord1Dict, ord2Dict, gruppDict, emptyObjCats):
         + u'group is only used at HWY.\n\n' \
         + u'when possible ord1 will be used instead of the more ' \
         + u'generic ord2.\n\n' \
-        + u'Multile categores are separated by a "/"\n' \
+        + u'Multiple categories are separated by a "/"\n' \
         + u'===Keyword|frequency|commonscategory===\n'
     # output
     f = codecs.open(filename, 'w', 'utf8')

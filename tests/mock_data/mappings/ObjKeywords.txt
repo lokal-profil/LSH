@@ -3,7 +3,7 @@ These are the keywords used to describe the objects themselves. Classification i
 
 when possible ord1 will be used instead of the more generic ord2.
 
-Multile categores are separated by a "/"
+Multiple categories are separated by a "/"
 ===Keyword|frequency|commonscategory===
 
 ====class: ord1====

@@ -4,10 +4,12 @@
 # Post upload library
 # TODO: Batch purges
 #
-import WikiApi as wikiApi
 import helpers
 import codecs
 import os
+import time
+import pywikibot
+from pywikibot import config as pwb_config
 
 # strings indicating a file belongs to the upload
 IDENTIFIERS = (u'Livrustkammaren', u'Skoklosters', u'Hallwylska', u'LSH')
@@ -21,24 +23,21 @@ LSH_EXPORT_FILE = os.path.join(POST_DIR, u'FileLinkExport.csv')
 
 def purgeBrokenLinks(configPath=u'config.json'):
     """
-    Finds images which contain links to (potentially) missing files
-    and purges these to identify any files which are actually missing
+    Find images which contain links to (potentially) missing files
+    and purges these to identify any files which are actually missing.
+
     :param configPath: path to config.json file
     :return: None
     """
-    api = helpers.openConnection(configPath, apiClass=WikiApiHotfix)
+    api = helpers.openConnection(configPath)
+    hotfix = WikiApiHotfix()
 
-    # Todo: Package them in batches of 10/25? before purging
     categoryname = u'Category:Files with broken file links'
     pages = api.getCategoryMembers(categoryname=categoryname, cmnamespace=6)
-    count = 0
-    for page in pages:
-        if any(i in page for i in IDENTIFIERS):
-            count += 1
-            api.purgeLinks(page=page, forcelinkupdate=True)
-            if count % 250 == 0:
-                print count
-    print u'Found %d pages with broken links' % count
+
+    # purge any where the filename contains one of our identifiers
+    to_purge = filter(lambda page: any(i in page for i in IDENTIFIERS), pages)
+    hotfix.purge_links(to_purge, forcelinkupdate=True, verbose=True)
 
 
 def findMissingImages(configPath=u'config.json'):
@@ -48,11 +47,12 @@ def findMissingImages(configPath=u'config.json'):
     :param configPath: path to config.json file
     :return: None
     """
-    # create targetdirectory if it doesn't exist
+    # create target directory if it doesn't exist
     if not os.path.isdir(POST_DIR):
         os.mkdir(POST_DIR)
 
-    api = helpers.openConnection(configPath, apiClass=WikiApiHotfix)
+    api = helpers.openConnection(configPath)
+    hotfix = WikiApiHotfix()
     f = codecs.open(BROKEN_LINKS_FILE, 'w', 'utf8')
 
     # find which images point to (potentially) missing files
@@ -65,7 +65,7 @@ def findMissingImages(configPath=u'config.json'):
     for page in pages:
         if any(i in page for i in IDENTIFIERS):
             count += 1
-            missing = missing + api.getMissingImages(page)
+            missing = missing + hotfix.get_missing_images(page)
     missing = list(set(missing))
     print u'Found %d missing files in %d broken pages' % (len(missing), count)
 
@@ -119,14 +119,14 @@ def fixRenamedFiles(filename=BROKEN_LINKS_FILE, configPath=u'config.json'):
                     comApi.editText(name, contentsNew, comment, minor=True,
                                     bot=True, nocreate=True, userassert=None)
     print 'Check that any replacements worked since double replacements on the same ' \
-          'page is known to cause errors'
+          'page is known to cause errors.'
 
 
 def findAllMissing(filenamesFile=FILENAME_FILE, configPath=u'config.json'):
     """
     Goes through the filenames file and checks each name for existence.
-    Missing files are outputed to MISSING_FILES_FILE
-    Existing files are outputed to LSH_EXPORT_FILE
+    Missing files are outputted to MISSING_FILES_FILE
+    Existing files are outputted to LSH_EXPORT_FILE
     :param filenamesFile: path to filenames data file
     :param configPath: path to config.json file
     :return: None
@@ -150,7 +150,7 @@ def findAllMissing(filenamesFile=FILENAME_FILE, configPath=u'config.json'):
     comApi = helpers.openConnection(configPath)
     fileInfos = comApi.getPageInfo(files.keys())
 
-    # determine which are pressent and which are missing
+    # determine which are present and which are missing
     missing = {}
     found = {}
     prefix = u'https://commons.wikimedia.org/wiki/'
@@ -171,61 +171,78 @@ def findAllMissing(filenamesFile=FILENAME_FILE, configPath=u'config.json'):
     print u'Created %s and %s' % (LSH_EXPORT_FILE, MISSING_FILES_FILE)
 
 
-class WikiApiHotfix(wikiApi.WikiApi):
+class WikiApiHotfix(object):
     """Extends the WikiApi class with post_upload specific methods"""
 
-    def getMissingImages(self, page, debug=False):
+    def __init__(self, site=None):
         """
-        Returns a list of all images linked to from a page where the
-        given image does not exist
-        :param page: The page to look at, incl. any namespace prefix
-        :param iunamespace: namespace to limit the search to (0=main, 6=file)
-        :return: list of pagenames
+
         """
-        # print "Fetching getMissingImages: " + page
-        members = []
-        # action=query&prop=images&format=json&imlimit=1&titles=File%3AFoo.jpg&generator=images&gimlimit=100
-        jsonr = self.httpPOST("query", [('prop', 'images'),
-                                        ('titles', page.encode('utf-8')),
-                                        ('imlimit', '1'),
-                                        ('generator', 'images'),
-                                        ('gimlimit', '100')])
+        self.site = site or pywikibot.Site('commons', 'commons')
+        self.site.login()
 
-        if debug:
-            print u'getMissingImages() page:%s \n' % page
-            print jsonr
-
-        # "query":{"pages":{"-1":{"ns":6,"title":"File:Examplefile.tif","missing":""}
-        for page in jsonr['query']['pages']:
-            if int(page) < 0:
-                page = jsonr['query']['pages'][page]
-                # if 'missing' in page.keys():
-                members.append(page['title'])
-
-        # print  "Fetching getMissingImages: " + page + "...complete"
-        return members
-
-    def purgeLinks(self, page, forcelinkupdate=True, debug=False):
+    def get_missing_images(self, page_title):
         """
-        Triggers a purge (and link update) for the given page
-        :param page: The page to look at, incl. any namespace prefix
-        :param forcelinkupdate: for links table to be updated
-        :return: None
+        All images linked to from a page where the given image does not exist.
+
+        :param page_title: The page to look at, incl. any namespace prefix
+        :return: list of page titles
         """
-        # action=query&prop=images&format=json&imlimit=1&titles=File%3AFoo.jpg&generator=images&gimlimit=100
-        requestparams = [
-            ('titles', page.encode('utf-8'))]
+        page = pywikibot.Page(self.site, page_title)
+        image_links = page.imagelinks()
+        members = filter(lambda image: image.pageid == 0, image_links)
+
+        return [member.title() for member in members]
+
+    def purge_links(self, page_titles, forcelinkupdate=True, verbose=True):
+        """
+        Trigger a purge (and link update) for the given pages.
+
+        These are done in batches to reduce number of api calls.
+        Timeout settings are temporarily changed to deal with the unusually
+        long response time for a purge request and the method implements its
+        own throttling to ensure it respects rate limits.
+
+        :param page_titles: A list of pages to look at, incl. namespace prefix
+        :param forcelinkupdate: if links table should be updated
+        :param verbose: output to log after every purge
+        :return: bool (if errors were encountered)
+        """
+        batch_size = 30
+        rate_limit = 65  # default limit is 30 edits per 60 seconds
+        max_timeout = 300
+        original_size = len(page_titles)
+        pages = [pywikibot.Page(self.site, title) for title in page_titles]
+
+        # bump timeout
+        old_timeout = pwb_config.socket_timeout
+        pwb_config.socket_timeout = max_timeout
+
+        requestparams = {}
         if forcelinkupdate:
-            requestparams.append(('forcelinkupdate', ''))
-        jsonr = self.httpPOST("purge", requestparams)
+            requestparams['forcelinkupdate'] = True
+        count = 0
+        while True:
+            batch = pages[:batch_size]
+            pages = pages[batch_size:]
+            pre_timepoint = time.time()
+            result = self.site.purgepages(batch, **requestparams)
+            count += len(batch)
 
-        if debug:
-            print u'purgeImageLinks() page:%s \n' % page
-            print jsonr
+            if verbose:
+                pywikibot.output(u'Purging: %d/%d' % (count, original_size))
+            if not result:
+                pywikibot.output(u'Some trouble occurred while purging')
 
-        if 'batchcomplete' not in jsonr.keys():
-            print u'Some trouble occured while purging'
-            print jsonr
+            if pages:
+                # ensure the rate limit is respected
+                duration = time.time()-pre_timepoint
+                time.sleep(max(0, (rate_limit-duration)))
+            else:
+                break
+
+        # reset timeout
+        pwb_config.socket_timeout = old_timeout
 
 
 if __name__ == '__main__':

@@ -258,7 +258,7 @@ def getDescFromObj(obj):
 
 def cleanup_routine(text):
     """
-    Run the full cleanupp routine on a string.
+    Run the full cleanup routine on a string.
 
     :param text: the text to clean
     :return: str

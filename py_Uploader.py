@@ -18,7 +18,7 @@ def main(*args):
             u'the specified number of files.\n' \
             u'\tchunked is optional and allows the upload to be run without ' \
             u'chunked uploading if given "False" or "F".\n' \
-            u'\tverbose is optional and allows the upload to be more chatty ' \
+            u'\tchatty is optional and allows the upload to be more chatty ' \
             u'if given "True" or "T".'
     path = None
     cutoff = None
@@ -35,7 +35,7 @@ def main(*args):
         elif option == '-chunked':
             if value.lower() in ('false', 'f'):
                 chunked = False
-        elif option == '-verbose':
+        elif option == '-chatty':
             if value.lower() in ('true', 't'):
                 verbose = True
         elif option == '-usage':

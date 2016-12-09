@@ -21,51 +21,51 @@ FILENAME_FILE = os.path.join(DATA_DIR, u'filenames.csv')
 LSH_EXPORT_FILE = os.path.join(POST_DIR, u'FileLinkExport.csv')
 
 
-def purgeBrokenLinks(configPath=u'config.json'):
+def purge_broken_links():
     """
-    Find images which contain links to (potentially) missing files
-    and purges these to identify any files which are actually missing.
+    Purge images which contain links to (potentially) missing files.
 
-    :param configPath: path to config.json file
-    :return: None
+    This is needed for any image which embeds (through <gallery>) an image
+    which was uploaded afterwards.
     """
-    api = helpers.openConnection(configPath)
-    hotfix = WikiApiHotfix()
+    site = pywikibot.Site('commons', 'commons')
+    hotfix = WikiApiHotfix(site)
 
-    categoryname = u'Category:Files with broken file links'
-    pages = api.getCategoryMembers(categoryname=categoryname, cmnamespace=6)
+    category_title = u'Category:Files with broken file links'
+    category = pywikibot.Page(site, category_title)
+    pages = site.categorymembers(category, namespaces=6)
 
     # purge any where the filename contains one of our identifiers
-    to_purge = filter(lambda page: any(i in page for i in IDENTIFIERS), pages)
-    hotfix.purge_links(to_purge, forcelinkupdate=True, verbose=True)
+    to_purge = filter(lambda page: any(i in page.title() for i in IDENTIFIERS),
+                      pages)
+
+    hotfix.purge_links(pages=to_purge, forcelinkupdate=True, verbose=True)
 
 
-def findMissingImages(configPath=u'config.json'):
-    """
-    Goes through any LSH images with broken file links to identify the
-    missing images
-    :param configPath: path to config.json file
-    :return: None
-    """
+def find_missing_images():
+    """Identify missing images from any LSH images with broken file links."""
     # create target directory if it doesn't exist
     if not os.path.isdir(POST_DIR):
         os.mkdir(POST_DIR)
 
-    api = helpers.openConnection(configPath)
-    hotfix = WikiApiHotfix()
+    site = pywikibot.Site('commons', 'commons')
+    hotfix = WikiApiHotfix(site)
     f = codecs.open(BROKEN_LINKS_FILE, 'w', 'utf8')
 
     # find which images point to (potentially) missing files
-    categoryname = u'Category:Files with broken file links'
-    pages = api.getCategoryMembers(categoryname=categoryname, cmnamespace=6)
+    category_title = u'Category:Files with broken file links'
+    category = pywikibot.Page(site, category_title)
+    pages = site.categorymembers(category, namespaces=6)
+
+    to_check = filter(lambda page: any(i in page.title() for i in IDENTIFIERS),
+                      pages)
 
     # find which images are refered to
     missing = []
     count = 0
-    for page in pages:
-        if any(i in page for i in IDENTIFIERS):
-            count += 1
-            missing = missing + hotfix.get_missing_images(page)
+    for page in to_check:
+        count += 1
+        missing += hotfix.get_missing_images(page=page)
     missing = list(set(missing))
     print u'Found %d missing files in %d broken pages' % (len(missing), count)
 
@@ -155,6 +155,9 @@ def findAllMissing(filenamesFile=FILENAME_FILE, configPath=u'config.json'):
     found = {}
     prefix = u'https://commons.wikimedia.org/wiki/'
     for name, info in fileInfos.iteritems():
+        if name not in files.keys():
+            print name
+            continue
         if 'missing' in info.keys():
             missing[name] = files[name]
         else:
@@ -181,20 +184,28 @@ class WikiApiHotfix(object):
         self.site = site or pywikibot.Site('commons', 'commons')
         self.site.login()
 
-    def get_missing_images(self, page_title):
+    def get_missing_images(self, page=None, page_title=None):
         """
         All images linked to from a page where the given image does not exist.
 
-        :param page_title: The page to look at, incl. any namespace prefix
+        :param page: The Page to look at, as a pywikibot.Page object
+        :param page_title: The page to look at, incl. any namespace prefix.
+            Used only if page is not provided.
         :return: list of page titles
         """
-        page = pywikibot.Page(self.site, page_title)
+        if not page:
+            if not page_title:
+                raise pywikibot.Error(
+                    'get_missing_images() requires either a page title or a '
+                    'pywikibot.Page object.')
+            page = pywikibot.Page(self.site, page_title)
         image_links = page.imagelinks()
         members = filter(lambda image: image.pageid == 0, image_links)
 
         return [member.title() for member in members]
 
-    def purge_links(self, page_titles, forcelinkupdate=True, verbose=True):
+    def purge_links(self, pages=None, page_titles=None, forcelinkupdate=True,
+                    verbose=False):
         """
         Trigger a purge (and link update) for the given pages.
 
@@ -203,16 +214,24 @@ class WikiApiHotfix(object):
         long response time for a purge request and the method implements its
         own throttling to ensure it respects rate limits.
 
-        :param page_titles: A list of pages to look at, incl. namespace prefix
+        :param pages: A list of pywkibot.Page to look at
+        :param page_titles: A list of pages to look at, incl. namespace prefix.
+            Used only if pages is not provided.
         :param forcelinkupdate: if links table should be updated
         :param verbose: output to log after every purge
         :return: bool (if errors were encountered)
         """
+        if not pages:
+            if not page_titles:
+                raise pywikibot.Error(
+                    'purge_links() requires a list of either pages titles or '
+                    'pywikibot.Page objects.')
+            pages = [pywikibot.Page(self.site, title) for title in page_titles]
+
         batch_size = 30
         rate_limit = 65  # default limit is 30 edits per 60 seconds
         max_timeout = 300
-        original_size = len(page_titles)
-        pages = [pywikibot.Page(self.site, title) for title in page_titles]
+        original_size = len(pages)
 
         # bump timeout
         old_timeout = pwb_config.socket_timeout
@@ -236,8 +255,8 @@ class WikiApiHotfix(object):
 
             if pages:
                 # ensure the rate limit is respected
-                duration = time.time()-pre_timepoint
-                time.sleep(max(0, (rate_limit-duration)))
+                duration = time.time() - pre_timepoint
+                time.sleep(max(0, (rate_limit - duration)))
             else:
                 break
 
@@ -250,8 +269,8 @@ if __name__ == '__main__':
     usage = u'Usage:\tpython py_postUpload.py action\n' \
             u'\taction: purge - purges broken fileliks in LSH files and ' \
             u'produces a file with remaining broken file links\n' \
-            u'\taction: rename - repairs broken file links for any files where ' \
-            u'a new name was added to broken file links then ' \
+            u'\taction: rename - repairs broken file links for any files ' \
+            u'where a new name was added to broken file links then ' \
             u'updates the brokenFileLinks file ' \
             u'(overwriting any added renamings)\n' \
             u'\taction: findMissing - checks all filenames for existance ' \
@@ -259,11 +278,11 @@ if __name__ == '__main__':
     argv = sys.argv[1:]
     if len(argv) == 1:
         if argv[0] == 'purge':
-            purgeBrokenLinks()
-            findMissingImages()
+            purge_broken_links()
+            find_missing_images()
         elif argv[0] == 'rename':
             fixRenamedFiles()
-            findMissingImages()
+            find_missing_images()
         elif argv[0] == 'findMissing':
             findAllMissing()
         else:

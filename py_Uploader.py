@@ -3,24 +3,49 @@
 #
 # Legacy file. Now serving only as a wrapper for batchupload.uploader
 #
-import helpers
+import pywikibot
+import batchupload.common as common
 import batchupload.uploader as uploader
 
 
-if __name__ == '__main__':
-    import sys
-    usage = u'Usage:\tpython py_Uploader.py path cutoff\n' \
+def main(*args):
+    """Command line entry-point."""
+    usage = u'Usage:\n' \
+            u'\tpython py_Uploader.py -path:<1> -cutoff:<2> -chunked:<3> -verbose:<4>\n' \
             u'\tpath: the relative path to the directory containing ' \
             u'images and descriptions.\n' \
             u'\tcutoff is optional and allows the upload to stop after ' \
-            u'the specified number of files'
-    argv = sys.argv[1:]
-    if len(argv) in (1, 2):
-        path = helpers.convertFromCommandline(argv[0])
-        if len(argv) == 2:
-            cutoff = int(argv[1])
-            uploader.up_all(path, cutoff=cutoff)
-        else:
-            uploader.up_all(path)
+            u'the specified number of files.\n' \
+            u'\tchunked is optional and allows the upload to be run without ' \
+            u'chunked uploading if given "False" or "F".\n' \
+            u'\tverbose is optional and allows the upload to be more chatty ' \
+            u'if given "True" or "T".'
+    path = None
+    cutoff = None
+    chunked = True
+    verbose = False
+
+    # Load pywikibot args and handle local args
+    for arg in pywikibot.handle_args(args):
+        option, sep, value = arg.partition(':')
+        if option == '-path':
+            path = common.convert_from_commandline(value)
+        elif option == '-cutoff':
+            cutoff = int(value)
+        elif option == '-chunked':
+            if value.lower() in ('false', 'f'):
+                chunked = False
+        elif option == '-verbose':
+            if value.lower() in ('true', 't'):
+                verbose = True
+        elif option == '-usage':
+            pywikibot.output(usage)
+            return
+
+    if path:
+        uploader.up_all(path, cutoff=cutoff, chunked=chunked, verbose=verbose)
     else:
-        print usage
+        pywikibot.output(usage)
+
+if __name__ == '__main__':
+    main()

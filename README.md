@@ -78,7 +78,7 @@ step 10 all can be done without the actual image files.
 15. Run `python py_prepUpload.py negativeCleanup ../bilder/m_a` etc. for
     each of the image subdirectory where the previous step was run
   * Check `¤conversion-errors.log` for problematic conversions (fix manually)
-16. Run `python py_Uploader.py ../bilder/m_a` etc. to upload the files
+16. Run `python py_Uploader.py -path:../bilder/m_a` etc. to upload the files
   * Successful uploads end up in the `Uploaded` subdirectory
   * Failed uploads in the `Uploaded_errors` subdirectory
   * Uploads with warnings in the `Uploaded_warnings` subdirectory

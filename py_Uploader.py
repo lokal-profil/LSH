@@ -35,9 +35,13 @@ def main(*args):
         elif option == '-chunked':
             if value.lower() in ('false', 'f'):
                 chunked = False
+            elif value.lower() not in ('true', 't'):
+                pywikibot.output(usage)
         elif option == '-chatty':
             if value.lower() in ('true', 't'):
                 verbose = True
+            elif value.lower() not in ('false', 'f'):
+                pywikibot.output(usage)
         elif option == '-usage':
             pywikibot.output(usage)
             return
@@ -46,6 +50,7 @@ def main(*args):
         uploader.up_all(path, cutoff=cutoff, chunked=chunked, verbose=verbose)
     else:
         pywikibot.output(usage)
+
 
 if __name__ == '__main__':
     main()

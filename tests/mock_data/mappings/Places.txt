@@ -47,3 +47,5 @@ Set commonsconnection of irrelevant places to "-"
 |other     = [[Institution:Skoklosters slott|Skoklosters slott]]
 }}
 |}
+
+[[Category:Livrustkammaren och Skoklosters slott med Stiftelsen Hallwylska museet/mapping]]

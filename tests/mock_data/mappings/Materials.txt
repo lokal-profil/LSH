@@ -75,3 +75,5 @@ Set commonsconnection of irrelevant technique/material to "-".
 |technique = brass
 }}
 |}
+
+[[Category:Livrustkammaren och Skoklosters slott med Stiftelsen Hallwylska museet/mapping]]

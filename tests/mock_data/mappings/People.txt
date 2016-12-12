@@ -66,3 +66,5 @@ Set commonsconnection of irrelevant events to "-". Note that creator is only rel
 |category  = Charles X Gustav of Sweden
 }}
 |}
+
+[[Category:Livrustkammaren och Skoklosters slott med Stiftelsen Hallwylska museet/mapping]]

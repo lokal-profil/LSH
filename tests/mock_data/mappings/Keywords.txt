@@ -93,3 +93,5 @@ Multiple categories are separated by "/"
 |category  = Firearms
 }}
 |}
+
+[[Category:Livrustkammaren och Skoklosters slott med Stiftelsen Hallwylska museet/mapping]]

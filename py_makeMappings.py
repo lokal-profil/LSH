@@ -27,6 +27,7 @@ ROLE_BLACKLIST = [u'Säljare', u'Auktion', u'Förmedlare', u'Givare',
 DATA_PATH = u'data'
 IN_PATH = u'old_connections'
 OUT_PATH = u'mappings'
+LIST_CAT = u'Category:Livrustkammaren och Skoklosters slott med Stiftelsen Hallwylska museet/mapping'
 CSV_FILES = None
 
 
@@ -80,7 +81,8 @@ def run(in_path=None, out_path=None, data_path=None):
     ord2Dict = simpleCombine(A.objCatC, ord2Dict)
     gruppDict = simpleCombine(A.objCatC, gruppDict)
     keywords = combineKeywords(A.stichC, keywords)
-    photographers = combinePhotographers(A.photographerCreatC, A.photographerCatC, photographers)
+    photographers = combinePhotographers(
+        A.photographerCreatC, A.photographerCatC, photographers)
     events = combineEvents(A.ereignisC, A.ereignisLinkC, events)
     people = combinePeople(A.peopleLinkC, A.peopleCreatC, A.peopleCatC, people)
 
@@ -93,14 +95,19 @@ def run(in_path=None, out_path=None, data_path=None):
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
     # several dicts per file
-    writePlaces(os.path.join(out_path, u'Places.txt'), exhibitPlaces, landDict, ortDict, emptyPlaces)  # Places
-    writeObjKeywords(os.path.join(out_path, u'ObjKeywords.txt'), ord1Dict, ord2Dict, gruppDict, emptyObjCats)  # ObjKeywords
+    writePlaces(os.path.join(out_path, u'Places.txt'),
+                exhibitPlaces, landDict, ortDict, emptyPlaces)  # Places
+    writeObjKeywords(os.path.join(out_path, u'ObjKeywords.txt'),
+                     ord1Dict, ord2Dict, gruppDict, emptyObjCats)  # ObjKeyword
     # one dict per file
-    writeMaterials(os.path.join(out_path, u'Materials.txt'), techDict)  # Materials
-    writeKeywords(os.path.join(out_path, u'Keywords.txt'), keywords)  # Keywords
+    writeMaterials(os.path.join(out_path, u'Materials.txt'),
+                   techDict)  # Materials
+    writeKeywords(os.path.join(out_path, u'Keywords.txt'),
+                  keywords)  # Keywords
     writeEvents(os.path.join(out_path, u'Events.txt'), events)  # Events
     writePeople(os.path.join(out_path, u'People.txt'), people)  # People
-    writePhotographers(os.path.join(out_path, u'Photographers.txt'), photographers)  # Photographers
+    writePhotographers(os.path.join(out_path, u'Photographers.txt'),
+                       photographers)  # Photographers
 
 
 def makePlaceAndMaterial(A, oDict):
@@ -176,6 +183,7 @@ def writeMaterials(filename, dDict):
             f.write(header)
         f.write(row % (key, val[u'freq'], '/'.join(val[u'connect'])))
     f.write(footer)
+    f.write(u'\n\n[[%s]]' % LIST_CAT)
     f.close()
     output(u'Created %s' % filename)
 
@@ -312,6 +320,7 @@ def writePhotographers(filename, dDict):
             f.write(header)
         f.write(row % (key, val[u'freq'], val[u'creator'], val[u'cat']))
     f.write(footer)
+    f.write(u'\n\n[[%s]]' % LIST_CAT)
     f.close()
     output(u'Created %s' % filename)
 
@@ -399,8 +408,10 @@ def writeKeywords(filename, dDict):
             f.write(footer)
             f.write(u'\n===Preserved mappings===\n')
             f.write(header)
-        f.write(row % (key, '/'.join(val[u'descr']), val[u'freq'], '/'.join(val[u'cat'])))
+        f.write(row % (key, '/'.join(val[u'descr']),
+                       val[u'freq'], '/'.join(val[u'cat'])))
     f.write(footer)
+    f.write(u'\n\n[[%s]]' % LIST_CAT)
     f.close()
     output(u'Created %s' % filename)
 
@@ -467,7 +478,8 @@ def makeEvents(A, oDict):
         if title in events.keys():
             events[title][u'freq'] += v
             if link != events[title][u'link']:
-                output(u'Found two events with title but different links %s' % k)
+                output(u'Found two events with title but different '
+                       u'links %s' % k)
         else:
             events[title] = {u'link': link, u'freq': v}
     return events
@@ -494,7 +506,8 @@ def combineEvents(oldCatDict, oldLinkDict, newDict):
                 if oldlink != newlink:
                     # check if the same, otherwise use old
                     if newlink:
-                        output(u'Eregnis: replaced %s by %s' % (newlink, oldlink))
+                        output(u'Eregnis: replaced %s by %s' %
+                               (newlink, oldlink))
                     newlink = oldlink
                 newDict[k][u'link'] = newlink  # reformated and possibly replaced
             del oldCatDict[k]  # no need to delete oldLinkDict if we iterate over cat
@@ -550,6 +563,7 @@ def writeEvents(filename, dDict):
             f.write(header)
         f.write(row % (key, val[u'freq'], val[u'link'], '/'.join(val[u'cat'])))
     f.write(footer)
+    f.write(u'\n\n[[%s]]' % LIST_CAT)
     f.close()
     output(u'Created %s' % filename)
 
@@ -685,8 +699,10 @@ def writePeople(filename, dDict):
             f.write(footer)
             f.write(u'\n===Preserved mappings===\n')
             f.write(header)
-        f.write(row % (val[u'descr'], key, val[u'freq'], val[u'link'], val[u'creator'], val[u'cat']))
+        f.write(row % (val[u'descr'], key, val[u'freq'], val[u'link'],
+                       val[u'creator'], val[u'cat']))
     f.write(footer)
+    f.write(u'\n\n[[%s]]' % LIST_CAT)
     f.close()
     output(u'Created %s' % filename)
 
@@ -734,6 +750,7 @@ def writeObjKeywords(filename, ord1Dict, ord2Dict, gruppDict, emptyObjCats):
     for key, val in helpers.sortedBy(emptyObjCats):
         f.write(row % (key, val[u'freq'], '/'.join(val[u'connect'])))
     f.write(footer)
+    f.write(u'\n\n[[%s]]' % LIST_CAT)
     f.close()
     output(u'Created %s' % filename)
 
@@ -781,6 +798,7 @@ def writePlaces(filename, exhibitPlaces, landDict, ortDict, emptyPlaces):
     for key, val in helpers.sortedBy(emptyPlaces):
         f.write(row % (key, val[u'freq'], val[u'connect']))
     f.write(footer)
+    f.write(u'\n\n[[%s]]' % LIST_CAT)
     f.close()
     output(u'Created %s' % filename)
 

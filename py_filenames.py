@@ -19,6 +19,7 @@ OBJDATEN_FILE = u'objDaten_etc.csv'
 CSV_FOLDER = u'data'
 LOG_SUBFOLDER = u'logs'
 MAPPING_FOLDER = u'mappings'
+LIST_CAT = u'Category:Livrustkammaren och Skoklosters slott med Stiftelsen Hallwylska museet/mapping'
 
 
 def run(folder=None, mapping=None, outfolder=None,
@@ -421,6 +422,7 @@ def commonsOutput(descriptions, mappingFile, allEntries=None):
 
     # # write outro
     fOut.write(u'|}')
+    fOut.write(u'\n\n[[%s]]' % LIST_CAT)
     fOut.close()
     output(u'Created %s' % mappingFile)
 

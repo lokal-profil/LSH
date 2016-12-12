@@ -91,3 +91,5 @@ Multiple categories are separated by a "/"
 |category  = Muskets
 }}
 |}
+
+[[Category:Livrustkammaren och Skoklosters slott med Stiftelsen Hallwylska museet/mapping]]

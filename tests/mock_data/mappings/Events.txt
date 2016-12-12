@@ -38,3 +38,5 @@ Multiple categories are separated by "/"
 |category  = Coronation of Charles X of Sweden
 }}
 |}
+
+[[Category:Livrustkammaren och Skoklosters slott med Stiftelsen Hallwylska museet/mapping]]

@@ -351,6 +351,32 @@ class MakeInfo(object):
         self.massC = MakeInfo.load_dimension_mappings()
         self.multi_mappings = MakeInfo.make_multimedia_type_input_mappings()
 
+    def dump_info(self, base_meta_cat=u'Media contributed by LSH'):
+        """
+        Dump the make_info data in a batchUploadTools compatible format.
+
+        This is limited to only those images which have an entry in the
+        filenames file.
+
+        :param base_meta_cat: the prefix added to any meta category
+        :return: dict
+        """
+        output = {}
+        for pho_mull, v in self.wikinameD.iteritems():
+            data = {}
+            image_info = self.populate_image_info(pho_mull)
+            data['filename'] = v['filename']
+            data['info'] = image_info.make_template()
+            data['cats'] = image_info.categories
+            data['meta_cats'] = ['%s: %s' % (base_meta_cat, cat)
+                                 for cat in image_info.meta_categories]
+
+            original_name = v['MulDateiS']
+            path = v['MulPfadS'].replace('\\', os.sep)  # windows -> this os
+            original_name = os.join(path, original_name)
+            output[original_name] = data
+        return output
+
     def infoFromPhoto(self, pho_mull, preview=True, testing=False):
         # skip any which don't have a filename
         if pho_mull not in self.wikinameD.keys():

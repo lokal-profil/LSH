@@ -122,6 +122,177 @@ class TestFormatDepicted(unittest.TestCase):
                          expected)
 
 
+class TestFormatCategory(unittest.TestCase):
+    """Test ImageInfo.format_category()"""
+
+    def setUp(self):
+        self.caption = u'A caption'
+        self.image_info = ImageInfo()
+        self.image_info.categories = []
+
+    def assert_same_category_content(self, actual, expected):
+        """Assert that a category block is same, up to order of its entries."""
+        actual_lines = actual.split('\n')
+        expected_lines = expected.split('\n')
+        # check first line
+        self.assertEqual(actual_lines[0], expected_lines[0])
+        # check contents of rest irrespective of order
+        self.assertItemsEqual(actual_lines[1:], expected_lines[1:])
+
+    def test_format_category_empty(self):
+        expected_text = ''
+        expected_printed = []
+        self.assertEqual(
+            self.image_info.format_category(self.caption, []),
+            expected_text)
+        self.assertItemsEqual(self.image_info.categories, expected_printed)
+
+    def test_format_category_single(self):
+        expected_text = u'\n<!--A caption-->\n' \
+                        u'[[Category:Cat]]\n'
+        expected_printed = ['Cat']
+        categories = ['Cat']
+        self.assertEqual(
+            self.image_info.format_category(self.caption, categories),
+            expected_text)
+        self.assertItemsEqual(self.image_info.categories, expected_printed)
+
+    def test_format_category_duplicate(self):
+        """Ensure internal duplicates are not outputted."""
+        expected_text = u'\n<!--A caption-->\n' \
+                        u'[[Category:Cat]]\n'
+        expected_printed = ['Cat']
+        categories = ['Cat', 'Cat']
+        self.assertEqual(
+            self.image_info.format_category(self.caption, categories),
+            expected_text)
+        self.assertItemsEqual(self.image_info.categories, expected_printed)
+
+    def test_format_category_reprint(self):
+        """Ensure already outputted categories are not re-outputted."""
+        expected_text = ''
+        expected_printed = ['Cat']
+        self.image_info.categories = ['Cat']
+        categories = ['Cat', ]
+        self.assertEqual(
+            self.image_info.format_category(self.caption, categories),
+            expected_text)
+        self.assertItemsEqual(self.image_info.categories, expected_printed)
+
+    def test_format_category_multiple(self):
+        expected_text = u'\n<!--A caption-->\n' \
+                        u'[[Category:Cat1]]\n' \
+                        u'[[Category:Cat2]]\n' \
+                        u'[[Category:Cat3]]\n'
+        expected_printed = ['Cat1', 'Cat2', 'Cat3']
+        categories = ['Cat1', 'Cat2', 'Cat3']
+        self.assert_same_category_content(
+            self.image_info.format_category(self.caption, categories),
+            expected_text)
+        self.assertItemsEqual(self.image_info.categories, expected_printed)
+
+    def test_format_category_with_prefix(self):
+        expected_text = u'\n<!--A caption-->\n' \
+                        u'[[Category:Prefix-Cat1]]\n' \
+                        u'[[Category:Prefix-Cat2]]\n'
+        expected_printed = ['Cat1', 'Cat2']
+        categories = ['Cat1', 'Cat2']
+        prefix = u'Prefix-'
+        self.assert_same_category_content(
+            self.image_info.format_category(self.caption, categories,
+                                            prefix=prefix),
+            expected_text)
+        self.assertItemsEqual(self.image_info.categories, expected_printed)
+
+    def test_format_category_no_de_duplication(self):
+        expected_text = u'\n<!--A caption-->\n' \
+                        u'[[Category:Cat1]]\n' \
+                        u'[[Category:Cat2]]\n'
+        expected_printed = []
+        categories = ['Cat1', 'Cat1', 'Cat2']
+        self.assert_same_category_content(
+            self.image_info.format_category(self.caption, categories,
+                                            de_duplicate=False),
+            expected_text)
+        self.assertItemsEqual(self.image_info.categories, expected_printed)
+
+
+class TestProcessCategories(unittest.TestCase):
+    """Test ImageInfo.process_categories()."""
+
+    def setUp(self):
+        self.image_info = ImageInfo()
+        self.image_info.meta_categories = []
+        self.image_info.obj_data = dict.fromkeys(
+            [u'cat_event', u'cat_artist', u'cat_depicted', u'cat_obj'])
+
+    def runAsserts(self, expected_output, expected_cats, expected_meta_cats):
+        """Hide complicated paths needed for asserts."""
+        expected_output = '\n%s\n' % expected_output  # make input easier
+        self.assertEqual(self.image_info.categories_as_text, expected_output)
+        self.assertItemsEqual(self.image_info.categories, expected_cats)
+        self.assertItemsEqual(self.image_info.meta_categories,
+                              expected_meta_cats)
+
+    def test_process_categories_only_meta_adds_meta(self):
+        """Only meta triggers "without cats", and is not added to cats."""
+        expected_output = \
+            '<!--Maintanance categories-->\n'\
+            '[[Category:Media contributed by LSH: without any categories]]\n'\
+            '[[Category:Media contributed by LSH: meta_1]]'
+        expected_cats = []
+        expected_meta_cats = ['meta_1', 'without any categories']
+        self.image_info.meta_categories = ['meta_1']
+        self.image_info.process_categories(None, None),
+        self.runAsserts(expected_output, expected_cats, expected_meta_cats)
+
+    def test_process_categories_only_photographer_adds_meta(self):
+        """Only photographer triggers "without cats", but is added to cats."""
+        expected_output = \
+            '<!--Photographer category-->\n' \
+            '[[Category:cat_photographer]]\n\n' \
+            '<!--Maintanance categories-->\n'\
+            '[[Category:Media contributed by LSH: without any categories]]'
+        expected_cats = ['cat_photographer']
+        expected_meta_cats = ['without any categories']
+        self.image_info.process_categories(None, 'cat_photographer'),
+        self.runAsserts(expected_output, expected_cats, expected_meta_cats)
+
+    def test_process_categories_stich_cats(self):
+        """Stich does not triggers "without cats", but is added to cats."""
+        expected_output = \
+            '<!--Photograph categories-->\n'\
+            '[[Category:stich_1]]\n'\
+            '[[Category:stich_2]]'
+        expected_cats = ['stich_1', 'stich_2']
+        expected_meta_cats = []
+        self.image_info.process_categories(['stich_1', 'stich_2'], None),
+        self.runAsserts(expected_output, expected_cats, expected_meta_cats)
+
+    def test_process_categories_all_obj_data(self):
+        """Test full obj_data category structure."""
+        expected_output = \
+            '<!--Event categories-->\n'\
+            '[[Category:event_1]]\n\n'\
+            '<!--Artist categories-->\n'\
+            '[[Category:artist_1]]\n\n'\
+            '<!--Depicted categories-->\n'\
+            '[[Category:depicted_1]]\n\n'\
+            '<!--Object categories-->\n'\
+            '[[Category:obj_2]]\n'\
+            '[[Category:obj_1]]'
+        expected_cats = ['event_1', 'artist_1', 'depicted_1', 'obj_1', 'obj_2']
+        expected_meta_cats = []
+        self.image_info.obj_data = {
+            u'cat_event': ['event_1'],
+            u'cat_artist': ['artist_1'],
+            u'cat_depicted': ['depicted_1'],
+            u'cat_obj': ['obj_1', 'obj_2']
+        }
+        self.image_info.process_categories(None, None),
+        self.runAsserts(expected_output, expected_cats, expected_meta_cats)
+
+
 class TestMakeGallery(unittest.TestCase):
     """Test MakeInfo.make_gallery()."""
 
@@ -206,88 +377,6 @@ class TestMakeGallery(unittest.TestCase):
             MakeInfo.make_gallery(self.title, files, self.printed,
                                   captions=captions),
             expected_gallery)
-        self.assertItemsEqual(self.printed, expected_printed)
-
-
-class TestMakeCategory(unittest.TestCase):
-    """Test MakeInfo.make_category()"""
-
-    def setUp(self):
-        self.caption = u'A caption'
-        self.printed = []
-
-    def assert_same_category_content(self, actual, expected):
-        """Assert that a category block is same, up to order its entries."""
-        actual_lines = actual.split('\n')
-        expected_lines = expected.split('\n')
-        # check first line
-        self.assertEqual(actual_lines[0], expected_lines[0])
-        # check contents of rest irrespective of order
-        self.assertItemsEqual(actual_lines[1:], expected_lines[1:])
-
-    def test_make_category_empty(self):
-        expected_category = ''
-        expected_printed = []
-        self.assertEqual(
-            MakeInfo.make_category(self.caption, [], self.printed),
-            expected_category)
-        self.assertItemsEqual(self.printed, expected_printed)
-
-    def test_make_category_single(self):
-        expected_category = u'\n<!--A caption-->\n' \
-                            u'[[Category:Cat]]\n'
-        expected_printed = ['Cat']
-        categories = ['Cat']
-        self.assertEqual(
-            MakeInfo.make_category(self.caption, categories, self.printed),
-            expected_category)
-        self.assertItemsEqual(self.printed, expected_printed)
-
-    def test_make_category_duplicate(self):
-        """Ensure internal duplicates are not outputted."""
-        expected_category = u'\n<!--A caption-->\n' \
-                            u'[[Category:Cat]]\n'
-        expected_printed = ['Cat']
-        categories = ['Cat', 'Cat']
-        self.assertEqual(
-            MakeInfo.make_category(self.caption, categories, self.printed),
-            expected_category)
-        self.assertItemsEqual(self.printed, expected_printed)
-
-    def test_make_category_reprint(self):
-        """Ensure already outputted categories are not re-outputted."""
-        expected_category = ''
-        expected_printed = ['Cat']
-        self.printed = ['Cat']
-        categories = ['Cat', ]
-        self.assertEqual(
-            MakeInfo.make_category(self.caption, categories, self.printed),
-            expected_category)
-        self.assertItemsEqual(self.printed, expected_printed)
-
-    def test_make_category_multiple(self):
-        expected_category = u'\n<!--A caption-->\n' \
-                            u'[[Category:Cat1]]\n' \
-                            u'[[Category:Cat2]]\n' \
-                            u'[[Category:Cat3]]\n'
-        expected_printed = ['Cat1', 'Cat2', 'Cat3']
-        categories = ['Cat1', 'Cat2', 'Cat3']
-        self.assert_same_category_content(
-            MakeInfo.make_category(self.caption, categories, self.printed),
-            expected_category)
-        self.assertItemsEqual(self.printed, expected_printed)
-
-    def test_make_category_with_prefix(self):
-        expected_category = u'\n<!--A caption-->\n' \
-                            u'[[Category:Prefix-Cat1]]\n' \
-                            u'[[Category:Prefix-Cat2]]\n'
-        expected_printed = ['Cat1', 'Cat2']
-        categories = ['Cat1', 'Cat2']
-        prefix = u'Prefix-'
-        self.assert_same_category_content(
-            MakeInfo.make_category(self.caption, categories, self.printed,
-                                   prefix=prefix),
-            expected_category)
         self.assertItemsEqual(self.printed, expected_printed)
 
 

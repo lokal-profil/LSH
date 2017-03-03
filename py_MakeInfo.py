@@ -46,12 +46,24 @@ class ImageInfo(object):
         obj_data[u'multiple'] = False
         return obj_data
 
-    def make_template(self, preview=False):
+    def make_description_page(self, preview=False):
+        """
+        Output a full description page for the current ImageInfo object.
+
+        This includes the template and any formatted categories.
+
+        """
+        if preview:
+            return u'%s\n%s\n<pre>%s</pre>' % (
+                self.wikiname, self.make_template(), self.categories)
+        else:
+            return u'%s\n%s' % (
+                self.make_template(), self.categories)
+
+    def make_template(self):
         """Output a {{LSH artwork}} for the current ImageInfo object."""
         # event (orig_event)
         text = u''
-        if preview:
-            text += u'%s\n' % self.wikiname
         text += u'{{LSH artwork\n'
         text += ImageInfo.format_multi_value_parameter(
             'artist', self.obj_data['artist'])
@@ -124,7 +136,8 @@ class ImageInfo(object):
             'place of origin', self.obj_data['place'])
         text += u'|original filename= %s\n' % self.orig_file
         if self.obj_data['multiple']:
-            text += u'|object-multiple= \n* %s\n' % '\n* '.join(self.obj_data['invNr'])
+            entries = '\n* '.join(self.obj_data['invNr'])
+            text += u'|object-multiple= \n* %s\n' % entries
         else:
             text += u'|object-id= %s\n' % self.obj_ids
             text += u'|inventory number= %s\n' % self.obj_data['invNr']
@@ -134,10 +147,7 @@ class ImageInfo(object):
         text += ImageInfo.format_empty_value_parameter(
             'deathyear', self.obj_data['death_year'])
         text += u'|other_versions= %s\n' % self.see_also
-        if preview:
-            text += u'}}<pre>\n%s</pre>\n' % self.categories
-        else:
-            text += u'}}\n%s' % self.categories
+        text += u'}}'
         return text.replace(u'<!>', u'<br/>')
 
     @staticmethod
@@ -312,7 +322,7 @@ class MakeInfo(object):
                                      ';'.join(printedCats))
             return (None, catData)
 
-        text = image_info.make_template(preview=preview)
+        text = image_info.make_description_page(preview=preview)
         return (image_info.wikiname, text)
 
     def make_photographer(self, pho_info):
@@ -1036,7 +1046,7 @@ class MakeInfo(object):
 
     @staticmethod
     def make_category(caption, categories, printed, prefix=u''):
-        """Given a list of objects add the corresponding images to a gallery.
+        """Given a list of categories format these for output.
 
         Also adds newly printed categories to the printed list.
         :param caption: Comment preceding category block

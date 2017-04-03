@@ -1,14 +1,14 @@
 {
-    "ausstellung": "Ausstellung 4.0.csv",
-    "kuenstler": "kuenstler 4.0.csv",
-    "objDaten": "ObjDaten 4.0.csv",
-    "objMass": "ObjMass 4.0.csv",
-    "photo": "photo 4.0.csv",
-    "stichwort": "Photo_stichwort 4.0.csv",
-    "ereignis": "Ereignis 4.0.csv",
-    "multimedia": "Multimedia 4.0.csv",
-    "objDatenSam": "ObjDaten - samhörande nr 4.0.csv",
-    "objMultiple": "ObjMultiple 4.0.csv",
-    "photoObjDaten": "Photo - ObjDaten 4.0.csv",
-    "photoAll": "Photo 4.1 - ej filtrerad.csv"
+    "ausstellung": "Ausstellung 2016_02.csv",
+    "kuenstler": "kuenstler 2016_02.csv",
+    "objDaten": "ObjDaten 2016_02.csv",
+    "objMass": "ObjMass 2016_02.csv",
+    "photo": "Photo 2016_02.csv",
+    "stichwort": "Photo_stichwort 2016_02.csv",
+    "ereignis": "Ereignis 2016_02.csv",
+    "multimedia": "Multimedia 2016_02.csv",
+    "objDatenSam": "ObjDaten - samhörande nr 2016_02.csv",
+    "objMultiple": "ObjMultiple 2016_02.csv",
+    "photoObjDaten": "Photo - ObjDaten 2016_02.csv",
+    "photoAll": "Photo 2016_02 - ej filtrerad.csv"
 }

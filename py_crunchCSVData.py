@@ -295,9 +295,9 @@ def makePhotoAll(photoAllFile, photo_multi, logFile):
                u'This will most likely mess things up. Check the log at '
                u'%s for details.' % logFile)
         flog.write(u'* duplicates found in photo and photo_all\n'
-                   u'phoId:MulId|commonsFile')
+                   u'phoId:MulId|commonsFile\n')
         for d in dupes:
-            flog.write('%s|%s' % (d, photoAll[d]['PhoSystematikS']))
+            flog.write('%s|%s\n' % (d, photoAll[d]['PhoSystematikS']))
 
     flog.close()
     return photoAll

@@ -17,10 +17,7 @@ To make this work in LSH:
 * run maintanance/replace_descriptions
 """
 from __future__ import unicode_literals
-import os
-import sys
 from builtins import dict, object, open
-
 import pywikibot
 from pywikibot import textlib
 
@@ -91,7 +88,8 @@ class UpdatedPage(object):
         last_cats = set(textlib.getCategoryLinks(self.last_text, self.site))
         new_cats = set(textlib.getCategoryLinks(self.new_text, self.site))
 
-        cats = (new_cats - (first_cats-last_cats)) | (last_cats-first_cats)
+        cats = ((new_cats - (first_cats - last_cats)) |
+                (last_cats - first_cats))
         return list(cats)
 
     def handle_single_page(self):
@@ -119,6 +117,7 @@ class UpdatedPage(object):
                 text=self.remove_cats_and_comments(self.new_text),
                 catgories=textlib.categoryFormat(final_cats))
         else:
+            # This will also catch any already updated pages
             log_entry = "Unresolved"
             pass  # don't know what to do
 
@@ -143,7 +142,7 @@ class UpdatedPage(object):
 
         if self.dry:
             pywikibot.output(
-                u"Would have updated {title:s} with:\n{text}".format(
+                "Would have updated {title:s} with:\n{text}".format(
                     title=self.page.title(),
                     text=self.text))
             return True
@@ -177,7 +176,7 @@ def process_info_blob(info, site, log, summary, dry, cutoff=None):
     pywikibot.output('Processing {} images.'.format(len(info)))
     counter = 0
     for orig_name, image_data in info.items():
-        if cutoff and cutoff < counter:
+        if cutoff and cutoff <= counter:
             pywikibot.output('Reached cutoff.')
             return
         title = "File:{:s}".format(image_data['filename'])
@@ -306,6 +305,7 @@ def handle_args(*args):
         exit()
 
     return options
+
 
 if __name__ == '__main__':
     options = handle_args()

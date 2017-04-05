@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8  -*-
-"""
-Script to upload replacement versions of existing files.
-"""
+"""Script to upload replacement versions of existing files."""
 import batchupload.csv_methods as csv
 import batchupload.common as common
 import batchupload.prepUpload as prep

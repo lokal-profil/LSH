@@ -205,7 +205,7 @@ class ImageInfo(object):
         Given a list of categories format these for output.
 
         Also adds added categories to self.categories.
-        :param caption: Comment preceding category block
+        :param caption: comment preceding the category block
         :param categories: list of (Commons) categories
         :param de_duplicate: if categories should be checked against
             (and added to) self.categories
@@ -262,7 +262,7 @@ class ImageInfo(object):
             text += self.format_category(
                 u'Object categories', self.obj_data[u'cat_obj'])
 
-        # before cat_photographer since these are a type of meta categories
+        # before cat_photographer since that is a type of meta category
         if not self.categories:
             self.meta_categories.append(u'without any categories')
         if cat_photographer:

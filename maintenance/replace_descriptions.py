@@ -254,6 +254,39 @@ def tmp_test():
     process_info_blob({'one': data}, commons, pywikibot.output, None, True)
 
 
+def skipped_info(batch, skipped, view="last-new"):
+    """
+    Provide information/diffs for a list of skipped files.
+
+    :param batch: The category added to all files of the format
+        "Category:Media contributed by LSH: <batch>".
+    :param skipped: list of skipped Commons filenames (incl. namespace).
+    :param view: the diff view which you want. Allows last-new,
+        first-last, first-new with last-new as default.
+    """
+    allowed_views = ('last-new', 'first-last', 'first-new')
+    if view not in allowed_views:
+        pywikibot.output("view must be one of the allowed_views: {}".format(
+                         ', '.join(allowed_views)))
+    data = load_and_dump_LSH_info(batch)
+    site = pywikibot.Site('commons', 'commons')
+    for orig_name, image_data in data.items():
+        title = "File:{:s}".format(image_data['filename'])
+        if title not in skipped:
+            continue
+        page = pywikibot.Page(site, title)
+        last_text = page.get()
+        new_text = make_info_page(image_data)
+        first_text = page.getOldVersion(page.oldest_revision.revid)
+        if view == 'last-new':
+            print_diff(last_text, new_text)
+        elif view == 'first-last':
+            print_diff(first_text, last_text)
+        elif view == 'first-new':
+            print_diff(first_text, new_text)
+        raw_input(u"Press enter for next.")
+
+
 def print_diff(text_1, text_2):
     """Visualize the diff between two wikitexts."""
     patch = pywikibot.diff.PatchManager(text_1, text_2)

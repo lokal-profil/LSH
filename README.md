@@ -101,3 +101,11 @@ step 10 all can be done without the actual image files.
 ## Tests
 Some basic tests have been added to simplify maintenance/improvement of
 the code base. Run these with `tox`.
+
+## Maintenance
+The maintenance directory contains scripts which may be useful for one-off
+actions in relation to the batch upload.
+* `upload_dupes` replaces previously uploaded files without changing their
+  description pages.
+* `replace_descriptions` attempts to replace previously uploaded descriptions
+  while preserving any changes made by users since the upload.

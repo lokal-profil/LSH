@@ -30,7 +30,9 @@ class ImageInfo(object):
         self.orig_stich = None
         self.obj_ids = None
         self.see_also = None
+        self.categories_as_text = None
         self.categories = None
+        self.meta_categories = None
         self.obj_data = None
 
     @staticmethod
@@ -46,13 +48,27 @@ class ImageInfo(object):
         obj_data[u'multiple'] = False
         return obj_data
 
-    def make_template(self, preview=False):
+    def make_description_page(self, preview=False):
+        """
+        Output a full description page for the current ImageInfo object.
+
+        This includes the template and any formatted categories.
+        Preview mode adds the final filename to the top of the page and
+        wraps the categories in <pre>-tags.
+
+        :param preview: if output should be done in preview mode
+        """
+        if preview:
+            return u'%s\n%s\n<pre>%s</pre>' % (
+                self.wikiname, self.make_template(), self.categories_as_text)
+        else:
+            return u'%s\n%s' % (
+                self.make_template(), self.categories_as_text)
+
+    def make_template(self):
         """Output a {{LSH artwork}} for the current ImageInfo object."""
         # event (orig_event)
-        text = u''
-        if preview:
-            text += u'%s\n' % self.wikiname
-        text += u'{{LSH artwork\n'
+        text = u'{{LSH artwork\n'
         text += ImageInfo.format_multi_value_parameter(
             'artist', self.obj_data['artist'])
         if self.obj_data['manufacturer']:
@@ -124,7 +140,8 @@ class ImageInfo(object):
             'place of origin', self.obj_data['place'])
         text += u'|original filename= %s\n' % self.orig_file
         if self.obj_data['multiple']:
-            text += u'|object-multiple= \n* %s\n' % '\n* '.join(self.obj_data['invNr'])
+            entries = '\n* '.join(self.obj_data['invNr'])
+            text += u'|object-multiple= \n* %s\n' % entries
         else:
             text += u'|object-id= %s\n' % self.obj_ids
             text += u'|inventory number= %s\n' % self.obj_data['invNr']
@@ -134,10 +151,7 @@ class ImageInfo(object):
         text += ImageInfo.format_empty_value_parameter(
             'deathyear', self.obj_data['death_year'])
         text += u'|other_versions= %s\n' % self.see_also
-        if preview:
-            text += u'}}<pre>\n%s</pre>\n' % self.categories
-        else:
-            text += u'}}\n%s' % self.categories
+        text += u'}}'
         return text.replace(u'<!>', u'<br/>')
 
     @staticmethod
@@ -184,6 +198,82 @@ class ImageInfo(object):
                     % ('|'.join(depicted[:max_people]), ending)
             depicted = depicted[max_people:]
         return text
+
+    def format_category(self, caption, categories, de_duplicate=True,
+                        prefix=None):
+        """
+        Given a list of categories format these for output.
+
+        Also adds added categories to self.categories.
+        :param caption: comment preceding the category block
+        :param categories: list of (Commons) categories
+        :param de_duplicate: if categories should be checked against
+            (and added to) self.categories
+        :param prefix: a prefix to add to each category name
+        :return: str
+        """
+        # check for duplicates and escape if all were dupes
+        categories = list(set(categories))  # remove internal duplicates
+        if de_duplicate:
+            for c in self.categories:
+                if c in categories:
+                    categories.remove(c)
+            self.categories += categories
+
+        # escape if all were dupes
+        if not categories:
+            return ''
+
+        # output
+        if prefix:
+            cat_text = '\n'.join(
+                ['[[Category:%s%s]]' % (prefix, c) for c in categories])
+        else:
+            cat_text = u'\n'.join(
+                [u'[[Category:%s]]' % c for c in categories])
+        return u'\n<!--%s-->\n%s\n' % (caption, cat_text)
+
+    def process_categories(self, cat_stich, cat_photographer):
+        """
+        Store categories and format a single text block for output.
+
+        Populates self.categories and adds "no categories" to
+        self.meta_categories if needed. Stores the text block in
+        self.categories_as_text.
+
+        :param cat_stich: list of categories from stichwort
+        :param cat_photographer: single category from matched photographer
+        """
+        text = u''
+        self.categories = []
+        if cat_stich:
+            text += self.format_category(
+                u'Photograph categories', cat_stich)
+        if self.obj_data[u'cat_event']:
+            text += self.format_category(
+                u'Event categories', self.obj_data[u'cat_event'])
+        if self.obj_data[u'cat_artist']:
+            text += self.format_category(
+                u'Artist categories', self.obj_data[u'cat_artist'])
+        if self.obj_data[u'cat_depicted']:
+            text += self.format_category(
+                u'Depicted categories', self.obj_data[u'cat_depicted'])
+        if self.obj_data[u'cat_obj']:
+            text += self.format_category(
+                u'Object categories', self.obj_data[u'cat_obj'])
+
+        # before cat_photographer since that is a type of meta category
+        if not self.categories:
+            self.meta_categories.append(u'without any categories')
+        if cat_photographer:
+            text += self.format_category(
+                u'Photographer category', [cat_photographer, ])
+        if self.meta_categories:
+            text += self.format_category(
+                u'Maintanance categories', self.meta_categories,
+                de_duplicate=False,
+                prefix=u'Media contributed by LSH: ')
+        self.categories_as_text = text
 
 
 class MakeInfo(object):
@@ -261,9 +351,40 @@ class MakeInfo(object):
         self.massC = MakeInfo.load_dimension_mappings()
         self.multi_mappings = MakeInfo.make_multimedia_type_input_mappings()
 
-    def infoFromPhoto(self, pho_mull, preview=True, testing=False):
-        phoInfo = self.photoD[pho_mull]
+    def dump_info(self, base_meta_cat=u'Media contributed by LSH',
+                  use_commons_name=False):
+        """
+        Dump the make_info data in a batchUploadTools compatible format.
 
+        This is limited to only those images which have an entry in the
+        filenames file.
+
+        :param base_meta_cat: the prefix added to any meta category
+        :param use_commons_name: if pre-existing Commons name should be
+            used as filename (if any is detected)
+        :return: dict
+        """
+        output = {}
+        for pho_mull, v in self.wikinameD.iteritems():
+            data = {}
+            image_info = self.populate_image_info(pho_mull)
+            data['filename'] = v['filename']
+            if use_commons_name and self.photoAllD.get(pho_mull):
+                # by construction all entries in photoAllD have PhoSystematikS
+                commons_name = self.photoAllD[pho_mull].get('PhoSystematikS')
+                data['filename'] = commons_name
+            data['info'] = image_info.make_template()
+            data['cats'] = image_info.categories
+            data['meta_cats'] = ['%s: %s' % (base_meta_cat, cat)
+                                 for cat in image_info.meta_categories]
+
+            original_name = v['MulDateiS']
+            path = v['MulPfadS'].replace('\\', os.sep)  # windows -> this os
+            original_name = os.path.join(path, original_name)
+            output[original_name] = data
+        return output
+
+    def infoFromPhoto(self, pho_mull, preview=True, testing=False):
         # skip any which don't have a filename
         if pho_mull not in self.wikinameD.keys():
             self.flog.write('No filename: %s\n' % pho_mull)
@@ -275,7 +396,21 @@ class MakeInfo(object):
             return ('file without an extention: %s\n' % pho_mull, None)
 
         # set up Info object
+        image_info = self.populate_image_info(pho_mull)
+
+        if testing:
+            catData = u'%r/%r|%s' % (len(image_info.categories),
+                                     len(image_info.meta_categories),
+                                     ';'.join(image_info.categories))
+            return (None, catData)
+
+        text = image_info.make_description_page(preview=preview)
+        return (image_info.wikiname, text)
+
+    def populate_image_info(self, pho_mull):
+        """Construct, populate an return ImageInfo object."""
         image_info = ImageInfo()
+        phoInfo = self.photoD[pho_mull]
 
         # maintanance categories
         cat_meta = []
@@ -287,33 +422,27 @@ class MakeInfo(object):
         image_info.orig_file = self.wikinameD[pho_mull][u'MulDateiS']
         image_info.photo_license = self.lic[phoInfo[u'PhoAufnahmeortS']]
         image_info.photo_id = phoInfo[u'PhoId']
-        image_info.source = self.source[phoInfo[u'PhoSwdS']]  # can be overridden by objData
+        image_info.source = self.source[phoInfo[u'PhoSwdS']]
         image_info.orig_descr = phoInfo[u'PhoBeschreibungM']
-        image_info.photographer, cat_photographer = self.make_photographer(phoInfo)
+        image_info.photographer, cat_photographer = \
+            self.make_photographer(phoInfo)
 
         # category-stichwort
-        image_info.orig_stich, cat_stich = self.handle_stichwort(phoInfo, cat_meta)
+        image_info.orig_stich, cat_stich = \
+            self.handle_stichwort(phoInfo, cat_meta)
 
-        # objId(s)
-        image_info.obj_ids, image_info.obj_data = self.handle_obj_ids(phoInfo, image_info, cat_meta)
+        # objId(s), can override image_info.source
+        image_info.obj_ids, image_info.obj_data = \
+            self.handle_obj_ids(phoInfo, image_info, cat_meta)
 
         # see also
         image_info.see_also = self.make_see_also(phoInfo, image_info.obj_data)
 
         # Combine categories
-        # TODO: rename this format_categories and consider doing it in ImageInfo
-        #       since it is related to outputting
-        image_info.categories, printedCats = MakeInfo.handle_categories(
-            cat_meta, cat_stich, cat_photographer, image_info.obj_data)
+        image_info.meta_categories = cat_meta
+        image_info.process_categories(cat_stich, cat_photographer)
 
-        if testing:
-            catData = u'%r/%r|%s' % (len(printedCats) - len(cat_meta),
-                                     len(cat_meta),
-                                     ';'.join(printedCats))
-            return (None, catData)
-
-        text = image_info.make_template(preview=preview)
-        return (image_info.wikiname, text)
+        return image_info
 
     def make_photographer(self, pho_info):
         """Construct the photographer field and add photographer category."""
@@ -426,42 +555,6 @@ class MakeInfo(object):
                 obj_data[u'cat_depicted'] += v[u'cat_depicted']
 
         return obj_data
-
-    @staticmethod
-    def handle_categories(cat_meta, cat_stich, cat_photographer, obj_data):
-        """Combine categories into a single text block."""
-        # Categories need de-duplidication
-        categories = u''
-        printed_cats = []  # ensure same category isn't outputted twice
-        if cat_stich:
-            categories += MakeInfo.make_category(
-                u'Photograph categories', cat_stich, printed_cats)
-        if obj_data[u'cat_event']:
-            categories += MakeInfo.make_category(
-                u'Event categories', obj_data[u'cat_event'], printed_cats)
-        if obj_data[u'cat_artist']:
-            categories += MakeInfo.make_category(
-                u'Artist categories', obj_data[u'cat_artist'], printed_cats)
-        if obj_data[u'cat_depicted']:
-            categories += MakeInfo.make_category(
-                u'Depicted categories', obj_data[u'cat_depicted'],
-                printed_cats)
-        if obj_data[u'cat_obj']:
-            categories += MakeInfo.make_category(
-                u'Object categories', obj_data[u'cat_obj'], printed_cats)
-
-        # before cat_photographer since these are a type of meta categories
-        if not printed_cats:
-            cat_meta.append(u'without any categories')
-        if cat_photographer:
-            categories += MakeInfo.make_category(
-                u'Photographer category', [cat_photographer, ], printed_cats)
-        if cat_meta:
-            categories += MakeInfo.make_category(
-                u'Maintanance categories', cat_meta, printed_cats,
-                prefix=u'Media contributed by LSH: ')
-
-        return categories, printed_cats
 
     def make_see_also(self, pho_info, obj_data):
         """Make a see_also galleries."""
@@ -1032,37 +1125,6 @@ class MakeInfo(object):
         else:
             text += u'File:%s\n' % '\nFile:'.join(filenames)
         text += u'</gallery>'
-        return text
-
-    @staticmethod
-    def make_category(caption, categories, printed, prefix=u''):
-        """Given a list of objects add the corresponding images to a gallery.
-
-        Also adds newly printed categories to the printed list.
-        :param caption: Comment preceding category block
-        :param categories: list of (Commons) categories
-        :param printed: list of previously printed images
-        :param prefix: a prefix to add to each category name
-        :return: str
-        """
-        # check for duplicates and escape if all were dupes
-        categories = list(set(categories))  # remove internal duplicates
-        for p in printed:
-            if p in categories:
-                categories.remove(p)
-        printed += categories
-
-        # escape if all were dupes
-        if not categories:
-            return ''
-
-        # output
-        text = u'\n<!--%s-->\n' % caption
-        if prefix:
-            for c in categories:
-                text += u'[[Category:%s%s]]\n' % (prefix, c)
-        else:
-            text += u'[[Category:%s]]\n' % ']]\n[[Category:'.join(categories)
         return text
 
     @staticmethod

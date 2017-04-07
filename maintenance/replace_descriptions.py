@@ -4,9 +4,9 @@
 Attempt replacing file descriptions pages while preserving user changes.
 
 Notes:
-* For non-LSH use you have to ensure that the outputted filenames corresponde
-  to the actual filenames usd on Commons. Else you need to eplace the filename
-  field in the make_info json by the actual Commons filenames.
+* For non-LSH use you have to ensure that the outputted filenames corresponds
+  to the actual filenames used on Commons. Else you need to replace the
+  filename field in the make_info json by the actual Commons filenames.
 * "only categories" means only categories have changed since the first
   upload, not that only categories will be changed.
 
@@ -205,9 +205,6 @@ def load_and_dump_LSH_info(batch, data_dir=None, connections_dir=None):
     :param connections_dir: override the default directory for connection
         files
     """
-    # TODO: Check if v['PhoSystematikS'] is available. If different from
-    #      image['filename'] then there might be a need to change in
-    #      galleries.
     data_dir = data_dir or DATA_DIR
     connections_dir = connections_dir or CONNECTIONS_DIR
     base_meta_cat = 'Media contributed by LSH'

@@ -75,7 +75,7 @@ def upload_all(base_dir, sub_dir=u'Uploaded', log_file='upload.log',
     commons = pywikibot.Site('commons', 'commons')
     commons.login()
 
-    upload_comment = u'Source image improved by the institution #LSHupdate'
+    upload_comment = u'Source image improved by the institution #LSH'
 
     # create target directories if they don't exist
     done_dir = common.modify_path(base_dir, sub_dir)
